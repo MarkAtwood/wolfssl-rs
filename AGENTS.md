@@ -54,3 +54,7 @@ bd close <id>         # Complete work
 The only permitted markdown planning artifact is a crate's `PLAN.md`, which is a permanent
 design document checked into the repo — not a scratchpad. Use `bd remember` for persistent
 knowledge and `bd create` for all task tracking.
+
+## AI-to-AI PR Replies
+
+When an AI-drafted reply responds to another AI's PR comment (Copilot, Skoll, or any bot reviewer), preface the reply with "AItoAI: ". Replies to human reviewers never carry the prefix.
