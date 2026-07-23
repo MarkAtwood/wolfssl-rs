@@ -434,5 +434,6 @@ wrapper/Ada/obj/
 wolfssl/debug-trace-error-codes.h
 wolfssl/debug-untrace-error-codes.h
 .ai/
+.claude/
 compile_commands.json
 __pycache__/
