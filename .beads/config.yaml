@@ -54,4 +54,4 @@
 # - github.repo
 
 dolt:
-  shared-server: true
+  shared-server: false

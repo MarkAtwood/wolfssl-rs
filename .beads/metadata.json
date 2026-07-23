@@ -1,6 +1,6 @@
 {
   "database": "dolt",
-  "backend": "dolt",
+  "backend": "flatfile",
   "dolt_mode": "server",
   "dolt_database": "wolfssl_rs",
   "project_id": "1299f254-e978-4088-abb3-0e2479136124"
