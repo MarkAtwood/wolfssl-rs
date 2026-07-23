@@ -1,0 +1,5 @@
+# CAVP/SHAVS conformance test vectors are LF-only oracles.
+# Pin EOL so an editor or tool re-saving as CRLF does not create
+# 267-line-of-noise diffs that hide real vector changes.
+wolfcrypt-conformance/vectors/** text eol=lf
+wolfcrypt-ring-compat/tests/data/** text eol=lf
