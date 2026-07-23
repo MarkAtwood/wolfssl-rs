@@ -1,3 +1,9 @@
+> **EXPERIMENTAL - NOT SUPPORTED**
+>
+> These crates are experimental and are not supported. Do not use them in production.
+> The official wolfSSL Rust crate is **wolfssl-wolfcrypt**:
+> https://github.com/wolfSSL/wolfssl/tree/master/wrapper/rust/wolfssl-wolfcrypt
+
 # wolfssl-rs
 
 Rust bindings and cryptographic trait implementations for
