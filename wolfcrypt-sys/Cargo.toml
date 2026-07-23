@@ -24,4 +24,4 @@ cryptocb-pure = ["vendored", "wolfssl-src/cryptocb-pure"]
 [build-dependencies]
 bindgen = "0.72.0"
 pkg-config = "0.3"
-wolfssl-src = { version = "0.2.0", path = "../wolfssl-src" }
+wolfssl-src = { version = "0.2.1", path = "../wolfssl-src" }

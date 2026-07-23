@@ -19,10 +19,10 @@ ring-sig-verify = ["wolfcrypt-ring-compat/ring-sig-verify"]
 fips = ["wolfcrypt-ring-compat/fips"]
 
 [dependencies]
-wolfcrypt-ring-compat = { version = "1.0", path = "../wolfcrypt-ring-compat", optional = true }
+wolfcrypt-ring-compat = { version = "1.17.1", path = "../wolfcrypt-ring-compat", optional = true }
 
 [dev-dependencies]
-wolfcrypt-ring-compat = { version = "1.0", path = "../wolfcrypt-ring-compat", features = ["ring-sig-verify", "unstable"] }
+wolfcrypt-ring-compat = { version = "1.17.1", path = "../wolfcrypt-ring-compat", features = ["ring-sig-verify", "unstable"] }
 untrusted.workspace = true
 paste.workspace = true
 criterion = { workspace = true, features = ["csv_output"] }

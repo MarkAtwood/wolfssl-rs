@@ -15,7 +15,7 @@ build = "build.rs"
 links = "wolfssl"
 
 [dependencies]
-wolfcrypt-sys = { version = "0.2.0", path = "../wolfcrypt-sys", default-features = false, features = ["vendored"] }
+wolfcrypt-sys = { version = "0.2.2", path = "../wolfcrypt-sys", default-features = false, features = ["vendored"] }
 
 [features]
 default = []

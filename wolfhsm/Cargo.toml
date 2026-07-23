@@ -30,8 +30,8 @@ she = ["wolfhsm-sys/she"]
 
 [dependencies]
 log = "0.4"
-wolfhsm-sys = { version = "0.2.0", path = "../wolfhsm-sys" }
-wolfcrypt-sys = { version = "0.2.0", path = "../wolfcrypt-sys" }
+wolfhsm-sys = { version = "0.2.1", path = "../wolfhsm-sys" }
+wolfcrypt-sys = { version = "0.2.2", path = "../wolfcrypt-sys" }
 signature = "2.2"
 p256 = { version = "0.13", features = ["ecdsa"] }
 ed25519 = "2.2"

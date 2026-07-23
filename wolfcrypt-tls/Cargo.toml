@@ -27,7 +27,7 @@ vendored = ["wolfcrypt-sys/vendored"]
 fips = ["wolfcrypt-sys/fips"]
 
 [dependencies]
-wolfcrypt-sys = { version = "0.2.0", path = "../wolfcrypt-sys" }
+wolfcrypt-sys = { version = "0.2.2", path = "../wolfcrypt-sys" }
 zeroize = { workspace = true }
 
 [dev-dependencies]

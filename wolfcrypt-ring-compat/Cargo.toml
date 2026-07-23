@@ -56,7 +56,7 @@ fips = ["wolfcrypt-rs", "wolfcrypt-rs/fips"]
 [dependencies]
 spin.workspace = true
 untrusted = { workspace = true, optional = true }
-wolfcrypt-rs = { version = "0.2.0", path = "../wolfcrypt-rs", default-features = false, optional = true }
+wolfcrypt-rs = { version = "0.2.1", path = "../wolfcrypt-rs", default-features = false, optional = true }
 zeroize.workspace = true
 
 [dev-dependencies]
