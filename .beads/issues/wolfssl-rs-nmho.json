@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-rs-nmho",
+  "title": "Publish wolftpm-tss 0.3.1 once tpm-rs on crates.io",
+  "description": "wolftpm-tss 0.3.1 cannot be published to crates.io: its 'tss' feature pulls optional git-only deps tpm2-rs-client and tpm2-rs-base from github.com/tpm-rs/tpm-rs (rev a7bf0e9), which have no crates.io version. cargo publish rejects any dependency (even optional/feature-gated) that lacks a version requirement. Only the old 0.1.0 is live; the other 16 workspace crates published at their bumped versions on 2026-07-22. Unblock when tpm-rs publishes tpm2-rs-base/tpm2-rs-client to crates.io, then change the git deps to version requirements and re-run cargo publish -p wolftpm-tss. Alternatives: vendor the needed tpm-rs types, or ship wolftpm-tss without the tss feature/deps.",
+  "status": "open",
+  "priority": 3,
+  "issue_type": "task",
+  "owner": "mark@wolfssl.com",
+  "created_at": "2026-07-23T02:21:28.976883713Z",
+  "created_by": "Mark Atwood",
+  "updated_at": "2026-07-23T02:21:28.976883713Z"
+}
