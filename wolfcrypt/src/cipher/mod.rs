@@ -2,22 +2,24 @@
 //!
 //! Provides block ciphers (AES-ECB, AES-CBC), stream ciphers (AES-CTR,
 //! AES-CFB, ChaCha20), and 3DES-CBC, implementing the RustCrypto
-//! [`cipher`](cipher_trait) 0.4 traits.
+//! [`cipher`](cipher_trait) 0.5 traits.
 
 // All cipher trait imports in one place. Individual items are only used when
 // their corresponding mode's cfg is active; unused_imports is allowed here
 // to avoid a fragile cascade of `not(...)` cfg guards that must be updated
 // every time a new cipher mode is added.
 #[expect(unused_imports)]
-pub(crate) use cipher_trait::generic_array::GenericArray;
-#[expect(unused_imports)]
 pub(crate) use cipher_trait::inout::InOut;
 #[expect(unused_imports)]
 pub(crate) use cipher_trait::{
-    Block, BlockBackend, BlockCipher, BlockClosure, BlockDecrypt, BlockDecryptMut, BlockEncrypt,
-    BlockEncryptMut, BlockSizeUser, IvSizeUser, KeyInit, KeyIvInit, KeySizeUser, ParBlocksSizeUser,
-    StreamCipher, StreamCipherError,
+    Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
+    BlockCipherEncClosure, BlockCipherEncrypt, BlockModeDecBackend, BlockModeDecClosure,
+    BlockModeDecrypt, BlockModeEncBackend, BlockModeEncClosure, BlockModeEncrypt, BlockSizeUser,
+    IvSizeUser, KeyInit, KeyIvInit, KeySizeUser, ParBlocksSizeUser, StreamCipher,
+    StreamCipherError,
 };
+#[expect(unused_imports)]
+pub(crate) use hybrid_array::Array;
 #[expect(unused_imports)]
 pub(crate) use typenum::{U1, U16};
 

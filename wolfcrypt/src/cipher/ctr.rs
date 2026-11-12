@@ -31,7 +31,7 @@ macro_rules! impl_aes_ctr {
         }
 
         impl KeyIvInit for $name {
-            fn new(key: &GenericArray<u8, $key_size>, iv: &GenericArray<u8, U16>) -> Self {
+            fn new(key: &Array<u8, $key_size>, iv: &Array<u8, U16>) -> Self {
                 let mut aes = wolfcrypt_rs::WcAes::zeroed();
 
                 // SAFETY: `aes` is freshly zeroed; null heap + INVALID_DEVID is standard.
@@ -61,10 +61,16 @@ macro_rules! impl_aes_ctr {
         }
 
         impl StreamCipher for $name {
-            fn try_apply_keystream_inout(
+            fn check_remaining(&self, _data_len: usize) -> Result<(), StreamCipherError> {
+                // wolfCrypt tracks the counter/feedback state itself; there is no
+                // keystream-length limit to enforce here.
+                Ok(())
+            }
+
+            fn unchecked_apply_keystream_inout(
                 &mut self,
                 buf: cipher_trait::inout::InOutBuf<'_, '_, u8>,
-            ) -> Result<(), StreamCipherError> {
+            ) {
                 let len = buf.len();
                 let (in_ptr, out_ptr) = buf.into_raw();
 
@@ -77,11 +83,14 @@ macro_rules! impl_aes_ctr {
                         len_as_u32(len),
                     )
                 };
-                if rc == 0 {
-                    Ok(())
-                } else {
-                    Err(StreamCipherError)
-                }
+                // cipher 0.5's keystream methods are infallible, so a wolfCrypt
+                // failure can only be reported by panicking.
+                assert_eq!(rc, 0, "wolfCrypt keystream operation failed");
+            }
+
+            fn unchecked_write_keystream(&mut self, buf: &mut [u8]) {
+                buf.fill(0);
+                self.unchecked_apply_keystream(buf);
             }
         }
     };

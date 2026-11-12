@@ -8,7 +8,7 @@
 //! `new_from_slice()`, `update()`, `finalize()`, `verify_slice()`.
 
 use digest_trait::{FixedOutput, KeyInit, OutputSizeUser, Update};
-use generic_array::GenericArray;
+use hybrid_array::Array;
 use typenum::{U16, U32};
 
 use crate::error::len_as_u32;
@@ -59,7 +59,7 @@ impl crypto_common::KeySizeUser for WolfPoly1305 {
 
 #[cfg(wolfssl_poly1305)]
 impl KeyInit for WolfPoly1305 {
-    fn new(key: &GenericArray<u8, U32>) -> Self {
+    fn new(key: &Array<u8, U32>) -> Self {
         let mut ctx = wolfcrypt_rs::poly1305_state::zeroed();
 
         // SAFETY: `ctx` is zero-initialized, `key` points to exactly 32
@@ -77,10 +77,8 @@ impl KeyInit for WolfPoly1305 {
     }
 
     fn new_from_slice(key: &[u8]) -> Result<Self, crypto_common::InvalidLength> {
-        if key.len() != 32 {
-            return Err(crypto_common::InvalidLength);
-        }
-        Ok(Self::new(GenericArray::from_slice(key)))
+        let key = <&Array<u8, U32>>::try_from(key).map_err(|_| crypto_common::InvalidLength)?;
+        Ok(Self::new(key))
     }
 }
 
@@ -102,7 +100,7 @@ impl Update for WolfPoly1305 {
 
 #[cfg(wolfssl_poly1305)]
 impl FixedOutput for WolfPoly1305 {
-    fn finalize_into(mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
+    fn finalize_into(mut self, out: &mut Array<u8, Self::OutputSize>) {
         // SAFETY: `self.ctx` is valid. `out` is exactly 16 bytes.
         // After this call, Drop will zero the context.
         let rc = unsafe {

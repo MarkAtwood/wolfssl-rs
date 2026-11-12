@@ -18,15 +18,15 @@ use core::cell::UnsafeCell;
 use core::ffi::c_int;
 use core::marker::PhantomData;
 
-use generic_array::GenericArray;
+use hybrid_array::Array;
 
-use crate::error::{len_as_u32, WolfCryptError};
+use crate::error::{WolfCryptError, len_as_u32};
 
 use wolfcrypt_rs::{
-    wc_FreeRng, wc_InitRng, wc_ecc_export_x963, wc_ecc_import_private_key_ex, wc_ecc_import_x963,
-    wc_ecc_key, wc_ecc_key_free, wc_ecc_key_new, wc_ecc_make_key_ex, wc_ecc_make_pub,
-    wc_ecc_rs_raw_to_sig, wc_ecc_set_rng, wc_ecc_sig_to_rs, wc_ecc_sign_hash, wc_ecc_verify_hash,
-    ECC_SECP256R1, WC_RNG,
+    ECC_SECP256R1, WC_RNG, wc_FreeRng, wc_InitRng, wc_ecc_export_x963,
+    wc_ecc_import_private_key_ex, wc_ecc_import_x963, wc_ecc_key, wc_ecc_key_free, wc_ecc_key_new,
+    wc_ecc_make_key_ex, wc_ecc_make_pub, wc_ecc_rs_raw_to_sig, wc_ecc_set_rng, wc_ecc_sig_to_rs,
+    wc_ecc_sign_hash, wc_ecc_verify_hash,
 };
 
 #[cfg(wolfssl_ecc_p384)]
@@ -61,7 +61,7 @@ pub trait EcdsaCurve: sealed::Sealed + 'static {
     /// SHA-512 (64 bytes) while its field size is 66 bytes.
     const HASH_LEN: usize;
     /// Typenum encoding of [`SIG_SIZE`](Self::SIG_SIZE).
-    type SigSize: generic_array::ArrayLength<u8>;
+    type SigSize: hybrid_array::ArraySize;
 
     /// Hash `msg` using the curve's canonical digest.
     fn hash_message(msg: &[u8]) -> Result<Vec<u8>, WolfCryptError>;
@@ -169,7 +169,7 @@ impl EcdsaCurve for P521 {
 
 /// A fixed-size, stack-allocated ECDSA signature in `r || s` format.
 pub struct EcdsaSignature<C: EcdsaCurve> {
-    bytes: GenericArray<u8, C::SigSize>,
+    bytes: Array<u8, C::SigSize>,
     _curve: PhantomData<C>,
 }
 
@@ -180,7 +180,7 @@ impl<C: EcdsaCurve> EcdsaSignature<C> {
             return Err(WolfCryptError::INVALID_INPUT);
         }
         Ok(Self {
-            bytes: GenericArray::clone_from_slice(bytes),
+            bytes: Array::try_from(bytes).map_err(|_| WolfCryptError::INVALID_INPUT)?,
             _curve: PhantomData,
         })
     }
@@ -226,7 +226,7 @@ impl<C: EcdsaCurve> core::fmt::Debug for EcdsaSignature<C> {
 }
 
 impl<C: EcdsaCurve> signature_trait::SignatureEncoding for EcdsaSignature<C> {
-    type Repr = GenericArray<u8, C::SigSize>;
+    type Repr = Array<u8, C::SigSize>;
 }
 
 impl<C: EcdsaCurve> TryFrom<&[u8]> for EcdsaSignature<C> {
@@ -236,7 +236,7 @@ impl<C: EcdsaCurve> TryFrom<&[u8]> for EcdsaSignature<C> {
     }
 }
 
-impl<C: EcdsaCurve> From<EcdsaSignature<C>> for GenericArray<u8, C::SigSize> {
+impl<C: EcdsaCurve> From<EcdsaSignature<C>> for Array<u8, C::SigSize> {
     fn from(sig: EcdsaSignature<C>) -> Self {
         sig.bytes
     }
@@ -255,7 +255,7 @@ impl<C: EcdsaCurve> AsRef<[u8]> for EcdsaSignature<C> {
 fn der_to_fixed_rs<C: EcdsaCurve>(
     der: &[u8],
     der_len: u32,
-) -> Result<GenericArray<u8, C::SigSize>, WolfCryptError> {
+) -> Result<Array<u8, C::SigSize>, WolfCryptError> {
     let mut r = vec![0u8; C::FIELD_SIZE];
     let mut s = vec![0u8; C::FIELD_SIZE];
     let mut r_len = C::FIELD_SIZE as u32;
@@ -289,7 +289,7 @@ fn der_to_fixed_rs<C: EcdsaCurve>(
     if r_len as usize > C::FIELD_SIZE || s_len as usize > C::FIELD_SIZE {
         return Err(WolfCryptError::INVALID_INPUT);
     }
-    let mut combined = GenericArray::<u8, C::SigSize>::default();
+    let mut combined = Array::<u8, C::SigSize>::default();
     let r_pad = C::FIELD_SIZE - r_len as usize;
     combined[r_pad..C::FIELD_SIZE].copy_from_slice(&r[..r_len as usize]);
     let s_pad = C::FIELD_SIZE - s_len as usize;

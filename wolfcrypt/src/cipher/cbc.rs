@@ -12,9 +12,9 @@ impl<'a> ParBlocksSizeUser for AesCbcEncBackend<'a> {
     type ParBlocksSize = U1;
 }
 
-impl<'a> BlockBackend for AesCbcEncBackend<'a> {
+impl<'a> BlockModeEncBackend for AesCbcEncBackend<'a> {
     #[inline]
-    fn proc_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
+    fn encrypt_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
         let (in_ptr, out_ptr) = block.into_raw();
         // SAFETY: in_ptr and out_ptr are valid 16-byte block pointers.
         // wc_AesCbcEncrypt updates the IV state inside self.0 after each block.
@@ -35,9 +35,9 @@ impl<'a> ParBlocksSizeUser for AesCbcDecBackend<'a> {
     type ParBlocksSize = U1;
 }
 
-impl<'a> BlockBackend for AesCbcDecBackend<'a> {
+impl<'a> BlockModeDecBackend for AesCbcDecBackend<'a> {
     #[inline]
-    fn proc_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
+    fn decrypt_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
         let (in_ptr, out_ptr) = block.into_raw();
         // SAFETY: in_ptr and out_ptr are valid 16-byte block pointers.
         // wc_AesCbcDecrypt updates the IV state inside self.0 after each block.
@@ -67,7 +67,7 @@ macro_rules! impl_aes_cbc_enc {
         }
 
         impl KeyIvInit for $name {
-            fn new(key: &GenericArray<u8, $key_size>, iv: &GenericArray<u8, U16>) -> Self {
+            fn new(key: &Array<u8, $key_size>, iv: &Array<u8, U16>) -> Self {
                 let mut aes = wolfcrypt_rs::WcAes::zeroed();
                 // SAFETY: `aes` is freshly zeroed; null heap + INVALID_DEVID is standard.
                 let rc = unsafe {
@@ -97,10 +97,10 @@ macro_rules! impl_aes_cbc_enc {
             type BlockSize = U16;
         }
 
-        impl BlockEncryptMut for $name {
-            fn encrypt_with_backend_mut(
+        impl BlockModeEncrypt for $name {
+            fn encrypt_with_backend(
                 &mut self,
-                f: impl BlockClosure<BlockSize = Self::BlockSize>,
+                f: impl BlockModeEncClosure<BlockSize = Self::BlockSize>,
             ) {
                 f.call(&mut AesCbcEncBackend(&mut self.aes));
             }
@@ -136,7 +136,7 @@ macro_rules! impl_aes_cbc_dec {
         }
 
         impl KeyIvInit for $name {
-            fn new(key: &GenericArray<u8, $key_size>, iv: &GenericArray<u8, U16>) -> Self {
+            fn new(key: &Array<u8, $key_size>, iv: &Array<u8, U16>) -> Self {
                 let mut aes = wolfcrypt_rs::WcAes::zeroed();
                 // SAFETY: `aes` is freshly zeroed; null heap + INVALID_DEVID is standard.
                 let rc = unsafe {
@@ -166,10 +166,10 @@ macro_rules! impl_aes_cbc_dec {
             type BlockSize = U16;
         }
 
-        impl BlockDecryptMut for $name {
-            fn decrypt_with_backend_mut(
+        impl BlockModeDecrypt for $name {
+            fn decrypt_with_backend(
                 &mut self,
-                f: impl BlockClosure<BlockSize = Self::BlockSize>,
+                f: impl BlockModeDecClosure<BlockSize = Self::BlockSize>,
             ) {
                 f.call(&mut AesCbcDecBackend(&mut self.aes));
             }
@@ -190,13 +190,13 @@ impl_aes_cbc_enc!(
     Aes128CbcEnc,
     typenum::U16,
     16u32,
-    "AES-128 CBC encryption, implementing `BlockEncryptMut` and `KeyIvInit`."
+    "AES-128 CBC encryption, implementing `BlockModeEncrypt` and `KeyIvInit`."
 );
 impl_aes_cbc_dec!(
     Aes128CbcDec,
     typenum::U16,
     16u32,
-    "AES-128 CBC decryption, implementing `BlockDecryptMut` and `KeyIvInit`."
+    "AES-128 CBC decryption, implementing `BlockModeDecrypt` and `KeyIvInit`."
 );
 
 #[cfg(wolfssl_aes_192)]
@@ -204,25 +204,25 @@ impl_aes_cbc_enc!(
     Aes192CbcEnc,
     typenum::U24,
     24u32,
-    "AES-192 CBC encryption, implementing `BlockEncryptMut` and `KeyIvInit`."
+    "AES-192 CBC encryption, implementing `BlockModeEncrypt` and `KeyIvInit`."
 );
 #[cfg(wolfssl_aes_192)]
 impl_aes_cbc_dec!(
     Aes192CbcDec,
     typenum::U24,
     24u32,
-    "AES-192 CBC decryption, implementing `BlockDecryptMut` and `KeyIvInit`."
+    "AES-192 CBC decryption, implementing `BlockModeDecrypt` and `KeyIvInit`."
 );
 
 impl_aes_cbc_enc!(
     Aes256CbcEnc,
     typenum::U32,
     32u32,
-    "AES-256 CBC encryption, implementing `BlockEncryptMut` and `KeyIvInit`."
+    "AES-256 CBC encryption, implementing `BlockModeEncrypt` and `KeyIvInit`."
 );
 impl_aes_cbc_dec!(
     Aes256CbcDec,
     typenum::U32,
     32u32,
-    "AES-256 CBC decryption, implementing `BlockDecryptMut` and `KeyIvInit`."
+    "AES-256 CBC decryption, implementing `BlockModeDecrypt` and `KeyIvInit`."
 );

@@ -20,8 +20,8 @@
 //! let (prk, hkdf) = SimpleHkdf::<Sha256>::extract(Some(salt), ikm);
 //! ```
 
-use crate::error::{check, len_as_u32, WolfCryptError};
-use generic_array::GenericArray;
+use crate::error::{WolfCryptError, check, len_as_u32};
+use hybrid_array::Array;
 use typenum::*;
 
 /// Internal macro that stamps out a complete HKDF wrapper for one algorithm.
@@ -38,7 +38,7 @@ macro_rules! impl_hkdf {
         /// then used to derive output keying material via [`expand`](Self::expand).
         #[$cfg_gate]
         pub struct $name {
-            prk: GenericArray<u8, $output_size>,
+            prk: Array<u8, $output_size>,
         }
 
         #[$cfg_gate]
@@ -58,11 +58,8 @@ macro_rules! impl_hkdf {
             ///
             /// If `salt` is `None`, an all-zero salt of hash-length bytes is
             /// used per RFC 5869 §2.2.
-            pub fn extract(
-                salt: Option<&[u8]>,
-                ikm: &[u8],
-            ) -> (GenericArray<u8, $output_size>, Self) {
-                let mut prk = GenericArray::<u8, $output_size>::default();
+            pub fn extract(salt: Option<&[u8]>, ikm: &[u8]) -> (Array<u8, $output_size>, Self) {
+                let mut prk = Array::<u8, $output_size>::default();
 
                 let (salt_ptr, salt_len) = match salt {
                     Some(s) if !s.is_empty() => (s.as_ptr(), len_as_u32(s.len())),
@@ -103,7 +100,7 @@ macro_rules! impl_hkdf {
                 if prk.len() < hash_len {
                     return Err(WolfCryptError::INVALID_INPUT);
                 }
-                let mut arr = GenericArray::<u8, $output_size>::default();
+                let mut arr = Array::<u8, $output_size>::default();
                 arr.copy_from_slice(&prk[..hash_len]);
                 Ok(Self { prk: arr })
             }

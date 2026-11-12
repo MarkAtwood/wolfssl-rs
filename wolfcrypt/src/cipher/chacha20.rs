@@ -43,7 +43,7 @@ impl IvSizeUser for WolfChaCha20 {
 }
 
 impl KeyIvInit for WolfChaCha20 {
-    fn new(key: &GenericArray<u8, typenum::U32>, nonce: &GenericArray<u8, typenum::U12>) -> Self {
+    fn new(key: &Array<u8, typenum::U32>, nonce: &Array<u8, typenum::U12>) -> Self {
         let mut ctx = wolfcrypt_rs::ChaCha::zeroed();
 
         // SAFETY: `ctx` is freshly zeroed; key is a valid 32-byte slice.
@@ -63,10 +63,15 @@ impl KeyIvInit for WolfChaCha20 {
 }
 
 impl StreamCipher for WolfChaCha20 {
-    fn try_apply_keystream_inout(
-        &mut self,
-        buf: cipher_trait::inout::InOutBuf<'_, '_, u8>,
-    ) -> Result<(), StreamCipherError> {
+    fn check_remaining(&self, _data_len: usize) -> Result<(), StreamCipherError> {
+        // TODO: the RFC 8439 block counter is 32 bits, so a single key/nonce
+        // pair can produce at most 256 GiB of keystream. This impl doesn't
+        // track the position, so it can't reject requests past that limit;
+        // wolfCrypt's behaviour at counter wrap is unverified.
+        Ok(())
+    }
+
+    fn unchecked_apply_keystream_inout(&mut self, buf: cipher_trait::inout::InOutBuf<'_, '_, u8>) {
         let len = buf.len();
         let (in_ptr, out_ptr) = buf.into_raw();
 
@@ -79,10 +84,13 @@ impl StreamCipher for WolfChaCha20 {
                 len_as_u32(len),
             )
         };
-        if rc == 0 {
-            Ok(())
-        } else {
-            Err(StreamCipherError)
-        }
+        // cipher 0.5's keystream methods are infallible, so a wolfCrypt
+        // failure can only be reported by panicking.
+        assert_eq!(rc, 0, "wolfCrypt keystream operation failed");
+    }
+
+    fn unchecked_write_keystream(&mut self, buf: &mut [u8]) {
+        buf.fill(0);
+        self.unchecked_apply_keystream(buf);
     }
 }

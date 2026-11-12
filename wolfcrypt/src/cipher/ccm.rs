@@ -1,7 +1,7 @@
 //! AES-CCM authenticated encryption (wolfCrypt native API).
 //!
 //! Provides `Aes128Ccm` and `Aes256Ccm` implementing the RustCrypto
-//! [`aead`](aead_trait) 0.5 traits (`AeadCore`, `AeadInPlace`, `KeySizeUser`,
+//! [`aead`](aead_trait) 0.6 traits (`AeadCore`, `AeadInOut`, `KeySizeUser`,
 //! `KeyInit`), plus standalone `aes_ccm_encrypt` / `aes_ccm_decrypt` functions
 //! that accept variable-length nonces (7–13 bytes) and tags (4–16 bytes).
 //!
@@ -15,14 +15,14 @@
 use core::cell::UnsafeCell;
 use core::ffi::c_void;
 
-use aead_trait::generic_array::GenericArray;
-use aead_trait::{AeadCore, AeadInPlace, KeyInit, KeySizeUser};
-use typenum::{U0, U13, U16, U32};
+use aead_trait::{AeadCore, AeadInOut, KeyInit, KeySizeUser};
+use hybrid_array::Array;
+use typenum::{U13, U16, U32};
 
-use crate::error::{check, len_as_u32, WolfCryptError};
+use crate::error::{WolfCryptError, check, len_as_u32};
 
 // ---------------------------------------------------------------------------
-// Trait-based API (AeadInPlace)
+// Trait-based API (AeadInOut)
 // ---------------------------------------------------------------------------
 
 /// Internal macro to stamp out an AES-CCM wrapper for a given key size.
@@ -49,7 +49,7 @@ macro_rules! impl_aes_ccm {
         }
 
         impl KeyInit for $name {
-            fn new(key: &GenericArray<u8, $key_size>) -> Self {
+            fn new(key: &Array<u8, $key_size>) -> Self {
                 let mut aes = wolfcrypt_rs::WcAes::zeroed();
 
                 // SAFETY: `aes` is freshly zeroed and we pass null heap with
@@ -84,17 +84,17 @@ macro_rules! impl_aes_ccm {
             /// Use the standalone functions for shorter nonces.
             type NonceSize = U13;
             type TagSize = U16;
-            type CiphertextOverhead = U0;
+            const TAG_POSITION: aead_trait::TagPosition = aead_trait::TagPosition::Postfix;
         }
 
-        impl AeadInPlace for $name {
-            fn encrypt_in_place_detached(
+        impl AeadInOut for $name {
+            fn encrypt_inout_detached(
                 &self,
                 nonce: &aead_trait::Nonce<Self>,
                 associated_data: &[u8],
-                buffer: &mut [u8],
+                mut buffer: aead_trait::inout::InOutBuf<'_, '_, u8>,
             ) -> aead_trait::Result<aead_trait::Tag<Self>> {
-                let mut tag = GenericArray::<u8, U16>::default();
+                let mut tag = Array::<u8, U16>::default();
 
                 let aad_ptr = if associated_data.is_empty() {
                     core::ptr::null()
@@ -104,7 +104,7 @@ macro_rules! impl_aes_ccm {
                 let (in_ptr, out_ptr) = if buffer.is_empty() {
                     (core::ptr::null(), core::ptr::null_mut())
                 } else {
-                    (buffer.as_ptr(), buffer.as_mut_ptr())
+                    (buffer.get_in().as_ptr(), buffer.get_out().as_mut_ptr())
                 };
 
                 // SAFETY: We have exclusive logical access (&self + !Sync).
@@ -131,11 +131,11 @@ macro_rules! impl_aes_ccm {
                 }
             }
 
-            fn decrypt_in_place_detached(
+            fn decrypt_inout_detached(
                 &self,
                 nonce: &aead_trait::Nonce<Self>,
                 associated_data: &[u8],
-                buffer: &mut [u8],
+                mut buffer: aead_trait::inout::InOutBuf<'_, '_, u8>,
                 tag: &aead_trait::Tag<Self>,
             ) -> aead_trait::Result<()> {
                 let aad_ptr = if associated_data.is_empty() {
@@ -146,7 +146,7 @@ macro_rules! impl_aes_ccm {
                 let (in_ptr, out_ptr) = if buffer.is_empty() {
                     (core::ptr::null(), core::ptr::null_mut())
                 } else {
-                    (buffer.as_ptr(), buffer.as_mut_ptr())
+                    (buffer.get_in().as_ptr(), buffer.get_out().as_mut_ptr())
                 };
 
                 // SAFETY: We have exclusive logical access (&self + !Sync).
@@ -171,7 +171,7 @@ macro_rules! impl_aes_ccm {
                 } else {
                     // Zeroize the buffer to prevent the caller from observing
                     // unauthenticated plaintext after a tag verification failure.
-                    zeroize::Zeroize::zeroize(buffer);
+                    zeroize::Zeroize::zeroize(buffer.get_out());
                     Err(aead_trait::Error)
                 }
             }
@@ -192,7 +192,7 @@ impl_aes_ccm!(
     Aes128Ccm,
     typenum::U16,
     16,
-    "AES-128-CCM AEAD cipher, implementing `AeadInPlace` and `KeyInit`.\n\n\
+    "AES-128-CCM AEAD cipher, implementing `AeadInOut` and `KeyInit`.\n\n\
      The trait-level nonce size is fixed to 13 bytes.  Use the standalone\n\
      `aes_ccm_encrypt` / `aes_ccm_decrypt` functions for variable nonce lengths."
 );
@@ -201,7 +201,7 @@ impl_aes_ccm!(
     Aes256Ccm,
     U32,
     32,
-    "AES-256-CCM AEAD cipher, implementing `AeadInPlace` and `KeyInit`.\n\n\
+    "AES-256-CCM AEAD cipher, implementing `AeadInOut` and `KeyInit`.\n\n\
      The trait-level nonce size is fixed to 13 bytes.  Use the standalone\n\
      `aes_ccm_encrypt` / `aes_ccm_decrypt` functions for variable nonce lengths."
 );

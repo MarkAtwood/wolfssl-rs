@@ -12,9 +12,9 @@ impl<'a> ParBlocksSizeUser for AesEcbEncBackend<'a> {
     type ParBlocksSize = U1;
 }
 
-impl<'a> BlockBackend for AesEcbEncBackend<'a> {
+impl<'a> BlockCipherEncBackend for AesEcbEncBackend<'a> {
     #[inline]
-    fn proc_block(&mut self, mut block: InOut<'_, '_, Block<Self>>) {
+    fn encrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
         let mut tmp = [0u8; 16];
         // SAFETY: wc_AesEcbEncrypt does not modify the key schedule in self.0;
         // the *mut cast is required by the C API signature only.
@@ -41,9 +41,9 @@ impl<'a> ParBlocksSizeUser for AesEcbDecBackend<'a> {
     type ParBlocksSize = U1;
 }
 
-impl<'a> BlockBackend for AesEcbDecBackend<'a> {
+impl<'a> BlockCipherDecBackend for AesEcbDecBackend<'a> {
     #[inline]
-    fn proc_block(&mut self, mut block: InOut<'_, '_, Block<Self>>) {
+    fn decrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
         let mut tmp = [0u8; 16];
         // SAFETY: wc_AesEcbDecrypt does not modify the key schedule in self.0;
         // the *mut cast is required by the C API signature only.
@@ -75,7 +75,7 @@ macro_rules! impl_aes_ecb_enc {
         }
 
         impl KeyInit for $name {
-            fn new(key: &GenericArray<u8, $key_size>) -> Self {
+            fn new(key: &Array<u8, $key_size>) -> Self {
                 let mut aes = wolfcrypt_rs::WcAes::zeroed();
                 // SAFETY: `aes` is freshly zeroed; null heap + INVALID_DEVID is standard.
                 let rc = unsafe {
@@ -105,11 +105,12 @@ macro_rules! impl_aes_ecb_enc {
             type BlockSize = U16;
         }
 
-        impl BlockCipher for $name {}
-
-        impl BlockEncrypt for $name {
-            fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = Self::BlockSize>) {
-                f.call(&mut AesEcbEncBackend(&self.aes));
+        impl BlockCipherEncrypt for $name {
+            fn encrypt_with_backend(
+                &self,
+                f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>,
+            ) {
+                f.call(&AesEcbEncBackend(&self.aes));
             }
         }
 
@@ -139,7 +140,7 @@ macro_rules! impl_aes_ecb_dec {
         }
 
         impl KeyInit for $name {
-            fn new(key: &GenericArray<u8, $key_size>) -> Self {
+            fn new(key: &Array<u8, $key_size>) -> Self {
                 let mut aes = wolfcrypt_rs::WcAes::zeroed();
                 // SAFETY: `aes` is freshly zeroed; null heap + INVALID_DEVID is standard.
                 let rc = unsafe {
@@ -169,11 +170,12 @@ macro_rules! impl_aes_ecb_dec {
             type BlockSize = U16;
         }
 
-        impl BlockCipher for $name {}
-
-        impl BlockDecrypt for $name {
-            fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = Self::BlockSize>) {
-                f.call(&mut AesEcbDecBackend(&self.aes));
+        impl BlockCipherDecrypt for $name {
+            fn decrypt_with_backend(
+                &self,
+                f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>,
+            ) {
+                f.call(&AesEcbDecBackend(&self.aes));
             }
         }
 

@@ -59,48 +59,29 @@ require-dev-id = []
 [dependencies]
 wolfcrypt-rs = { version = "0.2.1", path = "../wolfcrypt-rs" }
 
-# RustCrypto trait crates (renamed to avoid module name collision).
-#
-# VERSION POLICY — two remaining tiers:
-#
-# rand_core has been upgraded to 0.10 (done).
-#
-# BLOCKED ON generic-array → hybrid-array MIGRATION (stable but large blast radius):
-#   - digest 0.10 → 0.11, cipher 0.4 → 0.5: these pull in crypto-common 0.2,
-#     which replaces generic-array 0.14 with hybrid-array. Nearly every file
-#     in wolfcrypt/src/ uses GenericArray. Do this once, together, when the
-#     remaining rc crates also go stable so we only migrate GenericArray once.
-#
-# BLOCKED ON STABLE RELEASE (still release candidates):
-#   - signature 2.2 → 3.0 (rc), hmac 0.12 → 0.13 (rc), aead 0.5 → 0.6 (rc),
-#     ed25519 2.2 → next (tied to signature). Upgrade when these reach stable.
-#     This will also eliminate the FFI bridging in ssh-key-wolfcrypt/signature.rs.
-#
-# ssh-key-wolfcrypt uses the rc versions because it's a fork of upstream
-# ssh-key which tracks the RustCrypto SSH crates' own next-gen pre-releases.
-# That version mismatch is handled via direct FFI calls in ssh-key-wolfcrypt's
-# signature.rs, bypassing wolfcrypt's trait impls entirely.
-digest_trait    = { package = "digest",         version = "0.10", optional = true }
-hmac_trait      = { package = "hmac",           version = "0.12", optional = true }
-aead_trait      = { package = "aead",           version = "0.5",  optional = true, features = ["alloc"] }
-cipher_trait    = { package = "cipher",         version = "0.4",  optional = true }
-signature_trait = { package = "signature",      version = "2.2",  optional = true }
-ed25519_trait   = { package = "ed25519",        version = "2.2",  optional = true }
+# RustCrypto trait crates (renamed to avoid module name collision), all on
+# the 2026 stable generation (crypto-common 0.2 / hybrid-array).
+digest_trait    = { package = "digest",         version = "0.11", optional = true, features = ["mac"] }
+hmac_trait      = { package = "hmac",           version = "0.13", optional = true }
+aead_trait      = { package = "aead",           version = "0.6",  optional = true, features = ["alloc"] }
+cipher_trait    = { package = "cipher",         version = "0.5",  optional = true }
+signature_trait = { package = "signature",      version = "3.0",  optional = true }
+ed25519_trait   = { package = "ed25519",        version = "3.0",  optional = true }
 rand_core       = { version = "0.10", optional = true }
-crypto-common   = { version = "0.1",  optional = true }
-generic-array   = "0.14"
+crypto-common   = { version = "0.2",  optional = true }
+hybrid-array    = "0.4"
 typenum         = "1"
 zeroize         = { version = "1", features = ["zeroize_derive"] }
 
 [dev-dependencies]
 hex = "0.4"
-hex-literal = "0.4"
+hex-literal = "1"
 rand_core = "0.10"
-aead_trait = { package = "aead", version = "0.5", features = ["alloc"] }
-cipher_trait = { package = "cipher", version = "0.4" }
-signature_trait = { package = "signature", version = "2.2" }
-ed25519_trait = { package = "ed25519", version = "2.2" }
-hkdf_trait = { package = "hkdf", version = "0.12" }
-hmac_trait = { package = "hmac", version = "0.12" }
-pbkdf2_trait = { package = "pbkdf2", version = "0.12" }
-digest_trait = { package = "digest", version = "0.10" }
+aead_trait = { package = "aead", version = "0.6", features = ["alloc"] }
+cipher_trait = { package = "cipher", version = "0.5" }
+signature_trait = { package = "signature", version = "3.0" }
+ed25519_trait = { package = "ed25519", version = "3.0" }
+hkdf_trait = { package = "hkdf", version = "0.13" }
+hmac_trait = { package = "hmac", version = "0.13" }
+pbkdf2_trait = { package = "pbkdf2", version = "0.13" }
+digest_trait = { package = "digest", version = "0.11", features = ["mac"] }

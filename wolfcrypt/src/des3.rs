@@ -1,20 +1,21 @@
 //! Triple-DES (3DES / DES-EDE3) CBC encryption and decryption.
 //!
 //! Provides [`DesEde3CbcEnc`] and [`DesEde3CbcDec`] implementing the
-//! RustCrypto `BlockEncryptMut`/`BlockDecryptMut` and `KeyIvInit` traits.
+//! RustCrypto `BlockModeEncrypt`/`BlockModeDecrypt` and `KeyIvInit` traits.
 //!
 //! Uses wolfCrypt's native wc_Des3* API with padding disabled, so
 //! callers must provide data in exact multiples of the 8-byte block size.
 //!
 //! Gated on `cfg(wolfssl_des3)`.
 
-use cipher_trait::generic_array::GenericArray;
 use cipher_trait::inout::InOut;
 use cipher_trait::{
-    Block, BlockBackend, BlockClosure, BlockDecryptMut, BlockEncryptMut, BlockSizeUser, IvSizeUser,
-    KeyIvInit, KeySizeUser, ParBlocksSizeUser,
+    Block, BlockModeDecBackend, BlockModeDecClosure, BlockModeDecrypt, BlockModeEncBackend,
+    BlockModeEncClosure, BlockModeEncrypt, BlockSizeUser, IvSizeUser, KeyIvInit, KeySizeUser,
+    ParBlocksSizeUser,
 };
-use typenum::{U1, U24, U8};
+use hybrid_array::Array;
+use typenum::{U1, U8, U24};
 
 pub use cipher_trait;
 
@@ -63,7 +64,7 @@ impl BlockSizeUser for DesEde3CbcEnc {
 
 #[cfg(wolfssl_des3)]
 impl KeyIvInit for DesEde3CbcEnc {
-    fn new(key: &GenericArray<u8, U24>, iv: &GenericArray<u8, U8>) -> Self {
+    fn new(key: &Array<u8, U24>, iv: &Array<u8, U8>) -> Self {
         // SAFETY: key is 24 bytes, iv is 8 bytes.
         let ctx = unsafe { wolfcrypt_rs::wolfcrypt_des3_enc_new(key.as_ptr(), iv.as_ptr()) };
         assert!(!ctx.is_null(), "wolfcrypt_des3_enc_new returned null");
@@ -85,9 +86,9 @@ impl ParBlocksSizeUser for DesEde3CbcEncBackend {
 }
 
 #[cfg(wolfssl_des3)]
-impl BlockBackend for DesEde3CbcEncBackend {
+impl BlockModeEncBackend for DesEde3CbcEncBackend {
     #[inline]
-    fn proc_block(&mut self, mut block: InOut<'_, '_, Block<Self>>) {
+    fn encrypt_block(&mut self, mut block: InOut<'_, '_, Block<Self>>) {
         let mut tmp = [0u8; 8];
         // SAFETY: block.get_in() is a valid 8-byte input; tmp is a valid 8-byte output.
         let rc = unsafe {
@@ -104,8 +105,8 @@ impl BlockBackend for DesEde3CbcEncBackend {
 }
 
 #[cfg(wolfssl_des3)]
-impl BlockEncryptMut for DesEde3CbcEnc {
-    fn encrypt_with_backend_mut(&mut self, f: impl BlockClosure<BlockSize = Self::BlockSize>) {
+impl BlockModeEncrypt for DesEde3CbcEnc {
+    fn encrypt_with_backend(&mut self, f: impl BlockModeEncClosure<BlockSize = Self::BlockSize>) {
         f.call(&mut DesEde3CbcEncBackend(self.ctx));
     }
 }
@@ -155,7 +156,7 @@ impl BlockSizeUser for DesEde3CbcDec {
 
 #[cfg(wolfssl_des3)]
 impl KeyIvInit for DesEde3CbcDec {
-    fn new(key: &GenericArray<u8, U24>, iv: &GenericArray<u8, U8>) -> Self {
+    fn new(key: &Array<u8, U24>, iv: &Array<u8, U8>) -> Self {
         // SAFETY: key is 24 bytes, iv is 8 bytes.
         let ctx = unsafe { wolfcrypt_rs::wolfcrypt_des3_dec_new(key.as_ptr(), iv.as_ptr()) };
         assert!(!ctx.is_null(), "wolfcrypt_des3_dec_new returned null");
@@ -177,9 +178,9 @@ impl ParBlocksSizeUser for DesEde3CbcDecBackend {
 }
 
 #[cfg(wolfssl_des3)]
-impl BlockBackend for DesEde3CbcDecBackend {
+impl BlockModeDecBackend for DesEde3CbcDecBackend {
     #[inline]
-    fn proc_block(&mut self, mut block: InOut<'_, '_, Block<Self>>) {
+    fn decrypt_block(&mut self, mut block: InOut<'_, '_, Block<Self>>) {
         let mut tmp = [0u8; 8];
         // SAFETY: block.get_in() is a valid 8-byte input; tmp is a valid 8-byte output.
         let rc = unsafe {
@@ -196,8 +197,8 @@ impl BlockBackend for DesEde3CbcDecBackend {
 }
 
 #[cfg(wolfssl_des3)]
-impl BlockDecryptMut for DesEde3CbcDec {
-    fn decrypt_with_backend_mut(&mut self, f: impl BlockClosure<BlockSize = Self::BlockSize>) {
+impl BlockModeDecrypt for DesEde3CbcDec {
+    fn decrypt_with_backend(&mut self, f: impl BlockModeDecClosure<BlockSize = Self::BlockSize>) {
         f.call(&mut DesEde3CbcDecBackend(self.ctx));
     }
 }

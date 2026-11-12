@@ -13,7 +13,7 @@
 //! `wolfcrypt::digest::digest_trait`) for the full API:
 //! `new()`, `update()`, `finalize()`, `finalize_reset()`, `reset()`.
 
-use generic_array::GenericArray;
+use hybrid_array::Array;
 use typenum::*;
 
 // Re-export the trait crate types we use in our public API.
@@ -94,7 +94,7 @@ macro_rules! impl_digest_native {
         }
 
         #[$cfg_gate]
-        impl digest_trait::core_api::BlockSizeUser for $name {
+        impl digest_trait::common::BlockSizeUser for $name {
             type BlockSize = $block_size;
         }
 
@@ -109,7 +109,7 @@ macro_rules! impl_digest_native {
 
         #[$cfg_gate]
         impl digest_trait::FixedOutput for $name {
-            fn finalize_into(mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
+            fn finalize_into(mut self, out: &mut Array<u8, Self::OutputSize>) {
                 // SAFETY: `self.ctx` is valid; `out` is OutputSize bytes.
                 let rc = unsafe { $final_fn(self.ctx, out.as_mut_ptr()) };
                 assert_eq!(rc, 0, concat!(stringify!($name), ": finalize failed"));
@@ -123,7 +123,7 @@ macro_rules! impl_digest_native {
 
         #[$cfg_gate]
         impl digest_trait::FixedOutputReset for $name {
-            fn finalize_into_reset(&mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
+            fn finalize_into_reset(&mut self, out: &mut Array<u8, Self::OutputSize>) {
                 // SAFETY: `self.ctx` is valid; `out` is OutputSize bytes.
                 let rc = unsafe { $final_fn(self.ctx, out.as_mut_ptr()) };
                 assert_eq!(
@@ -146,10 +146,7 @@ macro_rules! impl_digest_native {
                 // Re-init the existing context in place (no heap alloc/dealloc).
                 // SAFETY: `self.ctx` is a valid context; reset reinitialises it.
                 let rc = unsafe { $reset_fn(self.ctx) };
-                assert_eq!(
-                    rc, 0,
-                    concat!(stringify!($name), ": reset failed")
-                );
+                assert_eq!(rc, 0, concat!(stringify!($name), ": reset failed"));
             }
         }
 

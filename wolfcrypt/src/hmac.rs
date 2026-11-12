@@ -8,7 +8,7 @@
 //! `new_from_slice()`, `update()`, `finalize()`, `verify_slice()`.
 
 use digest_trait::{FixedOutput, KeyInit, OutputSizeUser, Update};
-use generic_array::GenericArray;
+use hybrid_array::Array;
 use typenum::*;
 
 /// Internal macro that stamps out a complete HMAC wrapper for one algorithm.
@@ -69,7 +69,7 @@ macro_rules! impl_hmac {
 
         #[$cfg_gate]
         impl KeyInit for $name {
-            fn new(key: &GenericArray<u8, <Self as crypto_common::KeySizeUser>::KeySize>) -> Self {
+            fn new(key: &Array<u8, <Self as crypto_common::KeySizeUser>::KeySize>) -> Self {
                 Self::init_with_key(key.as_slice())
             }
 
@@ -94,7 +94,7 @@ macro_rules! impl_hmac {
 
         #[$cfg_gate]
         impl FixedOutput for $name {
-            fn finalize_into(mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
+            fn finalize_into(mut self, out: &mut Array<u8, Self::OutputSize>) {
                 // SAFETY: out is exactly OutputSize bytes; ctx is valid.
                 let rc = unsafe { wolfcrypt_rs::wolfcrypt_hmac_final(self.ctx, out.as_mut_ptr()) };
                 assert_eq!(

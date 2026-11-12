@@ -1,15 +1,15 @@
 //! AEAD (Authenticated Encryption with Associated Data) backed by wolfCrypt.
 //!
 //! Provides AES-128-GCM, AES-256-GCM, and ChaCha20-Poly1305 implementations
-//! that satisfy the RustCrypto [`aead`](aead_trait) 0.5 traits (`AeadCore`,
-//! `AeadInPlace`, `KeySizeUser`, `KeyInit`).
+//! that satisfy the RustCrypto [`aead`](aead_trait) 0.6 traits (`AeadCore`,
+//! `AeadInOut`, `KeySizeUser`, `KeyInit`).
 
 use core::cell::UnsafeCell;
 use core::ffi::c_void;
 
-use aead_trait::generic_array::GenericArray;
-use aead_trait::{AeadCore, AeadInPlace, KeyInit, KeySizeUser};
-use typenum::{U0, U12, U16, U32};
+use aead_trait::{AeadCore, AeadInOut, KeyInit, KeySizeUser};
+use hybrid_array::Array;
+use typenum::{U12, U16, U32};
 
 use crate::error::len_as_u32;
 
@@ -45,7 +45,7 @@ macro_rules! impl_aes_gcm {
         }
 
         impl KeyInit for $name {
-            fn new(key: &GenericArray<u8, $key_size>) -> Self {
+            fn new(key: &Array<u8, $key_size>) -> Self {
                 let mut aes = wolfcrypt_rs::WcAes::zeroed();
 
                 // SAFETY: `aes` is freshly zeroed and we pass null heap with
@@ -78,17 +78,17 @@ macro_rules! impl_aes_gcm {
         impl AeadCore for $name {
             type NonceSize = U12;
             type TagSize = U16;
-            type CiphertextOverhead = U0;
+            const TAG_POSITION: aead_trait::TagPosition = aead_trait::TagPosition::Postfix;
         }
 
-        impl AeadInPlace for $name {
-            fn encrypt_in_place_detached(
+        impl AeadInOut for $name {
+            fn encrypt_inout_detached(
                 &self,
                 nonce: &aead_trait::Nonce<Self>,
                 associated_data: &[u8],
-                buffer: &mut [u8],
+                mut buffer: aead_trait::inout::InOutBuf<'_, '_, u8>,
             ) -> aead_trait::Result<aead_trait::Tag<Self>> {
-                let mut tag = GenericArray::<u8, U16>::default();
+                let mut tag = Array::<u8, U16>::default();
 
                 let aad_ptr = if associated_data.is_empty() {
                     core::ptr::null()
@@ -98,7 +98,7 @@ macro_rules! impl_aes_gcm {
                 let (in_ptr, out_ptr) = if buffer.is_empty() {
                     (core::ptr::null(), core::ptr::null_mut())
                 } else {
-                    (buffer.as_ptr(), buffer.as_mut_ptr())
+                    (buffer.get_in().as_ptr(), buffer.get_out().as_mut_ptr())
                 };
 
                 // SAFETY: We have exclusive logical access (&self + !Sync).
@@ -125,11 +125,11 @@ macro_rules! impl_aes_gcm {
                 }
             }
 
-            fn decrypt_in_place_detached(
+            fn decrypt_inout_detached(
                 &self,
                 nonce: &aead_trait::Nonce<Self>,
                 associated_data: &[u8],
-                buffer: &mut [u8],
+                mut buffer: aead_trait::inout::InOutBuf<'_, '_, u8>,
                 tag: &aead_trait::Tag<Self>,
             ) -> aead_trait::Result<()> {
                 let aad_ptr = if associated_data.is_empty() {
@@ -140,7 +140,7 @@ macro_rules! impl_aes_gcm {
                 let (in_ptr, out_ptr) = if buffer.is_empty() {
                     (core::ptr::null(), core::ptr::null_mut())
                 } else {
-                    (buffer.as_ptr(), buffer.as_mut_ptr())
+                    (buffer.get_in().as_ptr(), buffer.get_out().as_mut_ptr())
                 };
 
                 // SAFETY: We have exclusive logical access (&self + !Sync).
@@ -165,7 +165,7 @@ macro_rules! impl_aes_gcm {
                 } else {
                     // Zeroize the buffer to prevent the caller from observing
                     // unauthenticated plaintext after a tag verification failure.
-                    zeroize::Zeroize::zeroize(buffer);
+                    zeroize::Zeroize::zeroize(buffer.get_out());
                     Err(aead_trait::Error)
                 }
             }
@@ -187,7 +187,7 @@ impl_aes_gcm!(
     Aes128Gcm,
     typenum::U16,
     16,
-    "AES-128-GCM AEAD cipher, implementing `AeadInPlace` and `KeyInit`."
+    "AES-128-GCM AEAD cipher, implementing `AeadInOut` and `KeyInit`."
 );
 
 #[cfg(all(wolfssl_aes_gcm, wolfssl_aes_192))]
@@ -195,7 +195,7 @@ impl_aes_gcm!(
     Aes192Gcm,
     typenum::U24,
     24,
-    "AES-192-GCM AEAD cipher, implementing `AeadInPlace` and `KeyInit`."
+    "AES-192-GCM AEAD cipher, implementing `AeadInOut` and `KeyInit`."
 );
 
 #[cfg(wolfssl_aes_gcm)]
@@ -203,7 +203,7 @@ impl_aes_gcm!(
     Aes256Gcm,
     U32,
     32,
-    "AES-256-GCM AEAD cipher, implementing `AeadInPlace` and `KeyInit`."
+    "AES-256-GCM AEAD cipher, implementing `AeadInOut` and `KeyInit`."
 );
 
 // ---------------------------------------------------------------------------
@@ -243,7 +243,7 @@ impl KeySizeUser for ChaCha20Poly1305 {
 
 #[cfg(wolfssl_chacha20_poly1305)]
 impl KeyInit for ChaCha20Poly1305 {
-    fn new(key: &GenericArray<u8, U32>) -> Self {
+    fn new(key: &Array<u8, U32>) -> Self {
         let mut k = [0u8; 32];
         k.copy_from_slice(key.as_slice());
         Self { key: k }
@@ -254,18 +254,18 @@ impl KeyInit for ChaCha20Poly1305 {
 impl AeadCore for ChaCha20Poly1305 {
     type NonceSize = U12;
     type TagSize = U16;
-    type CiphertextOverhead = U0;
+    const TAG_POSITION: aead_trait::TagPosition = aead_trait::TagPosition::Postfix;
 }
 
 #[cfg(wolfssl_chacha20_poly1305)]
-impl AeadInPlace for ChaCha20Poly1305 {
-    fn encrypt_in_place_detached(
+impl AeadInOut for ChaCha20Poly1305 {
+    fn encrypt_inout_detached(
         &self,
         nonce: &aead_trait::Nonce<Self>,
         associated_data: &[u8],
-        buffer: &mut [u8],
+        mut buffer: aead_trait::inout::InOutBuf<'_, '_, u8>,
     ) -> aead_trait::Result<aead_trait::Tag<Self>> {
-        let mut tag = GenericArray::<u8, U16>::default();
+        let mut tag = Array::<u8, U16>::default();
         // Stack-local AEAD context (~192 bytes) — no heap allocation.
         let mut aead = wolfcrypt_rs::ChaChaPoly_Aead::zeroed();
 
@@ -317,7 +317,7 @@ impl AeadInPlace for ChaCha20Poly1305 {
                 let sentinel: *const u8 = &0u8;
                 (sentinel, sentinel as *mut u8)
             } else {
-                (buffer.as_ptr(), buffer.as_mut_ptr())
+                (buffer.get_in().as_ptr(), buffer.get_out().as_mut_ptr())
             };
             // SAFETY: `aead` is initialised; in_ptr/out_ptr are valid or sentinel.
             let rc = unsafe {
@@ -344,11 +344,11 @@ impl AeadInPlace for ChaCha20Poly1305 {
         Ok(tag)
     }
 
-    fn decrypt_in_place_detached(
+    fn decrypt_inout_detached(
         &self,
         nonce: &aead_trait::Nonce<Self>,
         associated_data: &[u8],
-        buffer: &mut [u8],
+        mut buffer: aead_trait::inout::InOutBuf<'_, '_, u8>,
         tag: &aead_trait::Tag<Self>,
     ) -> aead_trait::Result<()> {
         let mut aead = wolfcrypt_rs::ChaChaPoly_Aead::zeroed();
@@ -387,7 +387,7 @@ impl AeadInPlace for ChaCha20Poly1305 {
                 let sentinel: *const u8 = &0u8;
                 (sentinel, sentinel as *mut u8)
             } else {
-                (buffer.as_ptr(), buffer.as_mut_ptr())
+                (buffer.get_in().as_ptr(), buffer.get_out().as_mut_ptr())
             };
             // SAFETY: `aead` is initialised; in_ptr/out_ptr are valid or sentinel.
             let rc = unsafe {
@@ -414,7 +414,7 @@ impl AeadInPlace for ChaCha20Poly1305 {
             wolfcrypt_rs::wc_ChaCha20Poly1305_Final(&mut aead, computed_tag.as_mut_ptr())
         };
         if rc != 0 {
-            zeroize::Zeroize::zeroize(buffer);
+            zeroize::Zeroize::zeroize(buffer.get_out());
             return Err(aead_trait::Error);
         }
 
@@ -423,7 +423,7 @@ impl AeadInPlace for ChaCha20Poly1305 {
             wolfcrypt_rs::wc_ChaCha20Poly1305_CheckTag(computed_tag.as_ptr(), tag.as_ptr())
         };
         if rc != 0 {
-            zeroize::Zeroize::zeroize(buffer);
+            zeroize::Zeroize::zeroize(buffer.get_out());
             return Err(aead_trait::Error);
         }
 

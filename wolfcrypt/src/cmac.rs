@@ -8,7 +8,7 @@
 //! `new_from_slice()`, `update()`, `finalize()`, `verify_slice()`.
 
 use digest_trait::{FixedOutput, KeyInit, OutputSizeUser, Update};
-use generic_array::GenericArray;
+use hybrid_array::Array;
 use typenum::*;
 
 /// Internal macro that stamps out a complete AES-CMAC wrapper for one key size.
@@ -71,7 +71,7 @@ macro_rules! impl_cmac {
 
         #[$cfg_gate]
         impl KeyInit for $name {
-            fn new(key: &GenericArray<u8, <Self as crypto_common::KeySizeUser>::KeySize>) -> Self {
+            fn new(key: &Array<u8, <Self as crypto_common::KeySizeUser>::KeySize>) -> Self {
                 Self::init_with_key(key.as_slice())
                     .expect("wolfcrypt_cmac_*_new failed with correct key size")
             }
@@ -97,7 +97,7 @@ macro_rules! impl_cmac {
 
         #[$cfg_gate]
         impl FixedOutput for $name {
-            fn finalize_into(mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
+            fn finalize_into(mut self, out: &mut Array<u8, Self::OutputSize>) {
                 let mut out_len: u32 = 16;
                 // SAFETY: out is exactly 16 bytes; ctx is valid.
                 let rc = unsafe {
