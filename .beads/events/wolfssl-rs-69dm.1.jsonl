@@ -3,3 +3,4 @@
 {"id":"01a1d367-6aab-727d-9117-5a9d1a50ae17","issue_id":"wolfssl-rs-69dm.1","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: release","created_at":"2026-11-13T05:35:32.523163321Z"}
 {"id":"01a1d367-6aad-7cfc-b695-39cd8f9bd19a","issue_id":"wolfssl-rs-69dm.1","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: rustcrypto","created_at":"2026-11-13T05:35:32.525851168Z"}
 {"id":"01a1d367-6ab0-7a47-a4e7-e06be8999e80","issue_id":"wolfssl-rs-69dm.1","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: wolfssl","created_at":"2026-11-13T05:35:32.528674042Z"}
+{"id":"01a1d367-6b20-727f-916e-ea386fac4ffa","issue_id":"wolfssl-rs-69dm.1","event_type":"closed","actor":"Mark Atwood","old_value":"","new_value":"Done in 2dcf91a and d4a01fd.","created_at":"2026-11-13T05:35:32.640164747Z"}
