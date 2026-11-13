@@ -14,10 +14,10 @@ categories = ["cryptography"]
 include = [
     "src/**",
     "patches/**",
-    "user_settings*.h",
-    "riscv_bare_metal_helpers.c",
-    "README.md",
-    "Cargo.toml",
+    "/user_settings*.h",
+    "/riscv_bare_metal_helpers.c",
+    "/README.md",
+    "/Cargo.toml",
 ]
 
 [features]

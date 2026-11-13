@@ -3,6 +3,9 @@ name = "wolftpm2-tss"
 version = "0.3.1"
 edition = "2024"
 rust-version = "1.88"
+# Not publishable: depends on tpm-rs (tpm2-rs-base/-client), which is only
+# available from git, not crates.io.
+publish = false
 description = "Unofficial wolfTPM backend for the tpm-rs / TSS Rust ecosystem"
 license = "GPL-3.0-only OR LicenseRef-wolfSSL-commercial"
 repository = "https://github.com/MarkAtwood/wolfssl-rs"

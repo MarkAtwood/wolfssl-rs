@@ -9,6 +9,10 @@ repository = "https://github.com/MarkAtwood/wolfssl-rs"
 readme = "README.md"
 
 [features]
+## Build wolfSSL from source (WOLFSSL_SRC or the bundled submodule) instead of
+## using an installed library. Same as wolfcrypt-tls's `vendored` feature.
+vendored = ["wolfcrypt-sys/vendored"]
+
 ## Enable Unix Domain Socket transport.
 ## Requires a wolfHSM source tree that includes posix_transport_uds.{c,h}
 ## (upstream wolfHSM main, or a fork with UDS support).

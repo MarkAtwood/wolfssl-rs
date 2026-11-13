@@ -9,6 +9,10 @@ repository = "https://github.com/MarkAtwood/wolfssl-rs"
 readme = "README.md"
 
 [features]
+## Build wolfSSL from source (WOLFSSL_SRC or the bundled submodule) instead of
+## using an installed library. Same as wolfcrypt-tls's `vendored` feature.
+vendored = ["wolftpm2-sys/vendored"]
+
 ## Enable Linux /dev/tpm0 kernel driver transport.
 linux-dev = ["wolftpm2-sys/linux-dev"]
 

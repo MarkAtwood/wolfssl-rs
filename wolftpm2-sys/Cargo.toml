@@ -18,6 +18,10 @@ wolftpm2-src = { version = "0.3.2", path = "../wolftpm2-src" }
 libc = { version = "0.2", optional = true }
 
 [features]
+## Build wolfSSL from source (WOLFSSL_SRC or the bundled submodule) instead of
+## using an installed library. Same as wolfcrypt-tls's `vendored` feature.
+vendored = ["wolfcrypt-sys/vendored"]
+
 ## Enable Linux /dev/tpm0 kernel driver transport — propagates to wolftpm2-src.
 linux-dev = ["wolftpm2-src/linux-dev"]
 

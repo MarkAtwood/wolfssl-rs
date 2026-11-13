@@ -10,9 +10,9 @@ readme = "README.md"
 links = "wolfhsm_src"
 include = [
     "src/**",
-    "build.rs",
-    "README.md",
-    "Cargo.toml",
+    "/build.rs",
+    "/README.md",
+    "/Cargo.toml",
 ]
 
 [features]
