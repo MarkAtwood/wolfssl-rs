@@ -3,3 +3,4 @@
 {"id":"01a1d367-74dc-7e9d-9ed2-3604cd09678f","issue_id":"wolfssl-rs-69dm.13","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: kdf","created_at":"2026-11-13T05:35:35.132958126Z"}
 {"id":"01a1d367-74df-7dc4-8012-be1974da59f9","issue_id":"wolfssl-rs-69dm.13","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: release","created_at":"2026-11-13T05:35:35.13590236Z"}
 {"id":"01a1d367-74e2-7bf5-9eec-7c92703669a6","issue_id":"wolfssl-rs-69dm.13","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: wolfssl","created_at":"2026-11-13T05:35:35.138783983Z"}
+{"id":"01a1d367-7555-7670-b829-145ebec1daf9","issue_id":"wolfssl-rs-69dm.13","event_type":"closed","actor":"Mark Atwood","old_value":"","new_value":"Done in 9dba7dd. Equivalence tests against hkdf pass; a planted bug makes them fail.","created_at":"2026-11-13T05:35:35.253422773Z"}
