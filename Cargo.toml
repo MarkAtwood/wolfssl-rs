@@ -49,7 +49,9 @@ exclude = [
 ]
 resolver = "2"
 
-# Edition policy: edition 2024 across all workspace members (MSRV 1.85).
+# Edition policy: edition 2024 across all workspace members. MSRV 1.88 (let
+# chains are used in build scripts); ssh-key-wolfcrypt and wolfcrypt-dpe-hw need
+# 1.89 (aes 0.9). Check with `cargo +1.88 build` before lowering.
 
 [workspace.dependencies]
 bindgen = "0.72.0"

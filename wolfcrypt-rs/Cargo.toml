@@ -10,7 +10,7 @@ repository = "https://github.com/MarkAtwood/wolfssl-rs"
 readme = "README.md"
 keywords = ["wolfcrypt", "wolfssl", "fips", "cryptography"]
 categories = ["cryptography"]
-rust-version = "1.85"
+rust-version = "1.88"
 build = "build.rs"
 links = "wolfssl"
 
