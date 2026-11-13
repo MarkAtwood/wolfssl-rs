@@ -1,0 +1,25 @@
+{
+  "id": "wolfssl-rs-qvrm",
+  "title": "WolfChaCha20: enforce the RFC 8439 2^32-block keystream limit",
+  "description": "cipher 0.5 check_remaining always returns Ok, so there's a TODO in cipher/chacha20.rs. wolfCrypt's behaviour when the counter wraps hasn't been checked.",
+  "status": "open",
+  "priority": 4,
+  "issue_type": "task",
+  "owner": "mark@reviewcommit.com",
+  "created_at": "2026-11-13T05:35:56.190291768Z",
+  "created_by": "Mark Atwood",
+  "updated_at": "2026-11-13T05:35:56.190291768Z",
+  "labels": [
+    "cipher"
+  ],
+  "dependencies": [
+    {
+      "issue_id": "wolfssl-rs-qvrm",
+      "depends_on_id": "wolfssl-rs-69dm",
+      "type": "discovered-from",
+      "created_at": "2026-11-13T05:35:56.212559363Z",
+      "created_by": "Mark Atwood",
+      "metadata": "{}"
+    }
+  ]
+}
