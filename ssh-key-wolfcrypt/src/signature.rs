@@ -320,8 +320,14 @@ impl Verifier<Signature> for public::KeyData {
 //   - ECDSA:   `EccKey::sign_hash`
 //   - RSA:     `NativeRsaKey::sign_pkcs1v15_raw`
 //
-// TODO: both crates now use `signature` 3.0 (stable), so this bridging layer
-// can be replaced with wolfcrypt's Signer/Verifier impls.
+// Both crates now use `signature` 3.0, so the version problem is gone. These
+// helpers stay anyway (checked November 2026). wolfcrypt's Ed25519SigningKey and
+// EcdsaSigningKey each set up their own WolfRng (DRBG seeding) when built, and
+// this module builds a key per signature, so switching would reseed a DRBG on
+// every signature instead of reusing the cached one (see with_cached_rng). The
+// trait Signer also reduces wolfCrypt errors to a bare signature::Error. RSA
+// can't switch at all: wolfcrypt's RSA Signer is fixed to SHA-256, while SSH
+// also needs rsa-sha2-512, and RsaPrivateKey loads only from PKCS#1 DER.
 // ---------------------------------------------------------------------------
 
 /// Sign a message with Ed25519 via wolfcrypt's standalone function.
