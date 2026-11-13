@@ -2,3 +2,4 @@
 {"id":"01a1d367-6eda-75d6-ae57-8844f6f74e67","issue_id":"wolfssl-rs-69dm.6","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: wolfssl","created_at":"2026-11-13T05:35:33.594383058Z"}
 {"id":"01a1d367-6edd-76a3-bf6f-cdb385ae0fc2","issue_id":"wolfssl-rs-69dm.6","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: release","created_at":"2026-11-13T05:35:33.597435178Z"}
 {"id":"01a1d367-6ee0-75c9-8635-234de1ec7e19","issue_id":"wolfssl-rs-69dm.6","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: rustcrypto","created_at":"2026-11-13T05:35:33.600379625Z"}
+{"id":"01a1d367-6f54-73e2-823b-38fa673f0bb2","issue_id":"wolfssl-rs-69dm.6","event_type":"closed","actor":"Mark Atwood","old_value":"","new_value":"Done in 76eb106, 84a7995, 0acf145, b502697 and 846dba9. A cfg diff between 5.9.1 and 5.9.4 showed nothing else lost.","created_at":"2026-11-13T05:35:33.716255439Z"}
