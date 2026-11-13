@@ -40,7 +40,9 @@ fn main() {
     assert_eq!(rc, 0, "wc_ecc_make_key_ex failed: {rc}");
 
     // --- Sign ---
-    let hash = [0u8; 48];
+    // Any non-zero digest. wolfSSL 5.9.4 rejects signing an all-zero hash
+    // with ECC_BAD_ARG_E unless built with WC_ALLOW_ECC_ZERO_HASH.
+    let hash = [0x5au8; 48];
     let mut sig = vec![0u8; 128];
     let mut sig_len: wolfcrypt_sys::word32 = 128;
     let rc = unsafe {
