@@ -24,16 +24,16 @@ use core::ptr;
 
 use zeroize::ZeroizeOnDrop;
 
-use crate::error::{check, len_as_u32, WolfCryptError};
+use crate::error::{WolfCryptError, check, len_as_u32};
 use wolfcrypt_rs::{
-    wc_FreeRng, wc_InitRng, wc_MlKemKey_Decapsulate, wc_MlKemKey_DecodePrivateKey,
-    wc_MlKemKey_DecodePublicKey, wc_MlKemKey_Delete, wc_MlKemKey_Encapsulate,
-    wc_MlKemKey_EncodePrivateKey, wc_MlKemKey_EncodePublicKey, wc_MlKemKey_MakeKey,
-    wc_MlKemKey_New, MlKemKey, INVALID_DEVID, WC_ML_KEM_1024, WC_ML_KEM_1024_CIPHER_TEXT_SIZE,
-    WC_ML_KEM_1024_PRIVATE_KEY_SIZE, WC_ML_KEM_1024_PUBLIC_KEY_SIZE, WC_ML_KEM_512,
-    WC_ML_KEM_512_CIPHER_TEXT_SIZE, WC_ML_KEM_512_PRIVATE_KEY_SIZE, WC_ML_KEM_512_PUBLIC_KEY_SIZE,
-    WC_ML_KEM_768, WC_ML_KEM_768_CIPHER_TEXT_SIZE, WC_ML_KEM_768_PRIVATE_KEY_SIZE,
-    WC_ML_KEM_768_PUBLIC_KEY_SIZE, WC_ML_KEM_SS_SZ, WC_RNG,
+    INVALID_DEVID, MlKemKey, WC_ML_KEM_512, WC_ML_KEM_512_CIPHER_TEXT_SIZE,
+    WC_ML_KEM_512_PRIVATE_KEY_SIZE, WC_ML_KEM_512_PUBLIC_KEY_SIZE, WC_ML_KEM_768,
+    WC_ML_KEM_768_CIPHER_TEXT_SIZE, WC_ML_KEM_768_PRIVATE_KEY_SIZE, WC_ML_KEM_768_PUBLIC_KEY_SIZE,
+    WC_ML_KEM_1024, WC_ML_KEM_1024_CIPHER_TEXT_SIZE, WC_ML_KEM_1024_PRIVATE_KEY_SIZE,
+    WC_ML_KEM_1024_PUBLIC_KEY_SIZE, WC_ML_KEM_SS_SZ, WC_RNG, wc_FreeRng, wc_InitRng,
+    wc_MlKemKey_Decapsulate, wc_MlKemKey_DecodePrivateKey, wc_MlKemKey_DecodePublicKey,
+    wc_MlKemKey_Delete, wc_MlKemKey_Encapsulate, wc_MlKemKey_EncodePrivateKey,
+    wc_MlKemKey_EncodePublicKey, wc_MlKemKey_MakeKey, wc_MlKemKey_New,
 };
 
 // ---------------------------------------------------------------------------

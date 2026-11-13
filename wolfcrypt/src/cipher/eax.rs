@@ -3,7 +3,7 @@
 //! EAX is an AEAD mode built from CMAC and CTR.  wolfCrypt exposes it as a
 //! pair of one-shot functions; there is no persistent cipher state.
 
-use crate::error::{check, WolfCryptError};
+use crate::error::{WolfCryptError, check};
 
 /// Encrypt and authenticate with AES-EAX.
 ///

@@ -30,7 +30,7 @@
 //! xof.squeeze_blocks(&mut out).unwrap();
 //! ```
 
-use crate::error::{check, len_as_u32, WolfCryptError};
+use crate::error::{WolfCryptError, check, len_as_u32};
 use core::ffi::c_void;
 
 /// Internal macro that stamps out a SHAKE XOF wrapper for one variant.

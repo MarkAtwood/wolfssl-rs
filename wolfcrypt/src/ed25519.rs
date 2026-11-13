@@ -6,12 +6,12 @@
 
 use core::cell::UnsafeCell;
 
-use crate::error::{check, len_as_u32, WolfCryptError};
+use crate::error::{WolfCryptError, check, len_as_u32};
 use wolfcrypt_rs::{
-    wc_FreeRng, wc_InitRng, wc_ed25519_check_key, wc_ed25519_export_public, wc_ed25519_free,
-    wc_ed25519_import_private_key, wc_ed25519_import_private_only, wc_ed25519_import_public,
-    wc_ed25519_init, wc_ed25519_key, wc_ed25519_make_key, wc_ed25519_make_public,
-    wc_ed25519_sign_msg, wc_ed25519_verify_msg, WC_RNG,
+    WC_RNG, wc_FreeRng, wc_InitRng, wc_ed25519_check_key, wc_ed25519_export_public,
+    wc_ed25519_free, wc_ed25519_import_private_key, wc_ed25519_import_private_only,
+    wc_ed25519_import_public, wc_ed25519_init, wc_ed25519_key, wc_ed25519_make_key,
+    wc_ed25519_make_public, wc_ed25519_sign_msg, wc_ed25519_verify_msg,
 };
 
 /// Ed25519 key size in bytes (seed = 32 bytes).

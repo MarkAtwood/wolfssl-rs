@@ -7,11 +7,12 @@
 
 use core::cell::UnsafeCell;
 
-use crate::error::{check, len_as_u32, WolfCryptError};
+use crate::error::{WolfCryptError, check, len_as_u32};
 use wolfcrypt_rs::{
-    wc_FreeRng, wc_InitRng, wc_ed448_export_public, wc_ed448_free, wc_ed448_import_private_key,
-    wc_ed448_import_private_only, wc_ed448_import_public, wc_ed448_init, wc_ed448_key,
-    wc_ed448_make_key, wc_ed448_make_public, wc_ed448_sign_msg, wc_ed448_verify_msg, WC_RNG,
+    WC_RNG, wc_FreeRng, wc_InitRng, wc_ed448_export_public, wc_ed448_free,
+    wc_ed448_import_private_key, wc_ed448_import_private_only, wc_ed448_import_public,
+    wc_ed448_init, wc_ed448_key, wc_ed448_make_key, wc_ed448_make_public, wc_ed448_sign_msg,
+    wc_ed448_verify_msg,
 };
 
 /// Ed448 key size in bytes (seed = 57 bytes).

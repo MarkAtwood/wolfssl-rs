@@ -17,7 +17,7 @@
 //!
 //! All functions are stateless (no structs) and return `Result<(), WolfCryptError>`.
 
-use crate::error::{check, len_as_c_int, len_as_u32, WolfCryptError};
+use crate::error::{WolfCryptError, check, len_as_c_int, len_as_u32};
 use core::ffi::c_int;
 
 // ======================================================================

@@ -20,7 +20,7 @@
 
 use core::ffi::c_void;
 
-use crate::error::{check, len_as_u32, WolfCryptError};
+use crate::error::{WolfCryptError, check, len_as_u32};
 
 // ---------------------------------------------------------------------------
 // AesGcmEncStream

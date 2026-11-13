@@ -1,7 +1,7 @@
-use crate::error::{check, len_as_u32, WolfCryptError};
+use crate::error::{WolfCryptError, check, len_as_u32};
 #[cfg(not(feature = "require-dev-id"))]
 use wolfcrypt_rs::wc_InitRng;
-use wolfcrypt_rs::{wc_FreeRng, wc_InitRng_ex, wc_RNG_GenerateBlock, WC_RNG};
+use wolfcrypt_rs::{WC_RNG, wc_FreeRng, wc_InitRng_ex, wc_RNG_GenerateBlock};
 
 /// A wolfCrypt-backed random number generator that implements
 /// [`rand_core::TryRng`] and [`rand_core::TryCryptoRng`] with

@@ -12,7 +12,7 @@
 //! so these types expose a standalone API similar to [`crate::hkdf`].
 
 #[cfg(any(wolfssl_blake2b, wolfssl_blake2s))]
-use crate::error::{check, len_as_u32, WolfCryptError};
+use crate::error::{WolfCryptError, check, len_as_u32};
 #[cfg(any(wolfssl_blake2b, wolfssl_blake2s))]
 use alloc::vec::Vec;
 

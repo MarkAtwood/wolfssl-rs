@@ -28,14 +28,14 @@ use alloc::vec;
 use alloc::vec::Vec;
 use core::ptr;
 
-use crate::error::{check, len_as_u32, WolfCryptError};
+use crate::error::{WolfCryptError, check, len_as_u32};
 use crate::rand::WolfRng;
 use wolfcrypt_rs::{
-    wc_ecc_check_key, wc_ecc_export_private_only, wc_ecc_export_x963,
-    wc_ecc_get_curve_size_from_id, wc_ecc_import_private_key, wc_ecc_import_private_key_ex,
-    wc_ecc_import_x963, wc_ecc_init_ex, wc_ecc_key, wc_ecc_key_free, wc_ecc_key_new,
-    wc_ecc_make_key_ex, wc_ecc_shared_secret, wc_ecc_sign_hash, wc_ecc_verify_hash, ECC_SECP256K1,
-    ECC_SECP256R1, ECC_SECP384R1, ECC_SECP521R1,
+    ECC_SECP256K1, ECC_SECP256R1, ECC_SECP384R1, ECC_SECP521R1, wc_ecc_check_key,
+    wc_ecc_export_private_only, wc_ecc_export_x963, wc_ecc_get_curve_size_from_id,
+    wc_ecc_import_private_key, wc_ecc_import_private_key_ex, wc_ecc_import_x963, wc_ecc_init_ex,
+    wc_ecc_key, wc_ecc_key_free, wc_ecc_key_new, wc_ecc_make_key_ex, wc_ecc_shared_secret,
+    wc_ecc_sign_hash, wc_ecc_verify_hash,
 };
 
 /// Supported ECC curve IDs.

@@ -369,15 +369,15 @@ pub mod ecdsa;
 
 #[cfg(all(feature = "ecdsa", wolfssl_ecc))]
 pub use ecdsa::{
-    EcdsaCurve, EcdsaSignature, EcdsaSigningKey, EcdsaVerifyingKey, P256Signature, P256SigningKey,
-    P256VerifyingKey, P256,
+    EcdsaCurve, EcdsaSignature, EcdsaSigningKey, EcdsaVerifyingKey, P256, P256Signature,
+    P256SigningKey, P256VerifyingKey,
 };
 
 #[cfg(all(feature = "ecdsa", wolfssl_ecc, wolfssl_ecc_p384))]
-pub use ecdsa::{P384Signature, P384SigningKey, P384VerifyingKey, P384};
+pub use ecdsa::{P384, P384Signature, P384SigningKey, P384VerifyingKey};
 
 #[cfg(all(feature = "ecdsa", wolfssl_ecc, wolfssl_ecc_p521, wolfssl_sha512))]
-pub use ecdsa::{P521Signature, P521SigningKey, P521VerifyingKey, P521};
+pub use ecdsa::{P521, P521Signature, P521SigningKey, P521VerifyingKey};
 
 #[cfg(feature = "rsa")]
 pub mod rsa;
@@ -408,9 +408,9 @@ pub mod mlkem;
 
 #[cfg(all(feature = "mlkem", wolfssl_mlkem))]
 pub use mlkem::{
-    MlKem1024, MlKem1024DecapsulationKey, MlKem1024EncapsulationKey, MlKem512,
-    MlKem512DecapsulationKey, MlKem512EncapsulationKey, MlKem768, MlKem768DecapsulationKey,
-    MlKem768EncapsulationKey,
+    MlKem512, MlKem512DecapsulationKey, MlKem512EncapsulationKey, MlKem768,
+    MlKem768DecapsulationKey, MlKem768EncapsulationKey, MlKem1024, MlKem1024DecapsulationKey,
+    MlKem1024EncapsulationKey,
 };
 
 // --- New algorithm modules ---

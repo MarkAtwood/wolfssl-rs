@@ -4,7 +4,7 @@
 //! for storage encryption.  It does not fit the standard RustCrypto block or
 //! stream cipher traits, so this module provides a bespoke API.
 
-use crate::error::{check, WolfCryptError};
+use crate::error::{WolfCryptError, check};
 
 /// AES-XTS cipher state.
 ///

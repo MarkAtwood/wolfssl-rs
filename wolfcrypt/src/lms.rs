@@ -19,12 +19,12 @@ use core::ffi::c_void;
 use alloc::vec;
 use alloc::vec::Vec;
 
-use crate::error::{check, len_as_c_int, WolfCryptError};
+use crate::error::{WolfCryptError, check, len_as_c_int};
 use wolfcrypt_rs::{
-    wc_LmsKey_ExportPubRaw, wc_LmsKey_Free, wc_LmsKey_GetPrivLen, wc_LmsKey_GetPubLen,
+    WcLmsKey, wc_LmsKey_ExportPubRaw, wc_LmsKey_Free, wc_LmsKey_GetPrivLen, wc_LmsKey_GetPubLen,
     wc_LmsKey_GetSigLen, wc_LmsKey_ImportPubRaw, wc_LmsKey_Init, wc_LmsKey_MakeKey,
     wc_LmsKey_SetContext, wc_LmsKey_SetParameters, wc_LmsKey_SetReadCb, wc_LmsKey_SetWriteCb,
-    wc_LmsKey_Sign, wc_LmsKey_SigsLeft, wc_LmsKey_Verify, WcLmsKey,
+    wc_LmsKey_Sign, wc_LmsKey_SigsLeft, wc_LmsKey_Verify,
 };
 
 // ---------------------------------------------------------------------------

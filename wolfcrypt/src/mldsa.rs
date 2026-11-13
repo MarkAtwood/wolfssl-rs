@@ -26,15 +26,15 @@ use alloc::boxed::Box;
 use alloc::vec;
 use alloc::vec::Vec;
 
-use crate::error::{check, len_as_u32, WolfCryptError};
+use crate::error::{WolfCryptError, check, len_as_u32};
 use wolfcrypt_rs::{
-    wc_FreeRng, wc_InitRng, wc_dilithium_export_private, wc_dilithium_export_public,
-    wc_dilithium_free, wc_dilithium_import_key, wc_dilithium_import_public, wc_dilithium_init,
-    wc_dilithium_key, wc_dilithium_make_key, wc_dilithium_set_level, wc_dilithium_sign_msg,
-    wc_dilithium_verify_msg, DILITHIUM_ML_DSA_44_KEY_SIZE, DILITHIUM_ML_DSA_44_PUB_KEY_SIZE,
-    DILITHIUM_ML_DSA_44_SIG_SIZE, DILITHIUM_ML_DSA_65_KEY_SIZE, DILITHIUM_ML_DSA_65_PUB_KEY_SIZE,
-    DILITHIUM_ML_DSA_65_SIG_SIZE, DILITHIUM_ML_DSA_87_KEY_SIZE, DILITHIUM_ML_DSA_87_PUB_KEY_SIZE,
-    DILITHIUM_ML_DSA_87_SIG_SIZE, WC_ML_DSA_44, WC_ML_DSA_65, WC_ML_DSA_87, WC_RNG,
+    DILITHIUM_ML_DSA_44_KEY_SIZE, DILITHIUM_ML_DSA_44_PUB_KEY_SIZE, DILITHIUM_ML_DSA_44_SIG_SIZE,
+    DILITHIUM_ML_DSA_65_KEY_SIZE, DILITHIUM_ML_DSA_65_PUB_KEY_SIZE, DILITHIUM_ML_DSA_65_SIG_SIZE,
+    DILITHIUM_ML_DSA_87_KEY_SIZE, DILITHIUM_ML_DSA_87_PUB_KEY_SIZE, DILITHIUM_ML_DSA_87_SIG_SIZE,
+    WC_ML_DSA_44, WC_ML_DSA_65, WC_ML_DSA_87, WC_RNG, wc_FreeRng, wc_InitRng,
+    wc_dilithium_export_private, wc_dilithium_export_public, wc_dilithium_free,
+    wc_dilithium_import_key, wc_dilithium_import_public, wc_dilithium_init, wc_dilithium_key,
+    wc_dilithium_make_key, wc_dilithium_set_level, wc_dilithium_sign_msg, wc_dilithium_verify_msg,
 };
 
 // ---------------------------------------------------------------------------

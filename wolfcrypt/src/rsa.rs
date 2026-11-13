@@ -34,9 +34,9 @@ use alloc::boxed::Box;
 use alloc::vec;
 use alloc::vec::Vec;
 
-use crate::error::{len_as_u32, WolfCryptError};
 #[cfg(feature = "rsa-direct")]
 use crate::error::check;
+use crate::error::{WolfCryptError, len_as_u32};
 use wolfcrypt_rs::{
     wolfcrypt_rsa_export_private_pkcs1, wolfcrypt_rsa_export_public_spki, wolfcrypt_rsa_free,
     wolfcrypt_rsa_generate, wolfcrypt_rsa_import_private_pkcs1, wolfcrypt_rsa_import_public_spki,

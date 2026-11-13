@@ -9,10 +9,10 @@
 
 use crate::WolfCryptError;
 use wolfcrypt_rs::{
-    wc_FreeRng, wc_InitRng, wc_curve25519_export_key_raw_ex, wc_curve25519_free,
-    wc_curve25519_import_private_raw_ex, wc_curve25519_import_public_ex, wc_curve25519_init,
-    wc_curve25519_key, wc_curve25519_make_key, wc_curve25519_make_pub, wc_curve25519_set_rng,
-    wc_curve25519_shared_secret_ex, EC25519_LITTLE_ENDIAN, WC_RNG,
+    EC25519_LITTLE_ENDIAN, WC_RNG, wc_FreeRng, wc_InitRng, wc_curve25519_export_key_raw_ex,
+    wc_curve25519_free, wc_curve25519_import_private_raw_ex, wc_curve25519_import_public_ex,
+    wc_curve25519_init, wc_curve25519_key, wc_curve25519_make_key, wc_curve25519_make_pub,
+    wc_curve25519_set_rng, wc_curve25519_shared_secret_ex,
 };
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
@@ -316,9 +316,9 @@ impl SharedSecret {
 
 #[cfg(wolfssl_curve448)]
 use wolfcrypt_rs::{
-    wc_curve448_export_key_raw_ex, wc_curve448_free, wc_curve448_import_private_raw_ex,
-    wc_curve448_import_public_ex, wc_curve448_init, wc_curve448_key, wc_curve448_make_key,
-    wc_curve448_make_pub, wc_curve448_shared_secret_ex, EC448_LITTLE_ENDIAN,
+    EC448_LITTLE_ENDIAN, wc_curve448_export_key_raw_ex, wc_curve448_free,
+    wc_curve448_import_private_raw_ex, wc_curve448_import_public_ex, wc_curve448_init,
+    wc_curve448_key, wc_curve448_make_key, wc_curve448_make_pub, wc_curve448_shared_secret_ex,
 };
 
 #[cfg(wolfssl_curve448)]
@@ -607,9 +607,9 @@ pub(crate) mod nist_ecdh_native {
     use crate::error::WolfCryptError;
 
     use wolfcrypt_rs::{
-        wc_FreeRng, wc_InitRng, wc_ecc_check_key, wc_ecc_export_x963, wc_ecc_import_private_key_ex,
-        wc_ecc_import_x963, wc_ecc_key, wc_ecc_key_free, wc_ecc_key_new, wc_ecc_make_key_ex,
-        wc_ecc_set_rng, wc_ecc_shared_secret, ECC_SECP256R1, WC_RNG,
+        ECC_SECP256R1, WC_RNG, wc_FreeRng, wc_InitRng, wc_ecc_check_key, wc_ecc_export_x963,
+        wc_ecc_import_private_key_ex, wc_ecc_import_x963, wc_ecc_key, wc_ecc_key_free,
+        wc_ecc_key_new, wc_ecc_make_key_ex, wc_ecc_set_rng, wc_ecc_shared_secret,
     };
 
     #[cfg(wolfssl_ecc_p384)]

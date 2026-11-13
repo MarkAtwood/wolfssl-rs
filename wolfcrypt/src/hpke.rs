@@ -40,15 +40,15 @@ use core::cell::UnsafeCell;
 use core::ffi::c_void;
 use core::ptr;
 
-use crate::error::{check, len_as_u32, WolfCryptError};
+use crate::error::{WolfCryptError, check, len_as_u32};
 use crate::rand::WolfRng;
 use wolfcrypt_rs::{
-    wc_HpkeDeserializePublicKey, wc_HpkeFreeKey, wc_HpkeGenerateKeyPair, wc_HpkeInit,
-    wc_HpkeOpenBase, wc_HpkeSealBase, wc_HpkeSerializePublicKey, HPKE_Nt_MAX, WcHpke,
     DHKEM_P256_ENC_LEN, DHKEM_P256_HKDF_SHA256, DHKEM_P384_ENC_LEN, DHKEM_P384_HKDF_SHA384,
-    DHKEM_P521_ENC_LEN, DHKEM_P521_HKDF_SHA512, DHKEM_X25519_ENC_LEN, DHKEM_X25519_HKDF_SHA256,
-    DHKEM_X448_ENC_LEN, DHKEM_X448_HKDF_SHA512, HPKE_AES_128_GCM, HPKE_AES_256_GCM,
-    HPKE_HKDF_SHA256, HPKE_HKDF_SHA384, HPKE_HKDF_SHA512,
+    DHKEM_P521_ENC_LEN, DHKEM_P521_HKDF_SHA512, DHKEM_X448_ENC_LEN, DHKEM_X448_HKDF_SHA512,
+    DHKEM_X25519_ENC_LEN, DHKEM_X25519_HKDF_SHA256, HPKE_AES_128_GCM, HPKE_AES_256_GCM,
+    HPKE_HKDF_SHA256, HPKE_HKDF_SHA384, HPKE_HKDF_SHA512, HPKE_Nt_MAX, WcHpke,
+    wc_HpkeDeserializePublicKey, wc_HpkeFreeKey, wc_HpkeGenerateKeyPair, wc_HpkeInit,
+    wc_HpkeOpenBase, wc_HpkeSealBase, wc_HpkeSerializePublicKey,
 };
 
 // ---------------------------------------------------------------------------
@@ -249,8 +249,7 @@ impl Hpke {
         let mut key: *mut c_void = ptr::null_mut();
         // SAFETY: `self.hpke` is initialised, `rng.rng` is initialised,
         // and `key` is a valid out-pointer.
-        let rc =
-            unsafe { wc_HpkeGenerateKeyPair(&mut *self.hpke.get(), &mut key, &mut rng.rng) };
+        let rc = unsafe { wc_HpkeGenerateKeyPair(&mut *self.hpke.get(), &mut key, &mut rng.rng) };
         check(rc, "wc_HpkeGenerateKeyPair")?;
         if key.is_null() {
             return Err(WolfCryptError::AllocFailed);

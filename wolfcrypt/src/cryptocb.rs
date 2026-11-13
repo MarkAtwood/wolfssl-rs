@@ -51,7 +51,7 @@ use core::ffi::{c_int, c_void};
 
 use alloc::boxed::Box;
 
-use crate::error::{check, WolfCryptError};
+use crate::error::{WolfCryptError, check};
 
 // ---------------------------------------------------------------------------
 // Result type for callbacks
@@ -875,10 +875,10 @@ pub mod cipher_type {
 
 /// Re-export PK type constants.
 pub mod pk_type {
+    pub use wolfcrypt_rs::WC_PK_TYPE_EC_KEYGEN;
     pub use wolfcrypt_rs::WC_PK_TYPE_ECDH;
     pub use wolfcrypt_rs::WC_PK_TYPE_ECDSA_SIGN;
     pub use wolfcrypt_rs::WC_PK_TYPE_ECDSA_VERIFY;
-    pub use wolfcrypt_rs::WC_PK_TYPE_EC_KEYGEN;
     pub use wolfcrypt_rs::WC_PK_TYPE_ED25519_SIGN;
     pub use wolfcrypt_rs::WC_PK_TYPE_ED25519_VERIFY;
     pub use wolfcrypt_rs::WC_PK_TYPE_RSA;
