@@ -8,7 +8,7 @@ use caliptra_dpe::commands::{
 };
 use caliptra_dpe::context::ContextHandle;
 use caliptra_dpe::dpe_instance::{DpeEnv, DpeInstance};
-use caliptra_dpe::response::{Response, SignResp};
+use caliptra_dpe::response::Response;
 use caliptra_dpe::support::Support;
 use caliptra_dpe::tci::TciMeasurement;
 use caliptra_dpe::{DpeFlags, DpeProfile, State};

@@ -18,7 +18,7 @@ macro_rules! hkdf_equiv_tests {
         mod $mod_name {
             use crate::helpers;
             use caliptra_dpe_crypto::Crypto;
-            use rand::RngCore;
+            use rand::Rng;
 
             #[test]
             fn derive_cdi_equiv_fixed() {
@@ -41,7 +41,7 @@ macro_rules! hkdf_equiv_tests {
 
             #[test]
             fn derive_cdi_equiv_random() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
 
                 for i in 0..20 {
                     let measurement = $random_meas(&mut rng);
@@ -175,7 +175,7 @@ macro_rules! hkdf_equiv_tests {
 
             #[test]
             fn derive_cdi_large_info() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let measurement = $fixed_meas(0x77);
                 let info = helpers::random_info(&mut rng, 1024);
 

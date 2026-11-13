@@ -43,8 +43,8 @@ macro_rules! hash_equiv_tests {
 
             #[test]
             fn random_inputs_equiv() {
-                use rand::RngCore;
-                let mut rng = rand::thread_rng();
+                use rand::Rng;
+                let mut rng = rand::rng();
 
                 for len in [1, 55, 56, 64, 128, 1024, 65536] {
                     let data = helpers::random_info(&mut rng, len);
@@ -129,8 +129,8 @@ macro_rules! hash_equiv_tests {
 
             #[test]
             fn many_small_updates_equiv() {
-                use rand::RngCore;
-                let mut rng = rand::thread_rng();
+                use rand::Rng;
+                let mut rng = rand::rng();
                 let mut data = [0u8; 256];
                 rng.fill_bytes(&mut data);
 

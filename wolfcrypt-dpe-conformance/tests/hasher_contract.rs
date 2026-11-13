@@ -89,7 +89,7 @@ macro_rules! hasher_contract_tests {
             #[test]
             fn many_small_updates_wolf() {
                 let mut backend = $new_wolf();
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let data = helpers::random_info(&mut rng, 256);
 
                 let mut hasher = backend.hash_initialize().unwrap();
@@ -112,7 +112,7 @@ macro_rules! hasher_contract_tests {
             #[test]
             fn many_small_updates_ref() {
                 let mut backend = $new_ref();
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let data = helpers::random_info(&mut rng, 256);
 
                 let mut hasher = backend.hash_initialize().unwrap();

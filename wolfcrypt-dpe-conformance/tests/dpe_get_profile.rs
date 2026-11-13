@@ -5,7 +5,6 @@ mod helpers;
 use caliptra_cfi_lib::CfiCounter;
 use caliptra_dpe::commands::{CommandExecution, GetProfileCmd};
 use caliptra_dpe::response::Response;
-use caliptra_dpe::support::Support;
 
 use helpers::dpe_harness::{self, LOCALITY};
 

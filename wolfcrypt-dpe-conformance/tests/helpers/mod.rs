@@ -4,10 +4,9 @@ pub mod dpe_harness;
 pub mod x509_parser;
 
 use caliptra_dpe_crypto::{
-    ecdsa::{EcdsaPubKey, EcdsaSignature},
-    Crypto, CryptoSuite, Digest, PubKey, Sha256, Sha384, Signature,
+    Digest, PubKey, Sha256, Sha384, Signature,
 };
-use rand::RngCore;
+use rand::Rng;
 
 // ---------------------------------------------------------------------------
 // Factory functions
@@ -38,21 +37,21 @@ pub fn new_ref_256() -> caliptra_dpe_crypto::Ecdsa256RustCrypto {
 // ---------------------------------------------------------------------------
 
 /// Generate a random Digest::Sha384 measurement.
-pub fn random_measurement_384(rng: &mut impl RngCore) -> Digest {
+pub fn random_measurement_384(rng: &mut impl Rng) -> Digest {
     let mut bytes = [0u8; 48];
     rng.fill_bytes(&mut bytes);
     Digest::Sha384(Sha384(bytes))
 }
 
 /// Generate a random Digest::Sha256 measurement.
-pub fn random_measurement_256(rng: &mut impl RngCore) -> Digest {
+pub fn random_measurement_256(rng: &mut impl Rng) -> Digest {
     let mut bytes = [0u8; 32];
     rng.fill_bytes(&mut bytes);
     Digest::Sha256(Sha256(bytes))
 }
 
 /// Generate random bytes of given length.
-pub fn random_info(rng: &mut impl RngCore, len: usize) -> Vec<u8> {
+pub fn random_info(rng: &mut impl Rng, len: usize) -> Vec<u8> {
     let mut bytes = vec![0u8; len];
     rng.fill_bytes(&mut bytes);
     bytes

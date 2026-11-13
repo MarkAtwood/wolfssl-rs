@@ -87,7 +87,7 @@ fn rotate_changes_handle() {
     );
 
     // New handle should work.
-    let (r, s, _) = sign_with_handle(&mut dpe, &mut env, new_handle, [0; 48], [0xBB; 48]);
+    let (r, _s, _) = sign_with_handle(&mut dpe, &mut env, new_handle, [0; 48], [0xBB; 48]);
     assert!(
         r.iter().any(|&b| b != 0),
         "Sign with rotated handle should produce non-zero r"
@@ -105,7 +105,7 @@ fn rotate_preserves_key() {
     let child = derive_child(&mut dpe, &mut env);
 
     // Sign before rotation.
-    let (r_before, s_before, handle_after_sign) =
+    let (r_before, _s_before, handle_after_sign) =
         sign_with_handle(&mut dpe, &mut env, child, [0xAA; 48], [0xBB; 48]);
     assert!(
         r_before.iter().any(|&b| b != 0),

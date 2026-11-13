@@ -23,7 +23,7 @@ macro_rules! sign_cross_tests {
         mod $mod_name {
             use crate::helpers;
             use caliptra_dpe_crypto::{Crypto, CryptoError, Mu, SignData};
-            use rand::RngCore;
+            use rand::Rng;
 
             #[test]
             fn wolf_sign_independent_verify() {
@@ -448,7 +448,7 @@ macro_rules! sign_cross_tests {
 
                 let mut wolf = $new_wolf();
                 let mut refb = $new_ref();
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
 
                 let wolf_cdi = wolf.derive_cdi(&measurement, cdi_info).unwrap();
                 let ref_cdi = refb.derive_cdi(&measurement, cdi_info).unwrap();

@@ -16,7 +16,6 @@ use caliptra_dpe::dpe_instance::DpeInstance;
 use caliptra_dpe::response::{CertifyKeyResp, Response};
 use caliptra_dpe::support::Support;
 use caliptra_dpe::tci::TciMeasurement;
-use caliptra_dpe::{DpeFlags, DpeProfile, State};
 
 use helpers::dpe_harness::{self, LOCALITY};
 use helpers::x509_parser;

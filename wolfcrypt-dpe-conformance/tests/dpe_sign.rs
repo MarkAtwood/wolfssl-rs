@@ -11,7 +11,6 @@ use caliptra_dpe::dpe_instance::DpeInstance;
 use caliptra_dpe::response::{Response, SignResp};
 use caliptra_dpe::support::Support;
 use caliptra_dpe::tci::TciMeasurement;
-use caliptra_dpe::{DpeFlags, DpeProfile, State};
 
 use helpers::dpe_harness::{self, LOCALITY};
 

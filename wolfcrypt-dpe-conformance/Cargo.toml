@@ -23,28 +23,28 @@ wolfcrypt-dpe = { version = "0.1.0", path = "../wolfcrypt-dpe" }
 wolfcrypt-ring-compat = { version = "1.0", path = "../wolfcrypt-ring-compat", default-features = false, features = ["wolfcrypt-rs", "alloc"] }
 
 # === Reference backend (RustCrypto) — same crypto crate with rustcrypto feature ===
-caliptra-dpe-crypto = { git = "https://github.com/chipsalliance/caliptra-dpe", rev = "6dfc502a30d443e5e054db1344a97eeb823ea5b9", package = "caliptra-dpe-crypto", default-features = false, features = ["rustcrypto"] }
+caliptra-dpe-crypto = { git = "https://github.com/chipsalliance/caliptra-dpe", rev = "cfc9a713882ca562a0ae6565198129e6da121a42", package = "crypto", default-features = false, features = ["rustcrypto"] }
 
 # === DPE engine ===
-caliptra-dpe = { git = "https://github.com/chipsalliance/caliptra-dpe", rev = "6dfc502a30d443e5e054db1344a97eeb823ea5b9", package = "caliptra-dpe", default-features = false, features = ["p384"] }
+caliptra-dpe = { git = "https://github.com/chipsalliance/caliptra-dpe", rev = "cfc9a713882ca562a0ae6565198129e6da121a42", package = "dpe", default-features = false, features = ["p384"] }
 
 # === Platform abstraction ===
-caliptra-dpe-platform = { git = "https://github.com/chipsalliance/caliptra-dpe", rev = "6dfc502a30d443e5e054db1344a97eeb823ea5b9", package = "caliptra-dpe-platform", default-features = false, features = ["rustcrypto"] }
+caliptra-dpe-platform = { git = "https://github.com/chipsalliance/caliptra-dpe", rev = "cfc9a713882ca562a0ae6565198129e6da121a42", package = "platform", default-features = false, features = ["rustcrypto"] }
 
 # === CFI (required for DPE engine tests) ===
 caliptra-cfi-lib = { git = "https://github.com/chipsalliance/caliptra-cfi.git", package = "caliptra-cfi-lib", rev = "767d4ef59a106aea683b883c07bd65456fb3ba6b", default-features = false, features = ["cfi-test"] }
 
 # === Independent signature verification ===
-p256 = { version = "0.13", features = ["ecdsa"] }
-p384 = { version = "0.13", features = ["ecdsa"] }
-ecdsa = "0.16"
-sha2 = "0.10"
+p256 = { version = "0.14", features = ["ecdsa"] }
+p384 = { version = "0.14", features = ["ecdsa"] }
+ecdsa = "0.17"
+sha2 = "0.11"
 
 # === X.509 parsing ===
-x509-cert = { version = "0.2", features = ["std"] }
-der = { version = "0.7", features = ["alloc", "oid"] }
+x509-cert = { version = "0.3", features = ["std"] }
+der = { version = "0.8", features = ["alloc", "oid"] }
 
 # === Test infrastructure ===
-rand = "0.8"
+rand = "0.10"
 hex = "0.4"
 zerocopy = "0.8"

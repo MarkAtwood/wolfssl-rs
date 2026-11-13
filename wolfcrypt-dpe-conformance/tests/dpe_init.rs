@@ -4,8 +4,7 @@ mod helpers;
 
 use caliptra_cfi_lib::CfiCounter;
 use caliptra_dpe::commands::{CommandExecution, GetProfileCmd, InitCtxCmd};
-use caliptra_dpe::context::ContextHandle;
-use caliptra_dpe::dpe_instance::{DpeEnv, DpeInstance};
+use caliptra_dpe::dpe_instance::DpeInstance;
 use caliptra_dpe::response::Response;
 use caliptra_dpe::support::Support;
 use caliptra_dpe::{DpeFlags, DpeProfile, State};

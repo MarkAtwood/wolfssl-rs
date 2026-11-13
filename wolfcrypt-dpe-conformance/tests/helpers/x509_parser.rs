@@ -40,36 +40,36 @@ pub fn parse_cert(der_bytes: &[u8]) -> Result<ParsedCert, String> {
     let cert = Certificate::from_der(der_bytes)
         .map_err(|e| format!("Certificate DER parse failed: {e}"))?;
 
-    let tbs = &cert.tbs_certificate;
+    let tbs = &cert.tbs_certificate();
 
     // Version (0 = v1, 2 = v3)
-    let version = tbs.version as u8;
+    let version = tbs.version() as u8;
 
     // Serial number
-    let serial_number = tbs.serial_number.as_bytes().to_vec();
+    let serial_number = tbs.serial_number().as_bytes().to_vec();
 
     // Issuer and Subject as raw DER
     let issuer_der = tbs
-        .issuer
+        .issuer()
         .to_der()
         .map_err(|e| format!("Issuer DER encode: {e}"))?;
     let subject_der = tbs
-        .subject
+        .subject()
         .to_der()
         .map_err(|e| format!("Subject DER encode: {e}"))?;
 
     // Public key (raw BIT STRING value)
     let public_key_bytes = tbs
-        .subject_public_key_info
+        .subject_public_key_info()
         .subject_public_key
         .raw_bytes()
         .to_vec();
 
     // Signature algorithm OID
-    let signature_algorithm_oid = cert.signature_algorithm.oid.to_string();
+    let signature_algorithm_oid = cert.signature_algorithm().oid.to_string();
 
     // Signature value
-    let signature_bytes = cert.signature.raw_bytes().to_vec();
+    let signature_bytes = cert.signature().raw_bytes().to_vec();
 
     // TBS certificate DER
     let tbs_der = tbs.to_der().map_err(|e| format!("TBS DER encode: {e}"))?;
@@ -78,7 +78,7 @@ pub fn parse_cert(der_bytes: &[u8]) -> Result<ParsedCert, String> {
     let mut is_ca = false;
     let mut extensions = Vec::new();
 
-    if let Some(exts) = &tbs.extensions {
+    if let Some(exts) = tbs.extensions() {
         for ext in exts.iter() {
             let oid_str = ext.extn_id.to_string();
             let critical = ext.critical;

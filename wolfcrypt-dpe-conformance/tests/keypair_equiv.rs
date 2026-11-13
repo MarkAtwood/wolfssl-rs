@@ -19,7 +19,7 @@ macro_rules! keypair_equiv_tests {
         mod $mod_name {
             use crate::helpers;
             use caliptra_dpe_crypto::Crypto;
-            use rand::RngCore;
+            use rand::Rng;
 
             #[test]
             fn derive_key_pair_equiv_fixed() {
@@ -49,7 +49,7 @@ macro_rules! keypair_equiv_tests {
 
             #[test]
             fn derive_key_pair_equiv_random() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
 
                 for i in 0..20 {
                     // Generate random CDI directly (same bytes for both)
