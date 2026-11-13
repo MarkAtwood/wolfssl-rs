@@ -1,0 +1,25 @@
+{
+  "id": "wolfssl-rs-47iv",
+  "title": "wolfcrypt: fix broken intra-doc links in module docs",
+  "description": "rustdoc broken_intra_doc_links: signature::Signer/Verifier (crate imported as signature_trait), ed25519::Signature, Blake2b/Blake2s (cfg-gated), ssh_kdf, wc_RsaFunction, to_private_bytes. These predate the migration.",
+  "status": "open",
+  "priority": 4,
+  "issue_type": "chore",
+  "owner": "mark@reviewcommit.com",
+  "created_at": "2026-11-13T05:35:56.09845711Z",
+  "created_by": "Mark Atwood",
+  "updated_at": "2026-11-13T05:35:56.09845711Z",
+  "labels": [
+    "docs"
+  ],
+  "dependencies": [
+    {
+      "issue_id": "wolfssl-rs-47iv",
+      "depends_on_id": "wolfssl-rs-69dm",
+      "type": "discovered-from",
+      "created_at": "2026-11-13T05:35:56.119938541Z",
+      "created_by": "Mark Atwood",
+      "metadata": "{}"
+    }
+  ]
+}
