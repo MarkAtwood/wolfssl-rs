@@ -1,0 +1,27 @@
+{
+  "id": "wolfssl-rs-69dm.6",
+  "title": "wolfSSL 5.9.1 -\u003e 5.9.4",
+  "description": "ML-DSA API is now wc_MlDsaKey_* (wc_dilithium_* are macros) and needs C wrappers in wolfcrypt-rs. WC_RNG grew from 40 to 96 bytes. dilithium.c is now wc_mldsa.c and mlkem.h is now wc_mlkem.h. Stale sp_521 patch overlay removed (fixed upstream). wolfSSL 5.9.4 now rejects signing a zero hash, so link_probe_pk uses a non-zero digest. wolfcrypt-wrapper silently lost ML-DSA (build.rs probed wc_dilithium_init); ported upstream b6d9623 (dilithium -\u003e mldsa).",
+  "status": "open",
+  "priority": 2,
+  "issue_type": "task",
+  "owner": "mark@reviewcommit.com",
+  "created_at": "2026-11-13T05:35:33.587584367Z",
+  "created_by": "Mark Atwood",
+  "updated_at": "2026-11-13T05:35:33.587584367Z",
+  "labels": [
+    "wolfssl",
+    "release",
+    "rustcrypto"
+  ],
+  "dependencies": [
+    {
+      "issue_id": "wolfssl-rs-69dm.6",
+      "depends_on_id": "wolfssl-rs-69dm",
+      "type": "parent-child",
+      "created_at": "2026-11-13T05:35:33.613909536Z",
+      "created_by": "Mark Atwood",
+      "metadata": "{}"
+    }
+  ]
+}
