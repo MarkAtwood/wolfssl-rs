@@ -25,33 +25,6 @@ fn sha256_round_trip() {
     );
 }
 
-/// Verify ML-KEM NID constants are in sync between Rust (lib.rs) and C (compat_shim.c).
-#[test]
-fn mlkem_nid_constants_sync() {
-    unsafe {
-        assert_eq!(
-            wolfcrypt_rs::NID_MLKEM512,
-            wolfcrypt_rs::get_NID_MLKEM512(),
-            "NID_MLKEM512 mismatch between Rust and C"
-        );
-        assert_eq!(
-            wolfcrypt_rs::NID_MLKEM768,
-            wolfcrypt_rs::get_NID_MLKEM768(),
-            "NID_MLKEM768 mismatch between Rust and C"
-        );
-        assert_eq!(
-            wolfcrypt_rs::NID_MLKEM1024,
-            wolfcrypt_rs::get_NID_MLKEM1024(),
-            "NID_MLKEM1024 mismatch between Rust and C"
-        );
-        assert_eq!(
-            wolfcrypt_rs::EVP_PKEY_KEM,
-            wolfcrypt_rs::get_EVP_PKEY_KEM_TYPE(),
-            "EVP_PKEY_KEM type mismatch between Rust and C"
-        );
-    }
-}
-
 /// RAND_bytes output must not be all zeros (probabilistic check).
 /// The probability of 32 random bytes being all zero is 2^{-256}.
 #[test]

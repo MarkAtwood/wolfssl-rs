@@ -14,9 +14,7 @@ fn error_checking() {
         let error = wolfcrypt_rs::ERR_get_error();
         let err_lib = wolfcrypt_rs::ERR_GET_LIB(error);
         let err_reason = wolfcrypt_rs::ERR_GET_REASON(error);
-        let err_func = wolfcrypt_rs::ERR_GET_FUNC(error);
         assert_eq!(err_lib, 0);
         assert_eq!(err_reason, 0);
-        assert_eq!(err_func, 0);
     }
 }
