@@ -269,3 +269,55 @@ hkdf_equiv!(
     sha2::Sha512,
     [wolfssl_hkdf, wolfssl_sha512]
 );
+
+// ---------------------------------------------------------------------------
+// kdf::Kdf trait: wolfcrypt's WolfHkdfSha*Kdf vs hkdf::HkdfExtract
+// ---------------------------------------------------------------------------
+
+/// Generic caller: anything implementing `kdf::Kdf` works here.
+fn derive_with<K: kdf::Kdf>(k: &K, secret: &[u8], info: &[u8], len: usize) -> Vec<u8> {
+    let mut out = vec![0u8; len];
+    k.derive_key(secret, info, &mut out).expect("derive_key");
+    out
+}
+
+macro_rules! hkdf_kdf_trait_equiv {
+    ($mod_name:ident, $wolf_kdf:ident, $pure_hash:ty, [$($cfg_gate:meta),*]) => {
+        #[cfg(all($($cfg_gate),*))]
+        mod $mod_name {
+            use super::derive_with;
+            use super::helpers::*;
+
+            #[test]
+            fn kdf_trait_equiv() {
+                let mut rng = rand::rng();
+                for salt_len in [None, Some(0usize), Some(16), Some(64)] {
+                    let salt = salt_len.map(|n| random_bytes(&mut rng, n));
+                    let wolf = wolfcrypt::$wolf_kdf::new(salt.as_deref());
+                    let pure = hkdf::HkdfExtract::<$pure_hash>::new(salt.as_deref());
+                    for (secret_len, info_len, out_len) in [(0, 0, 16), (32, 0, 32), (64, 16, 42), (7, 100, 200)] {
+                        let secret = random_bytes(&mut rng, secret_len);
+                        let info = random_bytes(&mut rng, info_len);
+                        assert_eq!(
+                            derive_with(&wolf, &secret, &info, out_len),
+                            derive_with(&pure, &secret, &info, out_len),
+                            "salt={salt_len:?} secret={secret_len} info={info_len} out={out_len}"
+                        );
+                    }
+                }
+            }
+
+            #[test]
+            fn kdf_trait_rejects_oversized_output() {
+                // HKDF-Expand can produce at most 255 * HashLen bytes.
+                let wolf = wolfcrypt::$wolf_kdf::default();
+                let mut out = vec![0u8; 255 * 64 + 1];
+                assert!(kdf::Kdf::derive_key(&wolf, b"secret", b"info", &mut out).is_err());
+            }
+        }
+    };
+}
+
+hkdf_kdf_trait_equiv!(kdf_sha256, WolfHkdfSha256Kdf, sha2::Sha256, [wolfssl_hkdf]);
+hkdf_kdf_trait_equiv!(kdf_sha384, WolfHkdfSha384Kdf, sha2::Sha384, [wolfssl_hkdf, wolfssl_sha384]);
+hkdf_kdf_trait_equiv!(kdf_sha512, WolfHkdfSha512Kdf, sha2::Sha512, [wolfssl_hkdf, wolfssl_sha512]);

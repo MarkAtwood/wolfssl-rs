@@ -20,13 +20,13 @@
 //! | [`ecdsa`] | `Signer`, `Verifier` | `EcdsaSigningKey<P256>`, `EcdsaVerifyingKey<P256>`, … |
 //! | [`rsa`] | `Signer`, `Verifier` | `RsaPrivateKey`, `RsaPublicKey` |
 //! | [`mldsa`] | `Signer`, `Verifier` | `MlDsa44SigningKey`, `MlDsa65SigningKey`, …; `MlDsaSignature<L>` |
+//! | [`hkdf`] | `kdf::Kdf` (extract-then-expand, like `hkdf::HkdfExtract`); plus `new()` / `extract()` / `expand()` matching `hkdf::Hkdf` | `WolfHkdfSha256Kdf`, …; `WolfHkdfSha256`, … |
 //! | [`rand`] | `TryRng`, `TryCryptoRng` (`Rng` + `CryptoRng` via blanket impl) | `WolfRng` |
 //!
 //! # What uses a bespoke (non-trait) API
 //!
 //! | Module | Why no trait | API shape |
 //! |--------|-------------|-----------|
-//! | [`hkdf`] | Predates `kdf::Kdf`; the `kdf` traits cover extract-then-expand in one call but have no expand-only step | `new()` / `extract()` / `expand()` — same method names as `hkdf::Hkdf` |
 //! | [`pbkdf2`] | Calls wolfCrypt's `wc_PBKDF2` directly. (`pbkdf2::pbkdf2::<hmac::SimpleHmac<Sha256>>` also works with our digests; only `pbkdf2_hmac` needs `EagerHash`.) | `pbkdf2_hmac_sha256(password, salt, rounds, &mut out)` |
 //! | [`keywrap`] | No RustCrypto trait exists for AES Key Wrap | `aes_wrap_key()` / `aes_unwrap_key()` |
 //! | [`dh`] | No RustCrypto trait for classic DH | `DhSecret::generate()` / `compute_shared_secret()` |
@@ -78,7 +78,7 @@
 //! | Infallible runtime operations | Still true: `Update`, `FixedOutput` and the `StreamCipher` keystream methods return `()`, so wolfCrypt failures panic. Upstream is open to fallible variants in a future breaking release (RustCrypto/traits#2366). |
 //! | No `ZeroizeOnDrop` bound on key types | Not possible upstream (`zeroize` is optional). Our key types free and zero in `Drop`. |
 //! | `AeadInPlace` is the only AEAD trait | Fixed in aead 0.6: `AeadInOut` takes an `InOutBuf`, so separate input and output buffers need no allocation. Implemented here. |
-//! | No HKDF/PBKDF2 traits | `kdf::Kdf`/`kdf::Pbkdf` exist and `hkdf`/`pbkdf2` implement them. Still no expand-only trait (TLS 1.3 key schedules). |
+//! | No HKDF/PBKDF2 traits | `kdf::Kdf`/`kdf::Pbkdf` exist. Our `WolfHkdfSha*Kdf` implement `kdf::Kdf`. There is still no expand-only trait (TLS 1.3 key schedules), so `expand()` stays inherent. |
 //! | `pbkdf2_hmac` needs `CoreProxy`; `pbkdf2` needs `Sync` | Both claims were wrong: `hmac::SimpleHmac<D>` needs only `Digest + BlockSizeUser`, and `pbkdf2::pbkdf2` has no `Sync` bound. Use `pbkdf2::pbkdf2::<SimpleHmac<D>>`. |
 //! | `SignatureEncoding::Repr` assumes fixed-size signatures | Not a gap: the `ml-dsa` crate uses `Array`s generic over the parameter set. Our `MlDsaSignature<L>` does the same. |
 //!
@@ -183,11 +183,11 @@ pub use cmac::WolfCmacAes256;
 pub mod hkdf;
 
 #[cfg(all(feature = "hkdf", wolfssl_hkdf))]
-pub use hkdf::WolfHkdfSha256;
+pub use hkdf::{WolfHkdfSha256, WolfHkdfSha256Kdf};
 #[cfg(all(feature = "hkdf", wolfssl_hkdf, wolfssl_sha384))]
-pub use hkdf::WolfHkdfSha384;
+pub use hkdf::{WolfHkdfSha384, WolfHkdfSha384Kdf};
 #[cfg(all(feature = "hkdf", wolfssl_hkdf, wolfssl_sha512))]
-pub use hkdf::WolfHkdfSha512;
+pub use hkdf::{WolfHkdfSha512, WolfHkdfSha512Kdf};
 
 #[cfg(feature = "pbkdf2")]
 pub mod pbkdf2;

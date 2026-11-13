@@ -78,7 +78,8 @@ p256 = { version = "0.14", features = ["ecdsa"] }
 p384 = { version = "0.14", features = ["ecdsa"] }
 p521 = { version = "0.14", features = ["ecdsa"] }
 # rsa = "0.9"  # TODO: add cross-validation tests against pure-Rust RSA
-hkdf = "0.13"
+hkdf = { version = "0.13", features = ["kdf"] }
+kdf = "0.1"
 pbkdf2 = { version = "0.13", features = ["hmac"] }
 poly1305 = "0.9"
 x25519-dalek = { version = "3", features = ["static_secrets"] }

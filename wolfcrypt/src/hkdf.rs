@@ -7,8 +7,13 @@
 //!
 //! These types call wolfCrypt's native `wc_HKDF_Extract`/`wc_HKDF_Expand`
 //! directly (single FFI call per operation) rather than building HKDF from
-//! HMAC in Rust.  The `hkdf` crate does not define a trait — it provides
-//! a concrete `Hkdf<H>` struct — so there is no trait to implement here.
+//! HMAC in Rust.
+//!
+//! For generic code, [`WolfHkdfSha256Kdf`] (and the SHA-384/512 variants)
+//! implement the RustCrypto [`kdf::Kdf`](kdf_trait::Kdf) trait the same way
+//! `hkdf` 0.13's `HkdfExtract` does: the value holds the optional salt, and
+//! `derive_key(secret, info, out)` runs extract-then-expand with `secret` as
+//! the IKM and `info` as the context.
 //!
 //! If you need the standard `hkdf::Hkdf` type for generic code, our digest
 //! types (e.g. [`Sha256`](crate::Sha256)) are fully compatible:
@@ -21,6 +26,8 @@
 //! ```
 
 use crate::error::{WolfCryptError, check, len_as_u32};
+
+pub use kdf_trait;
 use hybrid_array::Array;
 use typenum::*;
 
@@ -28,6 +35,7 @@ use typenum::*;
 macro_rules! impl_hkdf {
     (
         $name:ident,
+        $kdf_name:ident,
         $hash_type:expr,
         $output_size:ty,
         $cfg_gate:meta
@@ -131,6 +139,33 @@ macro_rules! impl_hkdf {
             }
         }
 
+        /// HKDF as a RustCrypto [`kdf::Kdf`](kdf_trait::Kdf): holds the
+        /// optional salt; `derive_key(secret, info, out)` runs
+        /// extract-then-expand with `secret` as the IKM.
+        #[$cfg_gate]
+        #[derive(Clone, Copy, Debug, Default)]
+        pub struct $kdf_name<'a> {
+            salt: Option<&'a [u8]>,
+        }
+
+        #[$cfg_gate]
+        impl<'a> $kdf_name<'a> {
+            /// HKDF with the given salt (`None` means an all-zero salt of
+            /// hash length, per RFC 5869 §2.2).
+            pub fn new(salt: Option<&'a [u8]>) -> Self {
+                Self { salt }
+            }
+        }
+
+        #[$cfg_gate]
+        impl kdf_trait::Kdf for $kdf_name<'_> {
+            fn derive_key(&self, secret: &[u8], non_secret: &[u8], out: &mut [u8]) -> kdf_trait::Result<()> {
+                $name::new(self.salt, secret)
+                    .expand(non_secret, out)
+                    .map_err(|_| kdf_trait::Error)
+            }
+        }
+
         #[$cfg_gate]
         impl Drop for $name {
             fn drop(&mut self) {
@@ -147,6 +182,7 @@ macro_rules! impl_hkdf {
 
 impl_hkdf!(
     WolfHkdfSha256,
+    WolfHkdfSha256Kdf,
     wolfcrypt_rs::WC_HASH_TYPE_SHA256,
     U32,
     cfg(wolfssl_hkdf)
@@ -154,6 +190,7 @@ impl_hkdf!(
 
 impl_hkdf!(
     WolfHkdfSha384,
+    WolfHkdfSha384Kdf,
     wolfcrypt_rs::WC_HASH_TYPE_SHA384,
     U48,
     cfg(all(wolfssl_hkdf, wolfssl_sha384))
@@ -161,6 +198,7 @@ impl_hkdf!(
 
 impl_hkdf!(
     WolfHkdfSha512,
+    WolfHkdfSha512Kdf,
     wolfcrypt_rs::WC_HASH_TYPE_SHA512,
     U64,
     cfg(all(wolfssl_hkdf, wolfssl_sha512))
