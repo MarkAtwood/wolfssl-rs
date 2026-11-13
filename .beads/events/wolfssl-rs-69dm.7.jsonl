@@ -4,3 +4,4 @@
 {"id":"01a1d367-6fb5-778d-94bf-7956e8e23c05","issue_id":"wolfssl-rs-69dm.7","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: tpm","created_at":"2026-11-13T05:35:33.813495151Z"}
 {"id":"01a1d367-6fb8-76ac-8a2f-3edaaa65b2ad","issue_id":"wolfssl-rs-69dm.7","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: release","created_at":"2026-11-13T05:35:33.816437658Z"}
 {"id":"01a1d367-6fbb-7528-a88d-898227e45979","issue_id":"wolfssl-rs-69dm.7","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: wolfssl","created_at":"2026-11-13T05:35:33.819338582Z"}
+{"id":"01a1d367-702c-7d18-8dae-60105b456160","issue_id":"wolfssl-rs-69dm.7","event_type":"closed","actor":"Mark Atwood","old_value":"","new_value":"Done in 2ecc8d6.","created_at":"2026-11-13T05:35:33.932858808Z"}
