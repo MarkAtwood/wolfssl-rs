@@ -4,3 +4,4 @@
 {"id":"01a1d367-723f-7939-991b-5c68fc712de1","issue_id":"wolfssl-rs-69dm.10","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: release","created_at":"2026-11-13T05:35:34.463604744Z"}
 {"id":"01a1d367-7242-7830-b76b-ecdc2646c82f","issue_id":"wolfssl-rs-69dm.10","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: rustcrypto","created_at":"2026-11-13T05:35:34.466539838Z"}
 {"id":"01a1d367-7245-7786-8f4d-3a4da493f024","issue_id":"wolfssl-rs-69dm.10","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: wolfssl","created_at":"2026-11-13T05:35:34.469493361Z"}
+{"id":"01a1d367-72b5-7c45-8d75-446ce3634724","issue_id":"wolfssl-rs-69dm.10","event_type":"closed","actor":"Mark Atwood","old_value":"","new_value":"Done in 8384175. test_key_material_zeroized passes in debug and release, and fails again without the wipe.","created_at":"2026-11-13T05:35:34.58180487Z"}
