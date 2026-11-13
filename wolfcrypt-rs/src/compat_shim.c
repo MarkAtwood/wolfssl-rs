@@ -105,8 +105,8 @@ _Static_assert(sizeof(Aes) <= 512,
 _Static_assert(_Alignof(Aes) <= 16,
     "Aes alignment exceeds repr(C, align(16)) in lib.rs");
 
-_Static_assert(sizeof(WC_RNG) <= 64,
-    "WC_RNG exceeds WC_RNG_ALLOC_SIZE (64) in lib.rs");
+_Static_assert(sizeof(WC_RNG) <= 128,
+    "WC_RNG exceeds WC_RNG_ALLOC_SIZE (128) in lib.rs");
 _Static_assert(_Alignof(WC_RNG) <= 8,
     "WC_RNG alignment exceeds repr(C, align(8)) in lib.rs");
 
@@ -2393,3 +2393,112 @@ int wolfcrypt_rsa_pss_verify(void* handle,
 #endif /* WC_RSA_PSS */
 
 #endif /* !NO_RSA */
+
+/* =========================================================================
+ * ML-DSA (Dilithium) wrappers
+ *
+ * wolfSSL 5.9.4 renamed the ML-DSA API to wc_MlDsaKey_* and kept the old
+ * wc_dilithium_* names only as preprocessor macros (some of which reorder
+ * arguments). Rust can't call a macro, so give the bindings real symbols.
+ * Calling the old names here compiles against both the old API (real
+ * functions) and the new one (macros).
+ * ========================================================================= */
+#ifdef HAVE_DILITHIUM
+
+int wolfcrypt_rs_dilithium_init(dilithium_key* key)
+{
+    return wc_dilithium_init(key);
+}
+
+void wolfcrypt_rs_dilithium_free(dilithium_key* key)
+{
+    wc_dilithium_free(key);
+}
+
+int wolfcrypt_rs_dilithium_set_level(dilithium_key* key, byte level)
+{
+    return wc_dilithium_set_level(key, level);
+}
+
+int wolfcrypt_rs_dilithium_make_key(dilithium_key* key, WC_RNG* rng)
+{
+    return wc_dilithium_make_key(key, rng);
+}
+
+int wolfcrypt_rs_dilithium_make_key_from_seed(dilithium_key* key,
+                                              const byte* seed)
+{
+    return wc_dilithium_make_key_from_seed(key, seed);
+}
+
+int wolfcrypt_rs_dilithium_sign_msg(const byte* msg, word32 msgLen, byte* sig,
+                                    word32* sigLen, dilithium_key* key,
+                                    WC_RNG* rng)
+{
+    return wc_dilithium_sign_msg(msg, msgLen, sig, sigLen, key, rng);
+}
+
+int wolfcrypt_rs_dilithium_verify_msg(const byte* sig, word32 sigLen,
+                                      const byte* msg, word32 msgLen, int* res,
+                                      dilithium_key* key)
+{
+    return wc_dilithium_verify_msg(sig, sigLen, msg, msgLen, res, key);
+}
+
+int wolfcrypt_rs_dilithium_verify_ctx_msg(const byte* sig, word32 sigLen,
+                                          const byte* ctx, word32 ctxLen,
+                                          const byte* msg, word32 msgLen,
+                                          int* res, dilithium_key* key)
+{
+    return wc_dilithium_verify_ctx_msg(sig, sigLen, ctx, ctxLen, msg, msgLen,
+                                       res, key);
+}
+
+int wolfcrypt_rs_dilithium_sign_ctx_msg(const byte* ctx, byte ctxLen,
+                                        const byte* msg, word32 msgLen,
+                                        byte* sig, word32* sigLen,
+                                        dilithium_key* key, WC_RNG* rng)
+{
+    return wc_dilithium_sign_ctx_msg(ctx, ctxLen, msg, msgLen, sig, sigLen,
+                                     key, rng);
+}
+
+int wolfcrypt_rs_dilithium_import_public(const byte* in, word32 inLen,
+                                         dilithium_key* key)
+{
+    return wc_dilithium_import_public(in, inLen, key);
+}
+
+int wolfcrypt_rs_dilithium_import_private(const byte* priv, word32 privSz,
+                                          dilithium_key* key)
+{
+    return wc_dilithium_import_private(priv, privSz, key);
+}
+
+int wolfcrypt_rs_dilithium_export_public(dilithium_key* key, byte* out,
+                                         word32* outLen)
+{
+    return wc_dilithium_export_public(key, out, outLen);
+}
+
+int wolfcrypt_rs_dilithium_export_private(dilithium_key* key, byte* out,
+                                          word32* outLen)
+{
+    return wc_dilithium_export_private(key, out, outLen);
+}
+
+int wolfcrypt_rs_dilithium_import_key(const byte* priv, word32 privSz,
+                                      const byte* pub, word32 pubSz,
+                                      dilithium_key* key)
+{
+    return wc_dilithium_import_key(priv, privSz, pub, pubSz, key);
+}
+
+int wolfcrypt_rs_dilithium_export_key(dilithium_key* key, byte* priv,
+                                      word32* privSz, byte* pub,
+                                      word32* pubSz)
+{
+    return wc_dilithium_export_key(key, priv, privSz, pub, pubSz);
+}
+
+#endif /* HAVE_DILITHIUM */

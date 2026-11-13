@@ -38,8 +38,8 @@ use core::ffi::{c_long, c_uint, c_ulong};
 pub const AES_KEY_ALLOC_SIZE: usize = 512;
 /// Allocation size for wolfCrypt's `Aes` struct.
 pub const WC_AES_ALLOC_SIZE: usize = 512;
-/// Allocation size for wolfCrypt's `WC_RNG` struct.
-pub const WC_RNG_ALLOC_SIZE: usize = 64;
+/// Allocation size for wolfCrypt's `WC_RNG` struct (96 bytes on x86_64 as of wolfSSL 5.9.4; 40 in 5.9.1).
+pub const WC_RNG_ALLOC_SIZE: usize = 128;
 /// Allocation size for wolfCrypt's `Poly1305` struct.
 #[cfg(wolfssl_poly1305)]
 pub const POLY1305_ALLOC_SIZE: usize = 512;
@@ -2596,26 +2596,28 @@ unsafe extern "C" {
 
 // ============================================================
 // ML-DSA (Dilithium) — native wolfCrypt API
+// The link names point at wrappers in compat_shim.c, because wolfSSL
+// 5.9.4 turned every wc_dilithium_* function into a macro.
 // ============================================================
 
 #[cfg(wolfssl_dilithium)]
 unsafe extern "C" {
-    #[link_name = "wc_dilithium_init"]
+    #[link_name = "wolfcrypt_rs_dilithium_init"]
     pub fn wc_dilithium_init(key: *mut wc_dilithium_key) -> c_int;
 
-    #[link_name = "wc_dilithium_free"]
+    #[link_name = "wolfcrypt_rs_dilithium_free"]
     pub fn wc_dilithium_free(key: *mut wc_dilithium_key);
 
-    #[link_name = "wc_dilithium_set_level"]
+    #[link_name = "wolfcrypt_rs_dilithium_set_level"]
     pub fn wc_dilithium_set_level(key: *mut wc_dilithium_key, level: u8) -> c_int;
 
-    #[link_name = "wc_dilithium_make_key"]
+    #[link_name = "wolfcrypt_rs_dilithium_make_key"]
     pub fn wc_dilithium_make_key(key: *mut wc_dilithium_key, rng: *mut WC_RNG) -> c_int;
 
-    #[link_name = "wc_dilithium_make_key_from_seed"]
+    #[link_name = "wolfcrypt_rs_dilithium_make_key_from_seed"]
     pub fn wc_dilithium_make_key_from_seed(key: *mut wc_dilithium_key, seed: *const u8) -> c_int;
 
-    #[link_name = "wc_dilithium_sign_msg"]
+    #[link_name = "wolfcrypt_rs_dilithium_sign_msg"]
     pub fn wc_dilithium_sign_msg(
         msg: *const u8,
         msgLen: u32,
@@ -2625,7 +2627,7 @@ unsafe extern "C" {
         rng: *mut WC_RNG,
     ) -> c_int;
 
-    #[link_name = "wc_dilithium_verify_msg"]
+    #[link_name = "wolfcrypt_rs_dilithium_verify_msg"]
     pub fn wc_dilithium_verify_msg(
         sig: *const u8,
         sigLen: u32,
@@ -2637,7 +2639,7 @@ unsafe extern "C" {
 
     /// FIPS 204 context-aware verification (Algorithm 3).
     /// Uses internal message format: M' = 0x00 || ctxLen || ctx || msg.
-    #[link_name = "wc_dilithium_verify_ctx_msg"]
+    #[link_name = "wolfcrypt_rs_dilithium_verify_ctx_msg"]
     pub fn wc_dilithium_verify_ctx_msg(
         sig: *const u8,
         sigLen: u32,
@@ -2651,7 +2653,7 @@ unsafe extern "C" {
 
     /// FIPS 204 context-aware signing (Algorithm 2).
     /// Uses internal message format: M' = 0x00 || ctxLen || ctx || msg.
-    #[link_name = "wc_dilithium_sign_ctx_msg"]
+    #[link_name = "wolfcrypt_rs_dilithium_sign_ctx_msg"]
     pub fn wc_dilithium_sign_ctx_msg(
         ctx: *const u8,
         ctxLen: u8,
@@ -2663,35 +2665,35 @@ unsafe extern "C" {
         rng: *mut WC_RNG,
     ) -> c_int;
 
-    #[link_name = "wc_dilithium_import_public"]
+    #[link_name = "wolfcrypt_rs_dilithium_import_public"]
     pub fn wc_dilithium_import_public(
         input: *const u8,
         inLen: u32,
         key: *mut wc_dilithium_key,
     ) -> c_int;
 
-    #[link_name = "wc_dilithium_import_private"]
+    #[link_name = "wolfcrypt_rs_dilithium_import_private"]
     pub fn wc_dilithium_import_private(
         priv_key: *const u8,
         privSz: u32,
         key: *mut wc_dilithium_key,
     ) -> c_int;
 
-    #[link_name = "wc_dilithium_export_public"]
+    #[link_name = "wolfcrypt_rs_dilithium_export_public"]
     pub fn wc_dilithium_export_public(
         key: *mut wc_dilithium_key,
         out: *mut u8,
         outLen: *mut u32,
     ) -> c_int;
 
-    #[link_name = "wc_dilithium_export_private"]
+    #[link_name = "wolfcrypt_rs_dilithium_export_private"]
     pub fn wc_dilithium_export_private(
         key: *mut wc_dilithium_key,
         out: *mut u8,
         outLen: *mut u32,
     ) -> c_int;
 
-    #[link_name = "wc_dilithium_import_key"]
+    #[link_name = "wolfcrypt_rs_dilithium_import_key"]
     pub fn wc_dilithium_import_key(
         priv_key: *const u8,
         privSz: u32,
@@ -2700,7 +2702,7 @@ unsafe extern "C" {
         key: *mut wc_dilithium_key,
     ) -> c_int;
 
-    #[link_name = "wc_dilithium_export_key"]
+    #[link_name = "wolfcrypt_rs_dilithium_export_key"]
     pub fn wc_dilithium_export_key(
         key: *mut wc_dilithium_key,
         priv_out: *mut u8,
