@@ -4,11 +4,11 @@
 
 mod helpers;
 
-use rand::RngCore;
+use rand::Rng;
 use wolfcrypt::X448StaticSecret;
 
 /// Generate a random 56-byte array suitable for X448 key material.
-fn random_x448_bytes(rng: &mut impl RngCore) -> [u8; 56] {
+fn random_x448_bytes(rng: &mut impl Rng) -> [u8; 56] {
     let mut buf = [0u8; 56];
     rng.fill_bytes(&mut buf);
     buf
@@ -16,7 +16,7 @@ fn random_x448_bytes(rng: &mut impl RngCore) -> [u8; 56] {
 
 #[test]
 fn round_trip() {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let a_bytes = random_x448_bytes(&mut rng);
     let b_bytes = random_x448_bytes(&mut rng);
 
@@ -43,7 +43,7 @@ fn round_trip() {
 
 #[test]
 fn different_peers_different_secrets() {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let a_bytes = random_x448_bytes(&mut rng);
     let b_bytes = random_x448_bytes(&mut rng);
     let c_bytes = random_x448_bytes(&mut rng);
@@ -69,7 +69,7 @@ fn different_peers_different_secrets() {
 
 #[test]
 fn key_bytes_round_trip() {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let bytes = random_x448_bytes(&mut rng);
 
     let sk1 = X448StaticSecret::from_bytes(&bytes);
@@ -87,7 +87,7 @@ fn key_bytes_round_trip() {
 
 #[test]
 fn multiple_random_pairs() {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     for i in 0..20 {
         let a_bytes = random_x448_bytes(&mut rng);

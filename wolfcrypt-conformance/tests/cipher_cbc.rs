@@ -10,7 +10,7 @@ macro_rules! cbc_equiv {
                 random_bytes, encrypt_blocks_with, decrypt_blocks_with,
                 BLOCK_ALIGNED_LENGTHS,
             };
-            use rand::thread_rng;
+            use rand::rng;
 
             const KEY_LEN: usize = $key_len;
             const BLOCK: usize = 16;
@@ -18,7 +18,7 @@ macro_rules! cbc_equiv {
 
             #[test]
             fn single_block_equiv() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key = random_bytes(&mut rng, KEY_LEN);
                 let iv = random_bytes(&mut rng, IV_LEN);
                 let pt = random_bytes(&mut rng, BLOCK);
@@ -35,7 +35,7 @@ macro_rules! cbc_equiv {
 
             #[test]
             fn multi_block_equiv() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key = random_bytes(&mut rng, KEY_LEN);
                 let iv = random_bytes(&mut rng, IV_LEN);
                 let pt = random_bytes(&mut rng, BLOCK * 8);
@@ -52,7 +52,7 @@ macro_rules! cbc_equiv {
 
             #[test]
             fn cross_round_trip() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key = random_bytes(&mut rng, KEY_LEN);
                 let iv = random_bytes(&mut rng, IV_LEN);
                 let pt = random_bytes(&mut rng, BLOCK * 4);
@@ -78,7 +78,7 @@ macro_rules! cbc_equiv {
 
             #[test]
             fn random_data_equiv() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
 
                 for &total_len in BLOCK_ALIGNED_LENGTHS {
                     let key = random_bytes(&mut rng, KEY_LEN);
@@ -99,7 +99,7 @@ macro_rules! cbc_equiv {
 
             #[test]
             fn iv_matters() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key = random_bytes(&mut rng, KEY_LEN);
                 let iv_a = random_bytes(&mut rng, IV_LEN);
                 let iv_b = random_bytes(&mut rng, IV_LEN);
@@ -117,7 +117,7 @@ macro_rules! cbc_equiv {
 
             #[test]
             fn canary_wrong_iv() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key = random_bytes(&mut rng, KEY_LEN);
                 let iv_enc = random_bytes(&mut rng, IV_LEN);
                 let iv_dec = random_bytes(&mut rng, IV_LEN);

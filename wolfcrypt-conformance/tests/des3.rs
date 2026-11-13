@@ -3,7 +3,7 @@ mod helpers;
 #[cfg(all(wolfssl_openssl_extra, wolfssl_des3))]
 mod des3_cbc {
     use super::helpers::{decrypt_blocks_with, encrypt_blocks_with, random_bytes};
-    use rand::thread_rng;
+    use rand::rng;
 
     type WolfEnc = wolfcrypt::DesEde3CbcEnc;
     type WolfDec = wolfcrypt::DesEde3CbcDec;
@@ -19,7 +19,7 @@ mod des3_cbc {
 
     #[test]
     fn single_block_equiv() {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let key = random_bytes(&mut rng, KEY_LEN);
         let iv = random_bytes(&mut rng, IV_LEN);
         let pt = random_bytes(&mut rng, BLOCK);
@@ -32,7 +32,7 @@ mod des3_cbc {
 
     #[test]
     fn multi_block_equiv() {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let key = random_bytes(&mut rng, KEY_LEN);
         let iv = random_bytes(&mut rng, IV_LEN);
         let pt = random_bytes(&mut rng, BLOCK * 8);
@@ -45,7 +45,7 @@ mod des3_cbc {
 
     #[test]
     fn cross_round_trip() {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let key = random_bytes(&mut rng, KEY_LEN);
         let iv = random_bytes(&mut rng, IV_LEN);
         let pt = random_bytes(&mut rng, BLOCK * 4);
@@ -69,7 +69,7 @@ mod des3_cbc {
 
     #[test]
     fn random_data_equiv() {
-        let mut rng = thread_rng();
+        let mut rng = rng();
 
         for &total_len in DES_BLOCK_ALIGNED {
             let key = random_bytes(&mut rng, KEY_LEN);
@@ -89,7 +89,7 @@ mod des3_cbc {
 
     #[test]
     fn iv_matters() {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let key = random_bytes(&mut rng, KEY_LEN);
         let iv_a = random_bytes(&mut rng, IV_LEN);
         let iv_b = random_bytes(&mut rng, IV_LEN);
@@ -106,7 +106,7 @@ mod des3_cbc {
 
     #[test]
     fn canary_wrong_iv() {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let key = random_bytes(&mut rng, KEY_LEN);
         let iv_enc = random_bytes(&mut rng, IV_LEN);
         let iv_dec = random_bytes(&mut rng, IV_LEN);

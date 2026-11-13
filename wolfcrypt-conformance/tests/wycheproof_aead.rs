@@ -3,8 +3,8 @@
 mod helpers;
 use helpers::wycheproof::*;
 
-use aead::{AeadInPlace, KeyInit};
-use generic_array::GenericArray;
+use aead::{AeadInOut, KeyInit};
+use hybrid_array::Array;
 
 /// Generate a Wycheproof AEAD test for a given algorithm.
 ///
@@ -50,7 +50,7 @@ macro_rules! wycheproof_aead_test {
                     let ct = hex_decode(&tc.ct, "ct");
                     let tag = hex_decode(&tc.tag, "tag");
 
-                    let key_ga = GenericArray::clone_from_slice(&key);
+                    let key_ga = Array::try_from(&(&key)[..]).unwrap();
                     let cipher = <$wolf_type as KeyInit>::new(&key_ga);
 
                     match tc.result {
@@ -64,10 +64,10 @@ macro_rules! wycheproof_aead_test {
                             // --- Encrypt and check CT + tag ---
                             let mut enc_buf = pt.clone();
                             let enc_result = cipher
-                                .encrypt_in_place_detached(
-                                    GenericArray::from_slice(&iv),
+                                .encrypt_inout_detached(
+                                    (&(&iv)[..]).try_into().unwrap(),
                                     &aad,
-                                    &mut enc_buf,
+                                    (&mut enc_buf[..]).into(),
                                 );
                             let enc_tag = enc_result.unwrap_or_else(|_| panic!(
                                 "tc {}: encrypt failed for {label} vector, comment: {}",
@@ -88,11 +88,11 @@ macro_rules! wycheproof_aead_test {
 
                             // --- Decrypt and check PT recovery ---
                             let mut dec_buf = ct.clone();
-                            let tag_ga = aead::Tag::<$wolf_type>::from_slice(&tag);
-                            let result = cipher.decrypt_in_place_detached(
-                                GenericArray::from_slice(&iv),
+                            let tag_ga = <&aead::Tag<$wolf_type>>::try_from(&(&tag)[..]).unwrap();
+                            let result = cipher.decrypt_inout_detached(
+                                (&(&iv)[..]).try_into().unwrap(),
                                 &aad,
-                                &mut dec_buf,
+                                (&mut dec_buf[..]).into(),
                                 tag_ga,
                             );
                             assert!(
@@ -115,11 +115,11 @@ macro_rules! wycheproof_aead_test {
                         WycheproofResult::Invalid => {
                             // Decrypt must fail.
                             let mut buf = ct.clone();
-                            let tag_ga = aead::Tag::<$wolf_type>::from_slice(&tag);
-                            let result = cipher.decrypt_in_place_detached(
-                                GenericArray::from_slice(&iv),
+                            let tag_ga = <&aead::Tag<$wolf_type>>::try_from(&(&tag)[..]).unwrap();
+                            let result = cipher.decrypt_inout_detached(
+                                (&(&iv)[..]).try_into().unwrap(),
                                 &aad,
-                                &mut buf,
+                                (&mut buf[..]).into(),
                                 tag_ga,
                             );
                             assert!(

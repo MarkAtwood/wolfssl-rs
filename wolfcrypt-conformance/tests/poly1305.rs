@@ -1,18 +1,17 @@
 mod helpers;
 
-use generic_array::GenericArray;
 use helpers::random_bytes;
-use rand::thread_rng;
+use rand::rng;
 
 /// Compute a Poly1305 tag using the wolfCrypt-backed implementation
 /// (via the `digest::Mac` trait).  Accepts arbitrary-length input.
 #[cfg(wolfssl_poly1305)]
 fn wolf_poly1305_tag(key: &[u8; 32], data: &[u8]) -> [u8; 16] {
-    use digest::Mac;
+    use digest::{KeyInit, Mac};
     use wolfcrypt::WolfPoly1305;
 
     let mut mac =
-        <WolfPoly1305 as Mac>::new_from_slice(key).expect("wolf: 32-byte key must be accepted");
+        <WolfPoly1305 as KeyInit>::new_from_slice(key).expect("wolf: 32-byte key must be accepted");
     mac.update(data);
     let tag = mac.finalize().into_bytes();
     let mut out = [0u8; 16];
@@ -29,7 +28,7 @@ fn wolf_poly1305_tag(key: &[u8; 32], data: &[u8]) -> [u8; 16] {
 fn pure_poly1305_tag(key: &[u8; 32], data: &[u8]) -> [u8; 16] {
     use universal_hash::KeyInit;
 
-    let ga_key = GenericArray::from_slice(key);
+    let ga_key = (&(key)[..]).try_into().unwrap();
     let mac = poly1305::Poly1305::new(ga_key);
     let tag = mac.compute_unpadded(data);
     let mut out = [0u8; 16];
@@ -65,7 +64,7 @@ fn fixed_key_message_equiv() {
 #[test]
 #[cfg(wolfssl_poly1305)]
 fn random_equiv() {
-    let mut rng = thread_rng();
+    let mut rng = rng();
 
     for &len in helpers::SYMMETRIC_LENGTHS {
         let key_bytes = random_bytes(&mut rng, 32);
@@ -86,7 +85,7 @@ fn random_equiv() {
 #[test]
 #[cfg(wolfssl_poly1305)]
 fn partial_block_equiv() {
-    let mut rng = thread_rng();
+    let mut rng = rng();
 
     for &len in &[1usize, 7, 15, 17, 31, 33] {
         let key_bytes = random_bytes(&mut rng, 32);
@@ -107,7 +106,7 @@ fn partial_block_equiv() {
 #[test]
 #[cfg(wolfssl_poly1305)]
 fn multi_block_equiv() {
-    let mut rng = thread_rng();
+    let mut rng = rng();
 
     for &len in helpers::BLOCK_ALIGNED_LENGTHS {
         let key_bytes = random_bytes(&mut rng, 32);
@@ -128,7 +127,7 @@ fn multi_block_equiv() {
 #[test]
 #[cfg(wolfssl_poly1305)]
 fn empty_message_equiv() {
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let key_bytes = random_bytes(&mut rng, 32);
     let key: [u8; 32] = key_bytes.try_into().unwrap();
 
@@ -145,7 +144,7 @@ fn empty_message_equiv() {
 #[test]
 #[cfg(wolfssl_poly1305)]
 fn canary_wrong_key() {
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let key_a_bytes = random_bytes(&mut rng, 32);
     let key_b_bytes = random_bytes(&mut rng, 32);
     let msg = random_bytes(&mut rng, 64);

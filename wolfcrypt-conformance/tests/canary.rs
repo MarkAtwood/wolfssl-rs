@@ -41,11 +41,11 @@ fn digest_flip_detected() {
 #[test]
 fn aead_wrong_key_decrypt_fails() {
     use aead::{Aead, KeyInit};
-    use generic_array::GenericArray;
-    use rand::RngCore;
+    
+    use rand::Rng;
     use wolfcrypt::Aes128Gcm;
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     let mut key_a = [0u8; 16];
     let mut key_b = [0u8; 16];
@@ -56,9 +56,9 @@ fn aead_wrong_key_decrypt_fails() {
     // Ensure keys differ
     key_b[0] ^= 0xFF;
 
-    let cipher_a = Aes128Gcm::new(GenericArray::from_slice(&key_a));
-    let cipher_b = Aes128Gcm::new(GenericArray::from_slice(&key_b));
-    let nonce = GenericArray::from_slice(&nonce_bytes);
+    let cipher_a = Aes128Gcm::new((&(&key_a)[..]).try_into().unwrap());
+    let cipher_b = Aes128Gcm::new((&(&key_b)[..]).try_into().unwrap());
+    let nonce = (&(&nonce_bytes)[..]).try_into().unwrap();
 
     let ct = cipher_a
         .encrypt(nonce, b"canary plaintext".as_ref())
@@ -75,19 +75,19 @@ fn aead_wrong_key_decrypt_fails() {
 #[test]
 fn aead_ct_not_pt() {
     use aead::{Aead, KeyInit};
-    use generic_array::GenericArray;
-    use rand::RngCore;
+    
+    use rand::Rng;
     use wolfcrypt::Aes128Gcm;
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     let mut key = [0u8; 16];
     let mut nonce_bytes = [0u8; 12];
     rng.fill_bytes(&mut key);
     rng.fill_bytes(&mut nonce_bytes);
 
-    let cipher = Aes128Gcm::new(GenericArray::from_slice(&key));
-    let nonce = GenericArray::from_slice(&nonce_bytes);
+    let cipher = Aes128Gcm::new((&(&key)[..]).try_into().unwrap());
+    let nonce = (&(&nonce_bytes)[..]).try_into().unwrap();
     let pt = b"this plaintext must not appear in ciphertext";
 
     let ct = cipher
@@ -104,7 +104,7 @@ fn aead_ct_not_pt() {
 #[cfg(all(wolfssl_openssl_extra, wolfssl_hmac))]
 #[test]
 fn hmac_key_matters() {
-    use hmac::Mac;
+    use hmac::{KeyInit, Mac};
     use wolfcrypt::WolfHmacSha256;
 
     let key_a = b"canary key AAAA AAAA AAAA AAAA AA";
@@ -131,11 +131,11 @@ fn hmac_key_matters() {
 #[cfg(wolfssl_ed25519)]
 #[test]
 fn signature_not_message() {
-    use rand::Rng;
+    use rand::RngExt;
     use wolfcrypt::Ed25519SigningKey;
 
-    let mut rng = rand::thread_rng();
-    let seed: [u8; 32] = rng.gen();
+    let mut rng = rand::rng();
+    let seed: [u8; 32] = rng.random();
     let msg = b"the signature should not equal this message";
 
     let sk = Ed25519SigningKey::from_seed(&seed).expect("canary: Ed25519 from_seed must succeed");

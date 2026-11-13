@@ -49,8 +49,8 @@ macro_rules! ecdsa_cross {
 
             #[test]
             fn pure_sign_wolf_verify() {
-                let mut rng = rand::thread_rng();
-                let pure_sk = PureSigningKey::random(&mut rng);
+                let mut rng = rand::rng();
+                let pure_sk = <PureSigningKey as crypto_common::Generate>::generate_from_rng(&mut rng);
                 let pure_vk = pure_sk.verifying_key();
 
                 let msg = b"pure signs, wolf verifies";
@@ -59,7 +59,7 @@ macro_rules! ecdsa_cross {
                 let pure_sig: PureSig = pure_sk.sign(msg);
 
                 // Export pure pub key (uncompressed), import into wolf
-                let point = pure_vk.to_encoded_point(false);
+                let point = pure_vk.to_sec1_point(false);
                 let sec1_bytes: &[u8] = point.as_bytes();
                 let wolf_vk = EcdsaVerifyingKey::<WolfCurve>::from_uncompressed_point(sec1_bytes)
                     .expect(concat!(stringify!($mod_name), ": wolf must accept pure public key bytes"));
@@ -84,7 +84,7 @@ macro_rules! ecdsa_cross {
                 // Wolf -> pure -> re-export
                 let pure_vk = PureVerifyingKey::from_sec1_bytes(wolf_pub_bytes)
                     .expect(concat!(stringify!($mod_name), ": pure must accept wolf public key"));
-                let point = pure_vk.to_encoded_point(false);
+                let point = pure_vk.to_sec1_point(false);
                 let re_exported: &[u8] = point.as_bytes();
 
                 assert_eq!(
@@ -197,7 +197,7 @@ macro_rules! ecdsa_cross {
 
             #[test]
             fn multiple_random_messages() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
 
                 let wolf_sk = EcdsaSigningKey::<WolfCurve>::generate()
                     .expect(concat!(stringify!($mod_name), ": wolf key generation should succeed"));
@@ -206,9 +206,9 @@ macro_rules! ecdsa_cross {
                 let pure_vk = PureVerifyingKey::from_sec1_bytes(wolf_vk.as_bytes())
                     .expect(concat!(stringify!($mod_name), ": pure must accept wolf public key"));
 
-                let pure_sk = PureSigningKey::random(&mut rng);
+                let pure_sk = <PureSigningKey as crypto_common::Generate>::generate_from_rng(&mut rng);
                 let pure_vk_own = pure_sk.verifying_key();
-                let point = pure_vk_own.to_encoded_point(false);
+                let point = pure_vk_own.to_sec1_point(false);
                 let wolf_vk_from_pure =
                     EcdsaVerifyingKey::<WolfCurve>::from_uncompressed_point(point.as_bytes())
                         .expect(concat!(stringify!($mod_name), ": wolf must accept pure public key"));
@@ -346,8 +346,8 @@ mod p521_cross {
 
     #[test]
     fn pure_sign_wolf_verify() {
-        let mut rng = rand::thread_rng();
-        let pure_sk = p521::ecdsa::SigningKey::random(&mut rng);
+        let mut rng = rand::rng();
+        let pure_sk = <p521::ecdsa::SigningKey as crypto_common::Generate>::generate_from_rng(&mut rng);
         let pure_vk = p521::ecdsa::VerifyingKey::from(&pure_sk);
 
         let msg = b"p521: pure signs, wolf verifies";
@@ -355,7 +355,7 @@ mod p521_cross {
         let pure_sig: p521::ecdsa::Signature = pure_sk.sign(msg);
 
         // Export pure pub key (uncompressed), import into wolf
-        let point = pure_vk.to_encoded_point(false);
+        let point = pure_vk.to_sec1_point(false);
         let sec1_bytes: &[u8] = point.as_bytes();
         let wolf_vk = EcdsaVerifyingKey::<P521>::from_uncompressed_point(sec1_bytes)
             .expect("p521: wolf must accept pure public key bytes");
@@ -380,7 +380,7 @@ mod p521_cross {
         // Wolf -> pure -> re-export
         let pure_vk = p521::ecdsa::VerifyingKey::from_sec1_bytes(wolf_pub_bytes)
             .expect("p521: pure must accept wolf public key");
-        let point = pure_vk.to_encoded_point(false);
+        let point = pure_vk.to_sec1_point(false);
         let re_exported: &[u8] = point.as_bytes();
 
         assert_eq!(
@@ -453,7 +453,7 @@ mod p521_cross {
     fn multiple_random_messages() {
         use super::helpers::random_bytes;
 
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         let wolf_sk =
             EcdsaSigningKey::<P521>::generate().expect("p521: wolf key generation should succeed");
@@ -462,9 +462,9 @@ mod p521_cross {
         let pure_vk = p521::ecdsa::VerifyingKey::from_sec1_bytes(wolf_vk.as_bytes())
             .expect("p521: pure must accept wolf public key");
 
-        let pure_sk = p521::ecdsa::SigningKey::random(&mut rng);
+        let pure_sk = <p521::ecdsa::SigningKey as crypto_common::Generate>::generate_from_rng(&mut rng);
         let pure_vk_own = p521::ecdsa::VerifyingKey::from(&pure_sk);
-        let point = pure_vk_own.to_encoded_point(false);
+        let point = pure_vk_own.to_sec1_point(false);
         let wolf_vk_from_pure =
             EcdsaVerifyingKey::<P521>::from_uncompressed_point(point.as_bytes())
                 .expect("p521: wolf must accept pure public key");

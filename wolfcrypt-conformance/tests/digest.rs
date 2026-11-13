@@ -6,7 +6,7 @@ macro_rules! digest_equiv {
         mod $mod_name {
             use super::helpers::*;
             use digest::Digest;
-            use rand::Rng;
+            use rand::RngExt;
 
             type Wolf = $wolf;
             type Pure = $pure;
@@ -37,7 +37,7 @@ macro_rules! digest_equiv {
 
             #[test]
             fn random_equiv() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 for &len in HASH_LENGTHS {
                     let input = random_bytes(&mut rng, len);
                     let wolf_out = Wolf::digest(&input);
@@ -54,14 +54,14 @@ macro_rules! digest_equiv {
 
             #[test]
             fn incremental_equiv() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 for &len in HASH_LENGTHS {
                     let input = random_bytes(&mut rng, len);
 
                     let mut wolf = Wolf::new();
                     let mut offset = 0;
                     while offset < input.len() {
-                        let chunk_size = rng.gen_range(1..=std::cmp::min(64, input.len() - offset));
+                        let chunk_size = rng.random_range(1..=std::cmp::min(64, input.len() - offset));
                         wolf.update(&input[offset..offset + chunk_size]);
                         offset += chunk_size;
                     }

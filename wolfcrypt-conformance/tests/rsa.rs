@@ -216,7 +216,7 @@ fn key_size_4096() {
 
 #[test]
 fn multiple_random_messages() {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let sk = RsaPrivateKey::generate(2048).expect("rsa: 2048-bit key generation should succeed");
     let pk = sk.public_key();
 

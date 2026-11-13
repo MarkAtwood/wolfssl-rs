@@ -12,8 +12,8 @@ macro_rules! mac_equiv {
         #[cfg(all($($cfg_gate),*))]
         mod $mod_name {
             use super::helpers::*;
-            use digest::Mac;
-            use rand::Rng;
+            use digest::{KeyInit, Mac};
+            use rand::RngExt;
 
             type Wolf = $wolf;
             type Pure = $pure;
@@ -44,7 +44,7 @@ macro_rules! mac_equiv {
 
             #[test]
             fn random_equiv() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let key = random_bytes(&mut rng, $key_len);
 
                 for &len in HASH_LENGTHS {
@@ -73,7 +73,7 @@ macro_rules! mac_equiv {
 
             #[test]
             fn incremental_equiv() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let key = random_bytes(&mut rng, $key_len);
                 let msg = random_bytes(&mut rng, 1024);
 
@@ -81,7 +81,7 @@ macro_rules! mac_equiv {
                     .expect("wolf: key slice should be valid");
                 let mut offset = 0;
                 while offset < msg.len() {
-                    let chunk_size = rng.gen_range(1..=std::cmp::min(64, msg.len() - offset));
+                    let chunk_size = rng.random_range(1..=std::cmp::min(64, msg.len() - offset));
                     wolf.update(&msg[offset..offset + chunk_size]);
                     offset += chunk_size;
                 }
@@ -103,7 +103,7 @@ macro_rules! mac_equiv {
 
             #[test]
             fn verify_cross() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let key = random_bytes(&mut rng, $key_len);
                 let msg = random_bytes(&mut rng, 256);
 
@@ -142,7 +142,7 @@ macro_rules! mac_equiv {
 
             #[test]
             fn wrong_key_both_reject() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let key_a = random_bytes(&mut rng, $key_len);
                 let key_b = random_bytes(&mut rng, $key_len);
                 let msg = b"message for wrong-key test";
@@ -177,7 +177,7 @@ macro_rules! mac_equiv {
 
             #[test]
             fn canary_wrong_key() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let key_a = random_bytes(&mut rng, $key_len);
                 let key_b = random_bytes(&mut rng, $key_len);
                 let msg = b"canary wrong key test message";
@@ -240,13 +240,12 @@ pub fn load_vectors(path: &str) -> String {
     })
 }
 
-use cipher::generic_array::GenericArray;
-use cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit};
-use rand::RngCore;
+use cipher::{Block, BlockModeDecrypt, BlockModeEncrypt, KeyIvInit};
+use rand::Rng;
 
 /// Generate a random byte vector of the given length.
 /// Each test should call this with its own rng to avoid shared state.
-pub fn random_bytes(rng: &mut impl RngCore, len: usize) -> Vec<u8> {
+pub fn random_bytes(rng: &mut impl Rng, len: usize) -> Vec<u8> {
     let mut buf = vec![0u8; len];
     rng.fill_bytes(&mut buf);
     buf
@@ -268,34 +267,34 @@ pub const HASH_LENGTHS: &[usize] = &[
 /// Lengths for block-cipher tests.  All are multiples of 16 (AES block size).
 pub const BLOCK_ALIGNED_LENGTHS: &[usize] = &[16, 32, 48, 64, 128, 256, 1024, 4096];
 
-/// Encrypt plaintext block-by-block using any `BlockEncryptMut + KeyIvInit` cipher.
+/// Encrypt plaintext block-by-block using any `BlockModeEncrypt + KeyIvInit` cipher.
 /// Block size is derived from the cipher's associated type, so this works for
 /// both AES (16-byte blocks) and 3DES (8-byte blocks).
-pub fn encrypt_blocks_with<E: BlockEncryptMut + KeyIvInit>(
+pub fn encrypt_blocks_with<E: BlockModeEncrypt + KeyIvInit>(
     key: &[u8],
     iv: &[u8],
     pt: &[u8],
 ) -> Vec<u8> {
-    let mut enc = E::new(GenericArray::from_slice(key), GenericArray::from_slice(iv));
+    let mut enc = E::new_from_slices(key, iv).expect("key/IV length");
     let mut blocks: Vec<_> = pt
         .chunks(E::block_size())
-        .map(|c| GenericArray::clone_from_slice(c))
+        .map(|c| Block::<E>::try_from(c).expect("whole blocks"))
         .collect();
-    enc.encrypt_blocks_mut(&mut blocks);
+    enc.encrypt_blocks(&mut blocks);
     blocks.iter().flat_map(|b| b.iter().copied()).collect()
 }
 
-/// Decrypt ciphertext block-by-block using any `BlockDecryptMut + KeyIvInit` cipher.
-pub fn decrypt_blocks_with<D: BlockDecryptMut + KeyIvInit>(
+/// Decrypt ciphertext block-by-block using any `BlockModeDecrypt + KeyIvInit` cipher.
+pub fn decrypt_blocks_with<D: BlockModeDecrypt + KeyIvInit>(
     key: &[u8],
     iv: &[u8],
     ct: &[u8],
 ) -> Vec<u8> {
-    let mut dec = D::new(GenericArray::from_slice(key), GenericArray::from_slice(iv));
+    let mut dec = D::new_from_slices(key, iv).expect("key/IV length");
     let mut blocks: Vec<_> = ct
         .chunks(D::block_size())
-        .map(|c| GenericArray::clone_from_slice(c))
+        .map(|c| Block::<D>::try_from(c).expect("whole blocks"))
         .collect();
-    dec.decrypt_blocks_mut(&mut blocks);
+    dec.decrypt_blocks(&mut blocks);
     blocks.iter().flat_map(|b| b.iter().copied()).collect()
 }

@@ -7,14 +7,14 @@ macro_rules! hkdf_equiv {
         #[cfg(all($($cfg_gate),*))]
         mod $mod_name {
             use super::helpers::*;
-            use rand::Rng;
+            use rand::RngExt;
 
             type Wolf = $wolf;
             type PureHkdf = hkdf::Hkdf<$pure_hash>;
 
             #[test]
             fn extract_equiv() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let salt = random_bytes(&mut rng, 32);
                 let ikm = random_bytes(&mut rng, 64);
 
@@ -31,7 +31,7 @@ macro_rules! hkdf_equiv {
 
             #[test]
             fn expand_equiv() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let salt = random_bytes(&mut rng, 32);
                 let ikm = random_bytes(&mut rng, 64);
                 let info = random_bytes(&mut rng, 16);
@@ -60,7 +60,7 @@ macro_rules! hkdf_equiv {
 
             #[test]
             fn extract_expand_equiv() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let salt = random_bytes(&mut rng, 20);
                 let ikm = random_bytes(&mut rng, 48);
                 let info = random_bytes(&mut rng, 10);
@@ -84,7 +84,7 @@ macro_rules! hkdf_equiv {
 
             #[test]
             fn no_salt_equiv() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let ikm = random_bytes(&mut rng, 32);
 
                 let (wolf_prk, _) = Wolf::extract(None, &ikm);
@@ -100,7 +100,7 @@ macro_rules! hkdf_equiv {
 
             #[test]
             fn various_okm_lengths() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let salt = random_bytes(&mut rng, 16);
                 let ikm = random_bytes(&mut rng, 32);
                 let info = b"okm length test";
@@ -133,13 +133,13 @@ macro_rules! hkdf_equiv {
 
             #[test]
             fn random_inputs_equiv() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
 
                 for i in 0..10 {
-                    let ikm_len = rng.gen_range(16..=128);
-                    let salt_len = rng.gen_range(0..=64);
-                    let info_len = rng.gen_range(0..=64);
-                    let okm_len = rng.gen_range(16..=128);
+                    let ikm_len = rng.random_range(16..=128);
+                    let salt_len = rng.random_range(0..=64);
+                    let info_len = rng.random_range(0..=64);
+                    let okm_len = rng.random_range(16..=128);
 
                     let ikm = random_bytes(&mut rng, ikm_len);
                     let salt = random_bytes(&mut rng, salt_len);
@@ -175,7 +175,7 @@ macro_rules! hkdf_equiv {
 
             #[test]
             fn canary_different_ikm() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let salt = random_bytes(&mut rng, 16);
                 let ikm_a = random_bytes(&mut rng, 32);
                 let ikm_b = random_bytes(&mut rng, 32);

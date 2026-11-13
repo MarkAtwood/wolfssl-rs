@@ -187,7 +187,7 @@ macro_rules! mldsa_conformance {
             #[test]
             fn multiple_random_messages() {
                 let mut rng = WolfRng::new().expect("WolfRng::new must succeed");
-                let mut thread_rng = rand::thread_rng();
+                let mut thread_rng = rand::rng();
                 let sk = SigningKey::generate(&mut rng)
                     .expect(concat!(stringify!($mod_name), ": key generation must succeed"));
                 let vk = sk.verifying_key();

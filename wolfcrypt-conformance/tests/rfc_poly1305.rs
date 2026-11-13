@@ -33,10 +33,10 @@ fn rfc8439_message_is_correct_ascii() {
 /// Wolf Poly1305 must produce the exact tag from the RFC.
 #[test]
 fn rfc8439_wolf_tag() {
-    use digest::Mac;
+    use digest::{KeyInit, Mac};
     use wolfcrypt::WolfPoly1305;
 
-    let mut mac = <WolfPoly1305 as Mac>::new_from_slice(&RFC8439_KEY)
+    let mut mac = <WolfPoly1305 as KeyInit>::new_from_slice(&RFC8439_KEY)
         .expect("RFC 8439 Section 2.5.2: wolf must accept 32-byte Poly1305 key");
     mac.update(&RFC8439_MSG);
     let tag = mac.finalize().into_bytes();
@@ -51,10 +51,10 @@ fn rfc8439_wolf_tag() {
 /// Wolf Poly1305 verify_slice must accept the correct tag.
 #[test]
 fn rfc8439_wolf_verify() {
-    use digest::Mac;
+    use digest::{KeyInit, Mac};
     use wolfcrypt::WolfPoly1305;
 
-    let mut mac = <WolfPoly1305 as Mac>::new_from_slice(&RFC8439_KEY)
+    let mut mac = <WolfPoly1305 as KeyInit>::new_from_slice(&RFC8439_KEY)
         .expect("RFC 8439 Section 2.5.2: wolf must accept 32-byte Poly1305 key");
     mac.update(&RFC8439_MSG);
     mac.verify_slice(&RFC8439_TAG)
@@ -64,13 +64,13 @@ fn rfc8439_wolf_verify() {
 /// Wolf Poly1305 must reject a tampered tag.
 #[test]
 fn rfc8439_wolf_tampered_tag_rejected() {
-    use digest::Mac;
+    use digest::{KeyInit, Mac};
     use wolfcrypt::WolfPoly1305;
 
     let mut bad_tag = RFC8439_TAG;
     bad_tag[0] ^= 0x01;
 
-    let mut mac = <WolfPoly1305 as Mac>::new_from_slice(&RFC8439_KEY)
+    let mut mac = <WolfPoly1305 as KeyInit>::new_from_slice(&RFC8439_KEY)
         .expect("RFC 8439 Section 2.5.2: wolf must accept 32-byte Poly1305 key");
     mac.update(&RFC8439_MSG);
     let result = mac.verify_slice(&bad_tag);
@@ -83,13 +83,13 @@ fn rfc8439_wolf_tampered_tag_rejected() {
 /// Wolf Poly1305 must produce a different tag when the message is altered.
 #[test]
 fn rfc8439_wolf_tampered_message_different_tag() {
-    use digest::Mac;
+    use digest::{KeyInit, Mac};
     use wolfcrypt::WolfPoly1305;
 
     let mut tampered_msg = RFC8439_MSG.to_vec();
     tampered_msg[0] ^= 0xff;
 
-    let mut mac = <WolfPoly1305 as Mac>::new_from_slice(&RFC8439_KEY)
+    let mut mac = <WolfPoly1305 as KeyInit>::new_from_slice(&RFC8439_KEY)
         .expect("RFC 8439 Section 2.5.2: wolf must accept 32-byte Poly1305 key");
     mac.update(&tampered_msg);
     let tag = mac.finalize().into_bytes();
@@ -104,13 +104,13 @@ fn rfc8439_wolf_tampered_message_different_tag() {
 /// Wolf Poly1305 must produce a different tag with a different key.
 #[test]
 fn rfc8439_wolf_different_key_different_tag() {
-    use digest::Mac;
+    use digest::{KeyInit, Mac};
     use wolfcrypt::WolfPoly1305;
 
     let mut other_key = RFC8439_KEY;
     other_key[0] ^= 0x01;
 
-    let mut mac = <WolfPoly1305 as Mac>::new_from_slice(&other_key)
+    let mut mac = <WolfPoly1305 as KeyInit>::new_from_slice(&other_key)
         .expect("wolf must accept modified 32-byte Poly1305 key");
     mac.update(&RFC8439_MSG);
     let tag = mac.finalize().into_bytes();
@@ -125,18 +125,18 @@ fn rfc8439_wolf_different_key_different_tag() {
 /// Incremental update must produce the same tag as a single update.
 #[test]
 fn rfc8439_wolf_incremental_update() {
-    use digest::Mac;
+    use digest::{KeyInit, Mac};
     use wolfcrypt::WolfPoly1305;
 
     // Single update
-    let mut mac_single = <WolfPoly1305 as Mac>::new_from_slice(&RFC8439_KEY)
+    let mut mac_single = <WolfPoly1305 as KeyInit>::new_from_slice(&RFC8439_KEY)
         .expect("wolf must accept 32-byte Poly1305 key");
     mac_single.update(&RFC8439_MSG);
     let tag_single = mac_single.finalize().into_bytes();
 
     // Incremental: split message into two parts
     let (part1, part2) = RFC8439_MSG.split_at(17);
-    let mut mac_inc = <WolfPoly1305 as Mac>::new_from_slice(&RFC8439_KEY)
+    let mut mac_inc = <WolfPoly1305 as KeyInit>::new_from_slice(&RFC8439_KEY)
         .expect("wolf must accept 32-byte Poly1305 key");
     mac_inc.update(part1);
     mac_inc.update(part2);
@@ -158,10 +158,10 @@ fn rfc8439_wolf_incremental_update() {
 /// Byte-at-a-time update must still produce the correct tag.
 #[test]
 fn rfc8439_wolf_byte_at_a_time() {
-    use digest::Mac;
+    use digest::{KeyInit, Mac};
     use wolfcrypt::WolfPoly1305;
 
-    let mut mac = <WolfPoly1305 as Mac>::new_from_slice(&RFC8439_KEY)
+    let mut mac = <WolfPoly1305 as KeyInit>::new_from_slice(&RFC8439_KEY)
         .expect("wolf must accept 32-byte Poly1305 key");
     for &b in RFC8439_MSG.iter() {
         mac.update(&[b]);

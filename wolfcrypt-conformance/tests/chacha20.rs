@@ -3,9 +3,9 @@ mod helpers;
 #[cfg(wolfssl_chacha)]
 mod chacha20_equiv {
     use super::helpers::{random_bytes, SYMMETRIC_LENGTHS};
-    use cipher::generic_array::GenericArray;
+    
     use cipher::{KeyIvInit, StreamCipher};
-    use rand::thread_rng;
+    use rand::rng;
 
     type Wolf = wolfcrypt::WolfChaCha20;
     type Pure = chacha20::ChaCha20;
@@ -15,22 +15,22 @@ mod chacha20_equiv {
 
     #[test]
     fn encrypt_equiv() {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let key = random_bytes(&mut rng, KEY_LEN);
         let nonce = random_bytes(&mut rng, NONCE_LEN);
         let pt = random_bytes(&mut rng, 64);
 
         let mut wolf_ct = pt.clone();
         let mut wolf = Wolf::new(
-            GenericArray::from_slice(&key),
-            GenericArray::from_slice(&nonce),
+            (&(&key)[..]).try_into().unwrap(),
+            (&(&nonce)[..]).try_into().unwrap(),
         );
         wolf.apply_keystream(&mut wolf_ct);
 
         let mut pure_ct = pt.clone();
         let mut pure = Pure::new(
-            GenericArray::from_slice(&key),
-            GenericArray::from_slice(&nonce),
+            (&(&key)[..]).try_into().unwrap(),
+            (&(&nonce)[..]).try_into().unwrap(),
         );
         pure.apply_keystream(&mut pure_ct);
 
@@ -42,7 +42,7 @@ mod chacha20_equiv {
 
     #[test]
     fn cross_round_trip() {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let key = random_bytes(&mut rng, KEY_LEN);
         let nonce = random_bytes(&mut rng, NONCE_LEN);
         let pt = random_bytes(&mut rng, 100);
@@ -50,15 +50,15 @@ mod chacha20_equiv {
         // Wolf encrypts, pure decrypts
         let mut ct = pt.clone();
         let mut wolf = Wolf::new(
-            GenericArray::from_slice(&key),
-            GenericArray::from_slice(&nonce),
+            (&(&key)[..]).try_into().unwrap(),
+            (&(&nonce)[..]).try_into().unwrap(),
         );
         wolf.apply_keystream(&mut ct);
 
         let mut recovered = ct.clone();
         let mut pure = Pure::new(
-            GenericArray::from_slice(&key),
-            GenericArray::from_slice(&nonce),
+            (&(&key)[..]).try_into().unwrap(),
+            (&(&nonce)[..]).try_into().unwrap(),
         );
         pure.apply_keystream(&mut recovered);
 
@@ -70,7 +70,7 @@ mod chacha20_equiv {
 
     #[test]
     fn various_lengths() {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let key = random_bytes(&mut rng, KEY_LEN);
 
         for &len in SYMMETRIC_LENGTHS {
@@ -81,15 +81,15 @@ mod chacha20_equiv {
 
             let mut wolf_ct = pt.clone();
             let mut wolf = Wolf::new(
-                GenericArray::from_slice(&key),
-                GenericArray::from_slice(&nonce),
+                (&(&key)[..]).try_into().unwrap(),
+                (&(&nonce)[..]).try_into().unwrap(),
             );
             wolf.apply_keystream(&mut wolf_ct);
 
             let mut pure_ct = pt.clone();
             let mut pure = Pure::new(
-                GenericArray::from_slice(&key),
-                GenericArray::from_slice(&nonce),
+                (&(&key)[..]).try_into().unwrap(),
+                (&(&nonce)[..]).try_into().unwrap(),
             );
             pure.apply_keystream(&mut pure_ct);
 
@@ -99,7 +99,7 @@ mod chacha20_equiv {
 
     #[test]
     fn partial_block_equiv() {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let key = random_bytes(&mut rng, KEY_LEN);
         let nonce = random_bytes(&mut rng, NONCE_LEN);
 
@@ -108,15 +108,15 @@ mod chacha20_equiv {
 
             let mut wolf_ct = pt.clone();
             let mut wolf = Wolf::new(
-                GenericArray::from_slice(&key),
-                GenericArray::from_slice(&nonce),
+                (&(&key)[..]).try_into().unwrap(),
+                (&(&nonce)[..]).try_into().unwrap(),
             );
             wolf.apply_keystream(&mut wolf_ct);
 
             let mut pure_ct = pt.clone();
             let mut pure = Pure::new(
-                GenericArray::from_slice(&key),
-                GenericArray::from_slice(&nonce),
+                (&(&key)[..]).try_into().unwrap(),
+                (&(&nonce)[..]).try_into().unwrap(),
             );
             pure.apply_keystream(&mut pure_ct);
 
@@ -130,7 +130,7 @@ mod chacha20_equiv {
 
     #[test]
     fn canary_different_nonce() {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let key = random_bytes(&mut rng, KEY_LEN);
         let nonce_a = random_bytes(&mut rng, NONCE_LEN);
         let nonce_b = random_bytes(&mut rng, NONCE_LEN);
@@ -138,15 +138,15 @@ mod chacha20_equiv {
 
         let mut ct_a = pt.clone();
         let mut wolf_a = Wolf::new(
-            GenericArray::from_slice(&key),
-            GenericArray::from_slice(&nonce_a),
+            (&(&key)[..]).try_into().unwrap(),
+            (&(&nonce_a)[..]).try_into().unwrap(),
         );
         wolf_a.apply_keystream(&mut ct_a);
 
         let mut ct_b = pt.clone();
         let mut wolf_b = Wolf::new(
-            GenericArray::from_slice(&key),
-            GenericArray::from_slice(&nonce_b),
+            (&(&key)[..]).try_into().unwrap(),
+            (&(&nonce_b)[..]).try_into().unwrap(),
         );
         wolf_b.apply_keystream(&mut ct_b);
 

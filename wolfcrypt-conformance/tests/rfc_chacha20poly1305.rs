@@ -2,8 +2,7 @@
 
 mod helpers;
 
-use aead::{AeadInPlace, KeyInit, Nonce};
-use generic_array::GenericArray;
+use aead::{AeadInOut, KeyInit, Nonce};
 use hex_literal::hex;
 
 /// RFC 8439 Section 2.8.2 -- ChaCha20-Poly1305 AEAD test vector.
@@ -40,14 +39,14 @@ const RFC8439_TAG: [u8; 16] = hex!("1ae10b594f09e26a7e902ecbd0600691");
 /// Wolf encryption must produce the exact ciphertext and tag from the RFC.
 #[test]
 fn rfc8439_wolf_encrypt() {
-    let key = GenericArray::from_slice(&RFC8439_KEY);
-    let nonce = Nonce::<wolfcrypt::ChaCha20Poly1305>::from_slice(&RFC8439_NONCE);
+    let key = (&(&RFC8439_KEY)[..]).try_into().unwrap();
+    let nonce = <&Nonce<wolfcrypt::ChaCha20Poly1305>>::try_from(&(&RFC8439_NONCE)[..]).unwrap();
 
     let cipher = <wolfcrypt::ChaCha20Poly1305 as KeyInit>::new(key);
 
     let mut buf = RFC8439_PT.to_vec();
     let tag = cipher
-        .encrypt_in_place_detached(nonce, &RFC8439_AAD, &mut buf)
+        .encrypt_inout_detached(nonce, &RFC8439_AAD, (&mut buf[..]).into())
         .expect("RFC 8439 Section 2.8.2: wolf encrypt must succeed");
 
     assert_eq!(
@@ -65,15 +64,15 @@ fn rfc8439_wolf_encrypt() {
 /// Wolf decryption must recover the original plaintext.
 #[test]
 fn rfc8439_wolf_decrypt() {
-    let key = GenericArray::from_slice(&RFC8439_KEY);
-    let nonce = Nonce::<wolfcrypt::ChaCha20Poly1305>::from_slice(&RFC8439_NONCE);
-    let tag = GenericArray::from_slice(&RFC8439_TAG);
+    let key = (&(&RFC8439_KEY)[..]).try_into().unwrap();
+    let nonce = <&Nonce<wolfcrypt::ChaCha20Poly1305>>::try_from(&(&RFC8439_NONCE)[..]).unwrap();
+    let tag = (&(&RFC8439_TAG)[..]).try_into().unwrap();
 
     let cipher = <wolfcrypt::ChaCha20Poly1305 as KeyInit>::new(key);
 
     let mut buf = RFC8439_CT.to_vec();
     cipher
-        .decrypt_in_place_detached(nonce, &RFC8439_AAD, &mut buf, tag)
+        .decrypt_inout_detached(nonce, &RFC8439_AAD, (&mut buf[..]).into(), tag)
         .expect("RFC 8439 Section 2.8.2: wolf decrypt must succeed");
 
     assert_eq!(
@@ -86,14 +85,14 @@ fn rfc8439_wolf_decrypt() {
 /// Pure-Rust ChaCha20Poly1305 must produce the same ciphertext and tag (sanity check).
 #[test]
 fn rfc8439_pure_encrypt() {
-    let key = GenericArray::from_slice(&RFC8439_KEY);
-    let nonce = Nonce::<chacha20poly1305::ChaCha20Poly1305>::from_slice(&RFC8439_NONCE);
+    let key = (&(&RFC8439_KEY)[..]).try_into().unwrap();
+    let nonce = <&Nonce<chacha20poly1305::ChaCha20Poly1305>>::try_from(&(&RFC8439_NONCE)[..]).unwrap();
 
     let cipher = <chacha20poly1305::ChaCha20Poly1305 as KeyInit>::new(key);
 
     let mut buf = RFC8439_PT.to_vec();
     let tag = cipher
-        .encrypt_in_place_detached(nonce, &RFC8439_AAD, &mut buf)
+        .encrypt_inout_detached(nonce, &RFC8439_AAD, (&mut buf[..]).into())
         .expect("RFC 8439 Section 2.8.2: pure encrypt must succeed (sanity check)");
 
     assert_eq!(
@@ -111,20 +110,20 @@ fn rfc8439_pure_encrypt() {
 /// Wolf-encrypted data must be decryptable by pure-Rust implementation.
 #[test]
 fn rfc8439_wolf_encrypt_pure_decrypt() {
-    let key = GenericArray::from_slice(&RFC8439_KEY);
-    let nonce_wolf = Nonce::<wolfcrypt::ChaCha20Poly1305>::from_slice(&RFC8439_NONCE);
-    let nonce_pure = Nonce::<chacha20poly1305::ChaCha20Poly1305>::from_slice(&RFC8439_NONCE);
+    let key = (&(&RFC8439_KEY)[..]).try_into().unwrap();
+    let nonce_wolf = <&Nonce<wolfcrypt::ChaCha20Poly1305>>::try_from(&(&RFC8439_NONCE)[..]).unwrap();
+    let nonce_pure = <&Nonce<chacha20poly1305::ChaCha20Poly1305>>::try_from(&(&RFC8439_NONCE)[..]).unwrap();
 
     let wolf = <wolfcrypt::ChaCha20Poly1305 as KeyInit>::new(key);
     let pure = <chacha20poly1305::ChaCha20Poly1305 as KeyInit>::new(key);
 
     let mut ct = RFC8439_PT.to_vec();
     let tag = wolf
-        .encrypt_in_place_detached(nonce_wolf, &RFC8439_AAD, &mut ct)
+        .encrypt_inout_detached(nonce_wolf, &RFC8439_AAD, (&mut ct[..]).into())
         .expect("RFC 8439: wolf encrypt must succeed");
 
     let mut recovered = ct.clone();
-    pure.decrypt_in_place_detached(nonce_pure, &RFC8439_AAD, &mut recovered, &tag)
+    pure.decrypt_inout_detached(nonce_pure, &RFC8439_AAD, (&mut recovered[..]).into(), &tag)
         .expect("RFC 8439: pure must decrypt wolf-encrypted data");
 
     assert_eq!(
@@ -137,20 +136,20 @@ fn rfc8439_wolf_encrypt_pure_decrypt() {
 /// Pure-encrypted data must be decryptable by wolf.
 #[test]
 fn rfc8439_pure_encrypt_wolf_decrypt() {
-    let key = GenericArray::from_slice(&RFC8439_KEY);
-    let nonce_wolf = Nonce::<wolfcrypt::ChaCha20Poly1305>::from_slice(&RFC8439_NONCE);
-    let nonce_pure = Nonce::<chacha20poly1305::ChaCha20Poly1305>::from_slice(&RFC8439_NONCE);
+    let key = (&(&RFC8439_KEY)[..]).try_into().unwrap();
+    let nonce_wolf = <&Nonce<wolfcrypt::ChaCha20Poly1305>>::try_from(&(&RFC8439_NONCE)[..]).unwrap();
+    let nonce_pure = <&Nonce<chacha20poly1305::ChaCha20Poly1305>>::try_from(&(&RFC8439_NONCE)[..]).unwrap();
 
     let wolf = <wolfcrypt::ChaCha20Poly1305 as KeyInit>::new(key);
     let pure = <chacha20poly1305::ChaCha20Poly1305 as KeyInit>::new(key);
 
     let mut ct = RFC8439_PT.to_vec();
     let tag = pure
-        .encrypt_in_place_detached(nonce_pure, &RFC8439_AAD, &mut ct)
+        .encrypt_inout_detached(nonce_pure, &RFC8439_AAD, (&mut ct[..]).into())
         .expect("RFC 8439: pure encrypt must succeed");
 
     let mut recovered = ct.clone();
-    wolf.decrypt_in_place_detached(nonce_wolf, &RFC8439_AAD, &mut recovered, &tag)
+    wolf.decrypt_inout_detached(nonce_wolf, &RFC8439_AAD, (&mut recovered[..]).into(), &tag)
         .expect("RFC 8439: wolf must decrypt pure-encrypted data");
 
     assert_eq!(
@@ -163,16 +162,16 @@ fn rfc8439_pure_encrypt_wolf_decrypt() {
 /// Tampered ciphertext must be rejected by wolf.
 #[test]
 fn rfc8439_tampered_ct_rejected() {
-    let key = GenericArray::from_slice(&RFC8439_KEY);
-    let nonce = Nonce::<wolfcrypt::ChaCha20Poly1305>::from_slice(&RFC8439_NONCE);
-    let tag = GenericArray::from_slice(&RFC8439_TAG);
+    let key = (&(&RFC8439_KEY)[..]).try_into().unwrap();
+    let nonce = <&Nonce<wolfcrypt::ChaCha20Poly1305>>::try_from(&(&RFC8439_NONCE)[..]).unwrap();
+    let tag = (&(&RFC8439_TAG)[..]).try_into().unwrap();
 
     let cipher = <wolfcrypt::ChaCha20Poly1305 as KeyInit>::new(key);
 
     let mut bad_ct = RFC8439_CT.to_vec();
     bad_ct[0] ^= 0xff;
 
-    let result = cipher.decrypt_in_place_detached(nonce, &RFC8439_AAD, &mut bad_ct, tag);
+    let result = cipher.decrypt_inout_detached(nonce, &RFC8439_AAD, (&mut bad_ct[..]).into(), tag);
     assert!(
         result.is_err(),
         "RFC 8439: wolf must reject tampered ciphertext"
@@ -182,17 +181,17 @@ fn rfc8439_tampered_ct_rejected() {
 /// Tampered tag must be rejected by wolf.
 #[test]
 fn rfc8439_tampered_tag_rejected() {
-    let key = GenericArray::from_slice(&RFC8439_KEY);
-    let nonce = Nonce::<wolfcrypt::ChaCha20Poly1305>::from_slice(&RFC8439_NONCE);
+    let key = (&(&RFC8439_KEY)[..]).try_into().unwrap();
+    let nonce = <&Nonce<wolfcrypt::ChaCha20Poly1305>>::try_from(&(&RFC8439_NONCE)[..]).unwrap();
 
     let mut bad_tag_bytes = RFC8439_TAG;
     bad_tag_bytes[0] ^= 0xff;
-    let bad_tag = GenericArray::from_slice(&bad_tag_bytes);
+    let bad_tag = (&(&bad_tag_bytes)[..]).try_into().unwrap();
 
     let cipher = <wolfcrypt::ChaCha20Poly1305 as KeyInit>::new(key);
 
     let mut ct = RFC8439_CT.to_vec();
-    let result = cipher.decrypt_in_place_detached(nonce, &RFC8439_AAD, &mut ct, bad_tag);
+    let result = cipher.decrypt_inout_detached(nonce, &RFC8439_AAD, (&mut ct[..]).into(), bad_tag);
     assert!(
         result.is_err(),
         "RFC 8439: wolf must reject tampered authentication tag"
@@ -202,15 +201,15 @@ fn rfc8439_tampered_tag_rejected() {
 /// Wrong AAD must be rejected by wolf.
 #[test]
 fn rfc8439_wrong_aad_rejected() {
-    let key = GenericArray::from_slice(&RFC8439_KEY);
-    let nonce = Nonce::<wolfcrypt::ChaCha20Poly1305>::from_slice(&RFC8439_NONCE);
-    let tag = GenericArray::from_slice(&RFC8439_TAG);
+    let key = (&(&RFC8439_KEY)[..]).try_into().unwrap();
+    let nonce = <&Nonce<wolfcrypt::ChaCha20Poly1305>>::try_from(&(&RFC8439_NONCE)[..]).unwrap();
+    let tag = (&(&RFC8439_TAG)[..]).try_into().unwrap();
 
     let cipher = <wolfcrypt::ChaCha20Poly1305 as KeyInit>::new(key);
 
     let mut ct = RFC8439_CT.to_vec();
     let wrong_aad = hex!("50515253c0c1c2c3c4c5c6c8"); // last byte changed
-    let result = cipher.decrypt_in_place_detached(nonce, &wrong_aad, &mut ct, tag);
+    let result = cipher.decrypt_inout_detached(nonce, &wrong_aad, (&mut ct[..]).into(), tag);
     assert!(
         result.is_err(),
         "RFC 8439: wolf must reject decryption with wrong AAD"

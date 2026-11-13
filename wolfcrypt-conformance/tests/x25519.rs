@@ -2,13 +2,13 @@
 
 mod helpers;
 
-use rand::Rng;
+use rand::RngExt;
 use wolfcrypt::X25519StaticSecret;
 
 #[test]
 fn pubkey_derivation_equiv() {
-    let mut rng = rand::thread_rng();
-    let secret_bytes: [u8; 32] = rng.gen();
+    let mut rng = rand::rng();
+    let secret_bytes: [u8; 32] = rng.random();
 
     // Wolf: derive public key
     let wolf_sk = X25519StaticSecret::from_bytes(&secret_bytes);
@@ -27,9 +27,9 @@ fn pubkey_derivation_equiv() {
 
 #[test]
 fn shared_secret_equiv() {
-    let mut rng = rand::thread_rng();
-    let alice_bytes: [u8; 32] = rng.gen();
-    let bob_bytes: [u8; 32] = rng.gen();
+    let mut rng = rand::rng();
+    let alice_bytes: [u8; 32] = rng.random();
+    let bob_bytes: [u8; 32] = rng.random();
 
     // Wolf: alice DH with bob's pub
     let wolf_bob = X25519StaticSecret::from_bytes(&bob_bytes);
@@ -52,9 +52,9 @@ fn shared_secret_equiv() {
 
 #[test]
 fn cross_dh_commutativity() {
-    let mut rng = rand::thread_rng();
-    let a_bytes: [u8; 32] = rng.gen();
-    let b_bytes: [u8; 32] = rng.gen();
+    let mut rng = rand::rng();
+    let a_bytes: [u8; 32] = rng.random();
+    let b_bytes: [u8; 32] = rng.random();
 
     // Derive public keys first; diffie_hellman() consumes self,
     // so we re-create each secret for the DH step below.
@@ -93,11 +93,11 @@ fn cross_dh_commutativity() {
 
 #[test]
 fn multiple_random_pairs() {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     for i in 0..20 {
-        let a_bytes: [u8; 32] = rng.gen();
-        let b_bytes: [u8; 32] = rng.gen();
+        let a_bytes: [u8; 32] = rng.random();
+        let b_bytes: [u8; 32] = rng.random();
 
         // Wolf: public key derivation
         let wolf_a_for_pub = X25519StaticSecret::from_bytes(&a_bytes);
@@ -142,11 +142,11 @@ fn multiple_random_pairs() {
 
 #[test]
 fn canary_different_keys_different_secrets() {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
-    let a_bytes: [u8; 32] = rng.gen();
-    let b_bytes: [u8; 32] = rng.gen();
-    let c_bytes: [u8; 32] = rng.gen();
+    let a_bytes: [u8; 32] = rng.random();
+    let b_bytes: [u8; 32] = rng.random();
+    let c_bytes: [u8; 32] = rng.random();
 
     // Wolf: DH(a, B_pub)
     let wolf_b = X25519StaticSecret::from_bytes(&b_bytes);

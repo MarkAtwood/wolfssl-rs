@@ -139,7 +139,7 @@ fn multiple_random_messages() {
     let sk = Ed448SigningKey::generate(&mut rng).expect("ed448: key generation should succeed");
     let vk = sk.verifying_key();
 
-    let mut thread_rng = rand::thread_rng();
+    let mut thread_rng = rand::rng();
     for i in 0..50 {
         let msg = random_bytes(&mut thread_rng, 32 + i * 7);
         let sig: Ed448Signature = sk.sign(&msg);

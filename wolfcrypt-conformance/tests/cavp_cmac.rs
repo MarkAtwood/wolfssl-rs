@@ -1,7 +1,7 @@
 #![cfg(all(wolfssl_openssl_extra, wolfssl_cmac))]
 
 mod helpers;
-use digest::Mac;
+use digest::{KeyInit, Mac};
 use helpers::cavp::parse_cavp;
 
 /// Run CAVP CMAC verification tests for a given AES key size.

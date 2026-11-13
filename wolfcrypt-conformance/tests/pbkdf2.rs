@@ -30,7 +30,7 @@ macro_rules! pbkdf2_equiv {
 
             #[test]
             fn random_equiv() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let password = random_bytes(&mut rng, 24);
                 let salt = random_bytes(&mut rng, 16);
 
@@ -55,7 +55,7 @@ macro_rules! pbkdf2_equiv {
 
             #[test]
             fn various_output_lengths() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let password = random_bytes(&mut rng, 20);
                 let salt = random_bytes(&mut rng, 16);
                 let rounds = 100u32;
@@ -81,7 +81,7 @@ macro_rules! pbkdf2_equiv {
 
             #[test]
             fn single_round() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let password = random_bytes(&mut rng, 16);
                 let salt = random_bytes(&mut rng, 16);
 
@@ -101,7 +101,7 @@ macro_rules! pbkdf2_equiv {
 
             #[test]
             fn canary_different_password() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let password_a = random_bytes(&mut rng, 16);
                 let password_b = random_bytes(&mut rng, 16);
                 let salt = random_bytes(&mut rng, 16);
@@ -122,7 +122,7 @@ macro_rules! pbkdf2_equiv {
 
             #[test]
             fn canary_different_salt() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let password = random_bytes(&mut rng, 16);
                 let salt_a = random_bytes(&mut rng, 16);
                 let salt_b = random_bytes(&mut rng, 16);
@@ -143,7 +143,7 @@ macro_rules! pbkdf2_equiv {
 
             #[test]
             fn canary_different_rounds() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let password = random_bytes(&mut rng, 16);
                 let salt = random_bytes(&mut rng, 16);
 

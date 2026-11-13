@@ -58,49 +58,49 @@ wolfcrypt = { version = "0.2.0", path = "../wolfcrypt", features = [
 ] }
 
 # === Pure-Rust RustCrypto implementations ===
-# Versions verified compatible with trait crate versions used by
-# wolfcrypt (digest 0.10, cipher 0.4, aead 0.5, signature 2.2).
-sha1 = "0.10"
-sha2 = "0.10"
-sha3 = "0.10"
-hmac = "0.12"
-cmac = "0.7"
-aes-gcm = "0.10"
-chacha20poly1305 = "0.10"
-aes = "0.8"
-cbc = { version = "0.1", features = ["alloc"] }
-ctr = "0.9"
-cfb-mode = "0.8"
-chacha20 = "0.9"
-des = "0.8"
-ed25519-dalek = { version = "2", features = ["rand_core"] }
-p256 = { version = "0.13", features = ["ecdsa"] }
-p384 = { version = "0.13", features = ["ecdsa"] }
-p521 = { version = "0.13", features = ["ecdsa"] }
+# Versions match the trait crate generation used by wolfcrypt
+# (digest 0.11, cipher 0.5, aead 0.6, signature 3.0).
+sha1 = "0.11"
+sha2 = "0.11"
+sha3 = "0.12"
+hmac = "0.13"
+cmac = "0.8"
+aes-gcm = "0.11"
+chacha20poly1305 = "0.11"
+aes = "0.9"
+cbc = { version = "0.2", features = ["alloc"] }
+ctr = "0.10"
+cfb-mode = "0.9"
+chacha20 = "0.10"
+des = "0.9"
+ed25519-dalek = { version = "3", features = ["rand_core"] }
+p256 = { version = "0.14", features = ["ecdsa"] }
+p384 = { version = "0.14", features = ["ecdsa"] }
+p521 = { version = "0.14", features = ["ecdsa"] }
 # rsa = "0.9"  # TODO: add cross-validation tests against pure-Rust RSA
-hkdf = "0.12"
-pbkdf2 = { version = "0.12", features = ["hmac"] }
-poly1305 = "0.8"
-x25519-dalek = { version = "2", features = ["static_secrets"] }
+hkdf = "0.13"
+pbkdf2 = { version = "0.13", features = ["hmac"] }
+poly1305 = "0.9"
+x25519-dalek = { version = "3", features = ["static_secrets"] }
 # ml-dsa = "0.0.4"  # Disabled: too early (0.0.x), API unstable
 # ml-kem = "0.2"    # Disabled: depends on pre-release kem 0.3.0-pre.0
 
 # === Shared trait crates (must match wolfcrypt's versions) ===
-digest = "0.10"
-cipher = "0.4"
-aead = { version = "0.5", features = ["alloc"] }
-signature = "2.2"
-ed25519 = "2.2"
-crypto-common = "0.1"
-generic-array = "0.14"
+digest = { version = "0.11", features = ["mac"] }
+cipher = "0.5"
+aead = { version = "0.6", features = ["alloc"] }
+signature = "3.0"
+ed25519 = "3.0"
+crypto-common = "0.2"
+hybrid-array = "0.4"
 typenum = "1"
-universal-hash = "0.5"
-elliptic-curve = "0.13"
+universal-hash = "0.6"
+elliptic-curve = "0.14"
 
 # === Test infrastructure ===
-rand = "0.8"
+rand = "0.10"
 rand_core = "0.10"
-hex-literal = "0.4"
+hex-literal = "1"
 hex = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

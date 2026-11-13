@@ -3,7 +3,7 @@
 mod helpers;
 use helpers::wycheproof::*;
 
-use hmac::Mac;
+use hmac::{KeyInit, Mac};
 
 /// Run a Wycheproof MAC test for one HMAC variant.
 ///

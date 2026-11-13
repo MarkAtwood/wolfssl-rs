@@ -3,7 +3,7 @@
 mod helpers;
 
 use helpers::random_bytes;
-use rand::Rng;
+use rand::RngExt;
 
 // Both `signature::Signer` and `ed25519_dalek::Signer` are in scope.
 // Use explicit aliases to avoid repeating `use … as _` in every test.
@@ -14,8 +14,8 @@ use signature::Verifier as WolfVerifier;
 
 #[test]
 fn same_seed_same_signature() {
-    let mut rng = rand::thread_rng();
-    let seed: [u8; 32] = rng.gen();
+    let mut rng = rand::rng();
+    let seed: [u8; 32] = rng.random();
     let msg = b"ed25519 deterministic signature test";
 
     let wolf_sk =
@@ -34,8 +34,8 @@ fn same_seed_same_signature() {
 
 #[test]
 fn same_seed_same_pubkey() {
-    let mut rng = rand::thread_rng();
-    let seed: [u8; 32] = rng.gen();
+    let mut rng = rand::rng();
+    let seed: [u8; 32] = rng.random();
 
     let wolf_sk =
         wolfcrypt::Ed25519SigningKey::from_seed(&seed).expect("wolf: from_seed should succeed");
@@ -53,8 +53,8 @@ fn same_seed_same_pubkey() {
 
 #[test]
 fn wolf_sign_dalek_verify() {
-    let mut rng = rand::thread_rng();
-    let seed: [u8; 32] = rng.gen();
+    let mut rng = rand::rng();
+    let seed: [u8; 32] = rng.random();
     let msg = b"wolf signs, dalek verifies";
 
     let wolf_sk =
@@ -74,8 +74,8 @@ fn wolf_sign_dalek_verify() {
 
 #[test]
 fn dalek_sign_wolf_verify() {
-    let mut rng = rand::thread_rng();
-    let seed: [u8; 32] = rng.gen();
+    let mut rng = rand::rng();
+    let seed: [u8; 32] = rng.random();
     let msg = b"dalek signs, wolf verifies";
 
     let dalek_sk = ed25519_dalek::SigningKey::from_bytes(&seed);
@@ -94,10 +94,10 @@ fn dalek_sign_wolf_verify() {
 
 #[test]
 fn random_seeds() {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     for i in 0..20 {
-        let seed: [u8; 32] = rng.gen();
+        let seed: [u8; 32] = rng.random();
         let msg_bytes = random_bytes(&mut rng, 64 + i);
 
         let wolf_sk = wolfcrypt::Ed25519SigningKey::from_seed(&seed)
@@ -137,8 +137,8 @@ fn random_seeds() {
 
 #[test]
 fn tampered_message_both_reject() {
-    let mut rng = rand::thread_rng();
-    let seed: [u8; 32] = rng.gen();
+    let mut rng = rand::rng();
+    let seed: [u8; 32] = rng.random();
     let msg = b"original message for tamper test";
     let mut tampered_msg = msg.to_vec();
     tampered_msg[0] ^= 0xFF;
@@ -169,8 +169,8 @@ fn tampered_message_both_reject() {
 
 #[test]
 fn tampered_signature_both_reject() {
-    let mut rng = rand::thread_rng();
-    let seed: [u8; 32] = rng.gen();
+    let mut rng = rand::rng();
+    let seed: [u8; 32] = rng.random();
     let msg = b"message for signature tamper test";
 
     let wolf_sk =
@@ -202,9 +202,9 @@ fn tampered_signature_both_reject() {
 
 #[test]
 fn wrong_key_both_reject() {
-    let mut rng = rand::thread_rng();
-    let seed_a: [u8; 32] = rng.gen();
-    let seed_b: [u8; 32] = rng.gen();
+    let mut rng = rand::rng();
+    let seed_a: [u8; 32] = rng.random();
+    let seed_b: [u8; 32] = rng.random();
     let msg = b"wrong key rejection test";
 
     let wolf_sk_a = wolfcrypt::Ed25519SigningKey::from_seed(&seed_a)
@@ -235,9 +235,9 @@ fn wrong_key_both_reject() {
 
 #[test]
 fn canary_different_seed_different_sig() {
-    let mut rng = rand::thread_rng();
-    let seed_a: [u8; 32] = rng.gen();
-    let seed_b: [u8; 32] = rng.gen();
+    let mut rng = rand::rng();
+    let seed_a: [u8; 32] = rng.random();
+    let seed_b: [u8; 32] = rng.random();
     let msg = b"different seeds should produce different signatures";
 
     let wolf_sk_a = wolfcrypt::Ed25519SigningKey::from_seed(&seed_a)
@@ -257,8 +257,8 @@ fn canary_different_seed_different_sig() {
 
 #[test]
 fn deterministic() {
-    let mut rng = rand::thread_rng();
-    let seed: [u8; 32] = rng.gen();
+    let mut rng = rand::rng();
+    let seed: [u8; 32] = rng.random();
     let msg = b"determinism check: sign twice, get same result";
 
     // Wolf: sign twice

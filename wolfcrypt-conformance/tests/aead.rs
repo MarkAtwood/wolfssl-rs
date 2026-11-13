@@ -1,9 +1,9 @@
 mod helpers;
 
-use aead::{AeadInPlace, KeyInit, Nonce};
-use generic_array::GenericArray;
+use aead::{AeadInOut, KeyInit, Nonce};
+use hybrid_array::Array;
 use helpers::{random_bytes, SYMMETRIC_LENGTHS};
-use rand::thread_rng;
+use rand::rng;
 
 /// Macro that generates a full suite of cross-validation tests for an
 /// AEAD algorithm, comparing the wolfCrypt-backed implementation against
@@ -18,27 +18,27 @@ macro_rules! aead_equiv {
             /// ciphertext and tag from both implementations.
             #[test]
             fn encrypt_equiv() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key_bytes = random_bytes(&mut rng, $key_len);
                 let nonce_bytes = random_bytes(&mut rng, $nonce_len);
                 let pt = random_bytes(&mut rng, 64);
                 let aad = random_bytes(&mut rng, 16);
 
-                let key = GenericArray::clone_from_slice(&key_bytes);
-                let nonce = Nonce::<$wolf>::clone_from_slice(&nonce_bytes);
+                let key = Array::try_from(&(&key_bytes)[..]).unwrap();
+                let nonce = Nonce::<$wolf>::try_from(&(&nonce_bytes)[..]).unwrap();
 
                 let wolf = <$wolf as KeyInit>::new(&key);
                 let pure = <$pure as KeyInit>::new(&key);
 
                 let mut wolf_buf = pt.clone();
                 let wolf_tag = wolf
-                    .encrypt_in_place_detached(&nonce, &aad, &mut wolf_buf)
-                    .expect("wolf encrypt_in_place_detached must succeed");
+                    .encrypt_inout_detached(&nonce, &aad, (&mut wolf_buf[..]).into())
+                    .expect("wolf encrypt_inout_detached must succeed");
 
                 let mut pure_buf = pt.clone();
                 let pure_tag = pure
-                    .encrypt_in_place_detached(&nonce, &aad, &mut pure_buf)
-                    .expect("pure encrypt_in_place_detached must succeed");
+                    .encrypt_inout_detached(&nonce, &aad, (&mut pure_buf[..]).into())
+                    .expect("pure encrypt_inout_detached must succeed");
 
                 assert_eq!(
                     wolf_buf, pure_buf,
@@ -54,25 +54,25 @@ macro_rules! aead_equiv {
             /// Wolf encrypts, pure decrypts. Recovered plaintext must match.
             #[test]
             fn cross_wolf_to_pure() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key_bytes = random_bytes(&mut rng, $key_len);
                 let nonce_bytes = random_bytes(&mut rng, $nonce_len);
                 let pt = random_bytes(&mut rng, 80);
                 let aad = random_bytes(&mut rng, 12);
 
-                let key = GenericArray::clone_from_slice(&key_bytes);
-                let nonce = Nonce::<$wolf>::clone_from_slice(&nonce_bytes);
+                let key = Array::try_from(&(&key_bytes)[..]).unwrap();
+                let nonce = Nonce::<$wolf>::try_from(&(&nonce_bytes)[..]).unwrap();
 
                 let wolf = <$wolf as KeyInit>::new(&key);
                 let pure = <$pure as KeyInit>::new(&key);
 
                 let mut ct = pt.clone();
                 let tag = wolf
-                    .encrypt_in_place_detached(&nonce, &aad, &mut ct)
+                    .encrypt_inout_detached(&nonce, &aad, (&mut ct[..]).into())
                     .expect("wolf encrypt must succeed");
 
                 let mut recovered = ct.clone();
-                pure.decrypt_in_place_detached(&nonce, &aad, &mut recovered, &tag)
+                pure.decrypt_inout_detached(&nonce, &aad, (&mut recovered[..]).into(), &tag)
                     .expect("pure decrypt of wolf-encrypted data must succeed");
 
                 assert_eq!(
@@ -84,25 +84,25 @@ macro_rules! aead_equiv {
             /// Pure encrypts, wolf decrypts. Recovered plaintext must match.
             #[test]
             fn cross_pure_to_wolf() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key_bytes = random_bytes(&mut rng, $key_len);
                 let nonce_bytes = random_bytes(&mut rng, $nonce_len);
                 let pt = random_bytes(&mut rng, 80);
                 let aad = random_bytes(&mut rng, 12);
 
-                let key = GenericArray::clone_from_slice(&key_bytes);
-                let nonce = Nonce::<$wolf>::clone_from_slice(&nonce_bytes);
+                let key = Array::try_from(&(&key_bytes)[..]).unwrap();
+                let nonce = Nonce::<$wolf>::try_from(&(&nonce_bytes)[..]).unwrap();
 
                 let wolf = <$wolf as KeyInit>::new(&key);
                 let pure = <$pure as KeyInit>::new(&key);
 
                 let mut ct = pt.clone();
                 let tag = pure
-                    .encrypt_in_place_detached(&nonce, &aad, &mut ct)
+                    .encrypt_inout_detached(&nonce, &aad, (&mut ct[..]).into())
                     .expect("pure encrypt must succeed");
 
                 let mut recovered = ct.clone();
-                wolf.decrypt_in_place_detached(&nonce, &aad, &mut recovered, &tag)
+                wolf.decrypt_inout_detached(&nonce, &aad, (&mut recovered[..]).into(), &tag)
                     .expect("wolf decrypt of pure-encrypted data must succeed");
 
                 assert_eq!(
@@ -115,25 +115,25 @@ macro_rules! aead_equiv {
             /// matching tags.
             #[test]
             fn empty_pt_equiv() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key_bytes = random_bytes(&mut rng, $key_len);
                 let nonce_bytes = random_bytes(&mut rng, $nonce_len);
                 let aad = random_bytes(&mut rng, 20);
 
-                let key = GenericArray::clone_from_slice(&key_bytes);
-                let nonce = Nonce::<$wolf>::clone_from_slice(&nonce_bytes);
+                let key = Array::try_from(&(&key_bytes)[..]).unwrap();
+                let nonce = Nonce::<$wolf>::try_from(&(&nonce_bytes)[..]).unwrap();
 
                 let wolf = <$wolf as KeyInit>::new(&key);
                 let pure = <$pure as KeyInit>::new(&key);
 
                 let mut wolf_buf: Vec<u8> = Vec::new();
                 let wolf_tag = wolf
-                    .encrypt_in_place_detached(&nonce, &aad, &mut wolf_buf)
+                    .encrypt_inout_detached(&nonce, &aad, (&mut wolf_buf[..]).into())
                     .expect("wolf encrypt empty PT must succeed");
 
                 let mut pure_buf: Vec<u8> = Vec::new();
                 let pure_tag = pure
-                    .encrypt_in_place_detached(&nonce, &aad, &mut pure_buf)
+                    .encrypt_inout_detached(&nonce, &aad, (&mut pure_buf[..]).into())
                     .expect("pure encrypt empty PT must succeed");
 
                 assert!(
@@ -154,25 +154,25 @@ macro_rules! aead_equiv {
             /// Empty AAD: both must produce identical CT and tag.
             #[test]
             fn empty_aad_equiv() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key_bytes = random_bytes(&mut rng, $key_len);
                 let nonce_bytes = random_bytes(&mut rng, $nonce_len);
                 let pt = random_bytes(&mut rng, 48);
 
-                let key = GenericArray::clone_from_slice(&key_bytes);
-                let nonce = Nonce::<$wolf>::clone_from_slice(&nonce_bytes);
+                let key = Array::try_from(&(&key_bytes)[..]).unwrap();
+                let nonce = Nonce::<$wolf>::try_from(&(&nonce_bytes)[..]).unwrap();
 
                 let wolf = <$wolf as KeyInit>::new(&key);
                 let pure = <$pure as KeyInit>::new(&key);
 
                 let mut wolf_buf = pt.clone();
                 let wolf_tag = wolf
-                    .encrypt_in_place_detached(&nonce, &[], &mut wolf_buf)
+                    .encrypt_inout_detached(&nonce, &[], (&mut wolf_buf[..]).into())
                     .expect("wolf encrypt with empty AAD must succeed");
 
                 let mut pure_buf = pt.clone();
                 let pure_tag = pure
-                    .encrypt_in_place_detached(&nonce, &[], &mut pure_buf)
+                    .encrypt_inout_detached(&nonce, &[], (&mut pure_buf[..]).into())
                     .expect("pure encrypt with empty AAD must succeed");
 
                 assert_eq!(
@@ -189,11 +189,11 @@ macro_rules! aead_equiv {
             /// Various plaintext lengths: CT and tags must match for each.
             #[test]
             fn various_lengths() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key_bytes = random_bytes(&mut rng, $key_len);
                 let aad = random_bytes(&mut rng, 8);
 
-                let key = GenericArray::clone_from_slice(&key_bytes);
+                let key = Array::try_from(&(&key_bytes)[..]).unwrap();
 
                 let wolf = <$wolf as KeyInit>::new(&key);
                 let pure = <$pure as KeyInit>::new(&key);
@@ -201,17 +201,17 @@ macro_rules! aead_equiv {
                 for &len in SYMMETRIC_LENGTHS.iter().filter(|&&l| l > 0) {
                     // Fresh nonce per length to avoid nonce reuse.
                     let nonce_bytes = random_bytes(&mut rng, $nonce_len);
-                    let nonce = Nonce::<$wolf>::clone_from_slice(&nonce_bytes);
+                    let nonce = Nonce::<$wolf>::try_from(&(&nonce_bytes)[..]).unwrap();
                     let pt = random_bytes(&mut rng, len);
 
                     let mut wolf_buf = pt.clone();
                     let wolf_tag = wolf
-                        .encrypt_in_place_detached(&nonce, &aad, &mut wolf_buf)
+                        .encrypt_inout_detached(&nonce, &aad, (&mut wolf_buf[..]).into())
                         .expect("wolf encrypt must succeed");
 
                     let mut pure_buf = pt.clone();
                     let pure_tag = pure
-                        .encrypt_in_place_detached(&nonce, &aad, &mut pure_buf)
+                        .encrypt_inout_detached(&nonce, &aad, (&mut pure_buf[..]).into())
                         .expect("pure encrypt must succeed");
 
                     assert_eq!(
@@ -230,29 +230,29 @@ macro_rules! aead_equiv {
             /// must reject.
             #[test]
             fn wrong_key_both_reject() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key_a_bytes = random_bytes(&mut rng, $key_len);
                 let key_b_bytes = random_bytes(&mut rng, $key_len);
                 let nonce_bytes = random_bytes(&mut rng, $nonce_len);
                 let pt = random_bytes(&mut rng, 32);
                 let aad = random_bytes(&mut rng, 8);
 
-                let key_a = GenericArray::clone_from_slice(&key_a_bytes);
-                let key_b = GenericArray::clone_from_slice(&key_b_bytes);
-                let nonce = Nonce::<$wolf>::clone_from_slice(&nonce_bytes);
+                let key_a = Array::try_from(&(&key_a_bytes)[..]).unwrap();
+                let key_b = Array::try_from(&(&key_b_bytes)[..]).unwrap();
+                let nonce = Nonce::<$wolf>::try_from(&(&nonce_bytes)[..]).unwrap();
 
                 // Encrypt with key A using wolf.
                 let wolf_a = <$wolf as KeyInit>::new(&key_a);
                 let mut ct = pt.clone();
                 let tag = wolf_a
-                    .encrypt_in_place_detached(&nonce, &aad, &mut ct)
+                    .encrypt_inout_detached(&nonce, &aad, (&mut ct[..]).into())
                     .expect("encrypt must succeed");
 
                 // Decrypt with key B using wolf.
                 let wolf_b = <$wolf as KeyInit>::new(&key_b);
                 let mut wolf_ct = ct.clone();
                 let wolf_result =
-                    wolf_b.decrypt_in_place_detached(&nonce, &aad, &mut wolf_ct, &tag);
+                    wolf_b.decrypt_inout_detached(&nonce, &aad, (&mut wolf_ct[..]).into(), &tag);
                 assert!(
                     wolf_result.is_err(),
                     "wolf must reject decryption with wrong key"
@@ -262,7 +262,7 @@ macro_rules! aead_equiv {
                 let pure_b = <$pure as KeyInit>::new(&key_b);
                 let mut pure_ct = ct.clone();
                 let pure_result =
-                    pure_b.decrypt_in_place_detached(&nonce, &aad, &mut pure_ct, &tag);
+                    pure_b.decrypt_inout_detached(&nonce, &aad, (&mut pure_ct[..]).into(), &tag);
                 assert!(
                     pure_result.is_err(),
                     "pure-Rust must reject decryption with wrong key"
@@ -272,21 +272,21 @@ macro_rules! aead_equiv {
             /// Encrypt, flip a CT byte, both impls must reject decryption.
             #[test]
             fn tampered_ct_both_reject() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key_bytes = random_bytes(&mut rng, $key_len);
                 let nonce_bytes = random_bytes(&mut rng, $nonce_len);
                 let pt = random_bytes(&mut rng, 64);
                 let aad = random_bytes(&mut rng, 8);
 
-                let key = GenericArray::clone_from_slice(&key_bytes);
-                let nonce = Nonce::<$wolf>::clone_from_slice(&nonce_bytes);
+                let key = Array::try_from(&(&key_bytes)[..]).unwrap();
+                let nonce = Nonce::<$wolf>::try_from(&(&nonce_bytes)[..]).unwrap();
 
                 let wolf = <$wolf as KeyInit>::new(&key);
                 let pure = <$pure as KeyInit>::new(&key);
 
                 let mut ct = pt.clone();
                 let tag = wolf
-                    .encrypt_in_place_detached(&nonce, &aad, &mut ct)
+                    .encrypt_inout_detached(&nonce, &aad, (&mut ct[..]).into())
                     .expect("encrypt must succeed");
 
                 // Flip first byte of CT.
@@ -294,7 +294,7 @@ macro_rules! aead_equiv {
 
                 let mut wolf_ct = ct.clone();
                 let wolf_result =
-                    wolf.decrypt_in_place_detached(&nonce, &aad, &mut wolf_ct, &tag);
+                    wolf.decrypt_inout_detached(&nonce, &aad, (&mut wolf_ct[..]).into(), &tag);
                 assert!(
                     wolf_result.is_err(),
                     "wolf must reject tampered ciphertext"
@@ -302,7 +302,7 @@ macro_rules! aead_equiv {
 
                 let mut pure_ct = ct.clone();
                 let pure_result =
-                    pure.decrypt_in_place_detached(&nonce, &aad, &mut pure_ct, &tag);
+                    pure.decrypt_inout_detached(&nonce, &aad, (&mut pure_ct[..]).into(), &tag);
                 assert!(
                     pure_result.is_err(),
                     "pure-Rust must reject tampered ciphertext"
@@ -312,31 +312,31 @@ macro_rules! aead_equiv {
             /// Encrypt, flip a tag byte, both impls must reject decryption.
             #[test]
             fn tampered_tag_both_reject() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key_bytes = random_bytes(&mut rng, $key_len);
                 let nonce_bytes = random_bytes(&mut rng, $nonce_len);
                 let pt = random_bytes(&mut rng, 48);
                 let aad = random_bytes(&mut rng, 8);
 
-                let key = GenericArray::clone_from_slice(&key_bytes);
-                let nonce = Nonce::<$wolf>::clone_from_slice(&nonce_bytes);
+                let key = Array::try_from(&(&key_bytes)[..]).unwrap();
+                let nonce = Nonce::<$wolf>::try_from(&(&nonce_bytes)[..]).unwrap();
 
                 let wolf = <$wolf as KeyInit>::new(&key);
                 let pure = <$pure as KeyInit>::new(&key);
 
                 let mut ct = pt.clone();
                 let tag = wolf
-                    .encrypt_in_place_detached(&nonce, &aad, &mut ct)
+                    .encrypt_inout_detached(&nonce, &aad, (&mut ct[..]).into())
                     .expect("encrypt must succeed");
 
                 // Flip first byte of tag.
                 let mut bad_tag_bytes = tag.as_slice().to_vec();
                 bad_tag_bytes[0] ^= 0xFF;
-                let bad_tag = GenericArray::clone_from_slice(&bad_tag_bytes);
+                let bad_tag = Array::try_from(&(&bad_tag_bytes)[..]).unwrap();
 
                 let mut wolf_ct = ct.clone();
                 let wolf_result =
-                    wolf.decrypt_in_place_detached(&nonce, &aad, &mut wolf_ct, &bad_tag);
+                    wolf.decrypt_inout_detached(&nonce, &aad, (&mut wolf_ct[..]).into(), &bad_tag);
                 assert!(
                     wolf_result.is_err(),
                     "wolf must reject tampered tag"
@@ -344,7 +344,7 @@ macro_rules! aead_equiv {
 
                 let mut pure_ct = ct.clone();
                 let pure_result =
-                    pure.decrypt_in_place_detached(&nonce, &aad, &mut pure_ct, &bad_tag);
+                    pure.decrypt_inout_detached(&nonce, &aad, (&mut pure_ct[..]).into(), &bad_tag);
                 assert!(
                     pure_result.is_err(),
                     "pure-Rust must reject tampered tag"
@@ -354,28 +354,28 @@ macro_rules! aead_equiv {
             /// Encrypt with nonce A, decrypt with nonce B. Both must reject.
             #[test]
             fn wrong_nonce_both_reject() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key_bytes = random_bytes(&mut rng, $key_len);
                 let nonce_a_bytes = random_bytes(&mut rng, $nonce_len);
                 let nonce_b_bytes = random_bytes(&mut rng, $nonce_len);
                 let pt = random_bytes(&mut rng, 32);
                 let aad = random_bytes(&mut rng, 8);
 
-                let key = GenericArray::clone_from_slice(&key_bytes);
-                let nonce_a = Nonce::<$wolf>::clone_from_slice(&nonce_a_bytes);
-                let nonce_b = Nonce::<$wolf>::clone_from_slice(&nonce_b_bytes);
+                let key = Array::try_from(&(&key_bytes)[..]).unwrap();
+                let nonce_a = Nonce::<$wolf>::try_from(&(&nonce_a_bytes)[..]).unwrap();
+                let nonce_b = Nonce::<$wolf>::try_from(&(&nonce_b_bytes)[..]).unwrap();
 
                 let wolf = <$wolf as KeyInit>::new(&key);
                 let pure = <$pure as KeyInit>::new(&key);
 
                 let mut ct = pt.clone();
                 let tag = wolf
-                    .encrypt_in_place_detached(&nonce_a, &aad, &mut ct)
+                    .encrypt_inout_detached(&nonce_a, &aad, (&mut ct[..]).into())
                     .expect("encrypt must succeed");
 
                 let mut wolf_ct = ct.clone();
                 let wolf_result =
-                    wolf.decrypt_in_place_detached(&nonce_b, &aad, &mut wolf_ct, &tag);
+                    wolf.decrypt_inout_detached(&nonce_b, &aad, (&mut wolf_ct[..]).into(), &tag);
                 assert!(
                     wolf_result.is_err(),
                     "wolf must reject decryption with wrong nonce"
@@ -383,7 +383,7 @@ macro_rules! aead_equiv {
 
                 let mut pure_ct = ct.clone();
                 let pure_result =
-                    pure.decrypt_in_place_detached(&nonce_b, &aad, &mut pure_ct, &tag);
+                    pure.decrypt_inout_detached(&nonce_b, &aad, (&mut pure_ct[..]).into(), &tag);
                 assert!(
                     pure_result.is_err(),
                     "pure-Rust must reject decryption with wrong nonce"
@@ -393,25 +393,25 @@ macro_rules! aead_equiv {
             /// Encrypt with AAD "foo", decrypt with AAD "bar". Both must reject.
             #[test]
             fn wrong_aad_both_reject() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key_bytes = random_bytes(&mut rng, $key_len);
                 let nonce_bytes = random_bytes(&mut rng, $nonce_len);
                 let pt = random_bytes(&mut rng, 32);
 
-                let key = GenericArray::clone_from_slice(&key_bytes);
-                let nonce = Nonce::<$wolf>::clone_from_slice(&nonce_bytes);
+                let key = Array::try_from(&(&key_bytes)[..]).unwrap();
+                let nonce = Nonce::<$wolf>::try_from(&(&nonce_bytes)[..]).unwrap();
 
                 let wolf = <$wolf as KeyInit>::new(&key);
                 let pure = <$pure as KeyInit>::new(&key);
 
                 let mut ct = pt.clone();
                 let tag = wolf
-                    .encrypt_in_place_detached(&nonce, b"foo", &mut ct)
+                    .encrypt_inout_detached(&nonce, b"foo", (&mut ct[..]).into())
                     .expect("encrypt must succeed");
 
                 let mut wolf_ct = ct.clone();
                 let wolf_result =
-                    wolf.decrypt_in_place_detached(&nonce, b"bar", &mut wolf_ct, &tag);
+                    wolf.decrypt_inout_detached(&nonce, b"bar", (&mut wolf_ct[..]).into(), &tag);
                 assert!(
                     wolf_result.is_err(),
                     "wolf must reject decryption with wrong AAD"
@@ -419,7 +419,7 @@ macro_rules! aead_equiv {
 
                 let mut pure_ct = ct.clone();
                 let pure_result =
-                    pure.decrypt_in_place_detached(&nonce, b"bar", &mut pure_ct, &tag);
+                    pure.decrypt_inout_detached(&nonce, b"bar", (&mut pure_ct[..]).into(), &tag);
                 assert!(
                     pure_result.is_err(),
                     "pure-Rust must reject decryption with wrong AAD"
@@ -429,28 +429,28 @@ macro_rules! aead_equiv {
             /// Same PT encrypted with different keys must yield different CT.
             #[test]
             fn canary_different_key_different_ct() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key_a_bytes = random_bytes(&mut rng, $key_len);
                 let key_b_bytes = random_bytes(&mut rng, $key_len);
                 let nonce_bytes = random_bytes(&mut rng, $nonce_len);
                 let pt = random_bytes(&mut rng, 64);
                 let aad = random_bytes(&mut rng, 8);
 
-                let key_a = GenericArray::clone_from_slice(&key_a_bytes);
-                let key_b = GenericArray::clone_from_slice(&key_b_bytes);
-                let nonce = Nonce::<$wolf>::clone_from_slice(&nonce_bytes);
+                let key_a = Array::try_from(&(&key_a_bytes)[..]).unwrap();
+                let key_b = Array::try_from(&(&key_b_bytes)[..]).unwrap();
+                let nonce = Nonce::<$wolf>::try_from(&(&nonce_bytes)[..]).unwrap();
 
                 let wolf_a = <$wolf as KeyInit>::new(&key_a);
                 let wolf_b = <$wolf as KeyInit>::new(&key_b);
 
                 let mut ct_a = pt.clone();
                 let tag_a = wolf_a
-                    .encrypt_in_place_detached(&nonce, &aad, &mut ct_a)
+                    .encrypt_inout_detached(&nonce, &aad, (&mut ct_a[..]).into())
                     .expect("encrypt with key A must succeed");
 
                 let mut ct_b = pt.clone();
                 let tag_b = wolf_b
-                    .encrypt_in_place_detached(&nonce, &aad, &mut ct_b)
+                    .encrypt_inout_detached(&nonce, &aad, (&mut ct_b[..]).into())
                     .expect("encrypt with key B must succeed");
 
                 // Either CT or tag (or both) must differ.
@@ -465,27 +465,27 @@ macro_rules! aead_equiv {
             /// Same key + PT with different nonces must yield different CT.
             #[test]
             fn canary_different_nonce_different_ct() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key_bytes = random_bytes(&mut rng, $key_len);
                 let nonce_a_bytes = random_bytes(&mut rng, $nonce_len);
                 let nonce_b_bytes = random_bytes(&mut rng, $nonce_len);
                 let pt = random_bytes(&mut rng, 64);
                 let aad = random_bytes(&mut rng, 8);
 
-                let key = GenericArray::clone_from_slice(&key_bytes);
-                let nonce_a = Nonce::<$wolf>::clone_from_slice(&nonce_a_bytes);
-                let nonce_b = Nonce::<$wolf>::clone_from_slice(&nonce_b_bytes);
+                let key = Array::try_from(&(&key_bytes)[..]).unwrap();
+                let nonce_a = Nonce::<$wolf>::try_from(&(&nonce_a_bytes)[..]).unwrap();
+                let nonce_b = Nonce::<$wolf>::try_from(&(&nonce_b_bytes)[..]).unwrap();
 
                 let wolf = <$wolf as KeyInit>::new(&key);
 
                 let mut ct_a = pt.clone();
                 let tag_a = wolf
-                    .encrypt_in_place_detached(&nonce_a, &aad, &mut ct_a)
+                    .encrypt_inout_detached(&nonce_a, &aad, (&mut ct_a[..]).into())
                     .expect("encrypt with nonce A must succeed");
 
                 let mut ct_b = pt.clone();
                 let tag_b = wolf
-                    .encrypt_in_place_detached(&nonce_b, &aad, &mut ct_b)
+                    .encrypt_inout_detached(&nonce_b, &aad, (&mut ct_b[..]).into())
                     .expect("encrypt with nonce B must succeed");
 
                 let same_ct = ct_a == ct_b;

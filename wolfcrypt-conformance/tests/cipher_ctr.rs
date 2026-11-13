@@ -7,31 +7,30 @@ macro_rules! ctr_equiv {
             // CTR is a stream cipher — arbitrary lengths are valid
             // (contrast with CBC which requires block-aligned input).
             use super::helpers::{random_bytes, SYMMETRIC_LENGTHS};
-            use cipher::generic_array::GenericArray;
             use cipher::{KeyIvInit, StreamCipher};
-            use rand::thread_rng;
+            use rand::rng;
 
             const KEY_LEN: usize = $key_len;
             const IV_LEN: usize = 16;
 
             #[test]
             fn encrypt_equiv() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key = random_bytes(&mut rng, KEY_LEN);
                 let iv = random_bytes(&mut rng, IV_LEN);
                 let pt = random_bytes(&mut rng, 64);
 
                 let mut wolf_ct = pt.clone();
                 let mut wolf = <$wolf>::new(
-                    GenericArray::from_slice(&key),
-                    GenericArray::from_slice(&iv),
+                    (&(&key)[..]).try_into().unwrap(),
+                    (&(&iv)[..]).try_into().unwrap(),
                 );
                 wolf.apply_keystream(&mut wolf_ct);
 
                 let mut pure_ct = pt.clone();
                 let mut pure = <$pure>::new(
-                    GenericArray::from_slice(&key),
-                    GenericArray::from_slice(&iv),
+                    (&(&key)[..]).try_into().unwrap(),
+                    (&(&iv)[..]).try_into().unwrap(),
                 );
                 pure.apply_keystream(&mut pure_ct);
 
@@ -44,7 +43,7 @@ macro_rules! ctr_equiv {
 
             #[test]
             fn cross_round_trip() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key = random_bytes(&mut rng, KEY_LEN);
                 let iv = random_bytes(&mut rng, IV_LEN);
                 let pt = random_bytes(&mut rng, 100);
@@ -52,15 +51,15 @@ macro_rules! ctr_equiv {
                 // Wolf encrypts, pure decrypts
                 let mut ct = pt.clone();
                 let mut wolf = <$wolf>::new(
-                    GenericArray::from_slice(&key),
-                    GenericArray::from_slice(&iv),
+                    (&(&key)[..]).try_into().unwrap(),
+                    (&(&iv)[..]).try_into().unwrap(),
                 );
                 wolf.apply_keystream(&mut ct);
 
                 let mut recovered = ct.clone();
                 let mut pure = <$pure>::new(
-                    GenericArray::from_slice(&key),
-                    GenericArray::from_slice(&iv),
+                    (&(&key)[..]).try_into().unwrap(),
+                    (&(&iv)[..]).try_into().unwrap(),
                 );
                 pure.apply_keystream(&mut recovered);
 
@@ -73,7 +72,7 @@ macro_rules! ctr_equiv {
 
             #[test]
             fn various_lengths() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key = random_bytes(&mut rng, KEY_LEN);
 
                 for &len in SYMMETRIC_LENGTHS {
@@ -85,15 +84,15 @@ macro_rules! ctr_equiv {
 
                     let mut wolf_ct = pt.clone();
                     let mut wolf = <$wolf>::new(
-                        GenericArray::from_slice(&key),
-                        GenericArray::from_slice(&iv),
+                        (&(&key)[..]).try_into().unwrap(),
+                        (&(&iv)[..]).try_into().unwrap(),
                     );
                     wolf.apply_keystream(&mut wolf_ct);
 
                     let mut pure_ct = pt.clone();
                     let mut pure = <$pure>::new(
-                        GenericArray::from_slice(&key),
-                        GenericArray::from_slice(&iv),
+                        (&(&key)[..]).try_into().unwrap(),
+                        (&(&iv)[..]).try_into().unwrap(),
                     );
                     pure.apply_keystream(&mut pure_ct);
 
@@ -108,7 +107,7 @@ macro_rules! ctr_equiv {
 
             #[test]
             fn partial_block_equiv() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key = random_bytes(&mut rng, KEY_LEN);
                 let iv = random_bytes(&mut rng, IV_LEN);
 
@@ -117,15 +116,15 @@ macro_rules! ctr_equiv {
 
                     let mut wolf_ct = pt.clone();
                     let mut wolf = <$wolf>::new(
-                        GenericArray::from_slice(&key),
-                        GenericArray::from_slice(&iv),
+                        (&(&key)[..]).try_into().unwrap(),
+                        (&(&iv)[..]).try_into().unwrap(),
                     );
                     wolf.apply_keystream(&mut wolf_ct);
 
                     let mut pure_ct = pt.clone();
                     let mut pure = <$pure>::new(
-                        GenericArray::from_slice(&key),
-                        GenericArray::from_slice(&iv),
+                        (&(&key)[..]).try_into().unwrap(),
+                        (&(&iv)[..]).try_into().unwrap(),
                     );
                     pure.apply_keystream(&mut pure_ct);
 
@@ -140,7 +139,7 @@ macro_rules! ctr_equiv {
 
             #[test]
             fn canary_different_iv() {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let key = random_bytes(&mut rng, KEY_LEN);
                 let iv_a = random_bytes(&mut rng, IV_LEN);
                 let iv_b = random_bytes(&mut rng, IV_LEN);
@@ -148,15 +147,15 @@ macro_rules! ctr_equiv {
 
                 let mut ct_a = pt.clone();
                 let mut wolf_a = <$wolf>::new(
-                    GenericArray::from_slice(&key),
-                    GenericArray::from_slice(&iv_a),
+                    (&(&key)[..]).try_into().unwrap(),
+                    (&(&iv_a)[..]).try_into().unwrap(),
                 );
                 wolf_a.apply_keystream(&mut ct_a);
 
                 let mut ct_b = pt.clone();
                 let mut wolf_b = <$wolf>::new(
-                    GenericArray::from_slice(&key),
-                    GenericArray::from_slice(&iv_b),
+                    (&(&key)[..]).try_into().unwrap(),
+                    (&(&iv_b)[..]).try_into().unwrap(),
                 );
                 wolf_b.apply_keystream(&mut ct_b);
 
