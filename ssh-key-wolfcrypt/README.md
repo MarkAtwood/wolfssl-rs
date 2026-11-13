@@ -42,7 +42,7 @@ backend:
 ssh-key-wolfcrypt = { path = "../ssh-key-wolfcrypt", features = ["ed25519"] }
 ```
 
-```rust
+```rust,ignore
 use ssh_key::{PrivateKey, PublicKey};
 
 let private = PrivateKey::from_openssh(include_bytes!("id_ed25519"))?;

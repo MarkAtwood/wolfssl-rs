@@ -146,12 +146,12 @@ impl RsaKeypair {
         // parsing internally via wc_RsaExportKey + wc_RsaKeyToDer.
         let c = wc_key.export_raw_components().map_err(Error::from)?;
 
-        let e = Mpint::from_positive_bytes(&c.e).map_err(|_| Error::Crypto)?;
-        let n = Mpint::from_positive_bytes(&c.n).map_err(|_| Error::Crypto)?;
-        let d = Mpint::from_positive_bytes(&c.d).map_err(|_| Error::Crypto)?;
-        let p = Mpint::from_positive_bytes(&c.p).map_err(|_| Error::Crypto)?;
-        let q = Mpint::from_positive_bytes(&c.q).map_err(|_| Error::Crypto)?;
-        let iqmp = Mpint::from_positive_bytes(&c.iqmp).map_err(|_| Error::Crypto)?;
+        let e = Mpint::from_positive_bytes(&c.e);
+        let n = Mpint::from_positive_bytes(&c.n);
+        let d = Mpint::from_positive_bytes(&c.d);
+        let p = Mpint::from_positive_bytes(&c.p);
+        let q = Mpint::from_positive_bytes(&c.q);
+        let iqmp = Mpint::from_positive_bytes(&c.iqmp);
 
         let public = RsaPublicKey::new(e, n)?;
         let private = RsaPrivateKey::new(d, iqmp, p, q)?;

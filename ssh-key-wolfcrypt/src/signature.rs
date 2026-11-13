@@ -312,35 +312,16 @@ impl Verifier<Signature> for public::KeyData {
 //
 // WHY NOT USE wolfcrypt's Signer/Verifier TRAIT IMPLS?
 //
-// wolfcrypt implements `signature::Signer` and `signature::Verifier` from
-// the `signature` crate **v2.2** (current stable).  This ssh-key fork's
-// public API uses `signature` **v3-rc** (pre-release) because upstream
-// RustCrypto SSH crates track the next-gen release candidates.
+// Historically wolfcrypt implemented `signature` v2.2 while this ssh-key fork
+// used the `signature` v3 release candidates, so the two crates' `Signer`,
+// `Verifier` and `Error` types were different Rust types. To avoid carrying
+// both versions, this module calls wolfCrypt directly through wolfcrypt-rs:
+//   - Ed25519: `ed25519_sign_raw` / `ed25519_verify_raw`
+//   - ECDSA:   `EccKey::sign_hash`
+//   - RSA:     `NativeRsaKey::sign_pkcs1v15_raw`
 //
-// These are semver-incompatible: the trait types, error types, and Signature
-// types are different Rust types even though they have the same names.
-//
-// If we called wolfcrypt's trait methods, we'd need `signature` v2.2 in our
-// dependency tree alongside v3-rc.  Two versions of the same crate means:
-//   - Two `Signer` traits that can't be confused at compile time but confuse
-//     humans reading the code ("which `Signer` is this?")
-//   - Two `signature::Error` types that can't convert to each other
-//   - A maintenance burden if either version is upgraded
-//
-// Instead, we call the wolfCrypt C functions directly through wolfcrypt-rs:
-//   - `wc_ed25519_init` / `wc_ed25519_import_private_key` / `wc_ed25519_sign_msg`
-//   - `wc_ed25519_init` / `wc_ed25519_import_public` / `wc_ed25519_verify_msg`
-//
-// This is the same approach used for ECDSA (via `EccKey::sign_hash`) and
-// RSA (via `NativeRsaKey::sign_pkcs1v15_raw`): bypass the wolfcrypt safe
-// wrapper's trait impls, call the FFI, and work with raw bytes.
-//
-// WHEN DOES THIS GO AWAY?
-//
-// This FFI bridging layer is blocked on `signature` v3 reaching a stable
-// (non-rc) release. Once it does and wolfcrypt upgrades, we can use
-// wolfcrypt's Signer/Verifier trait impls directly. See version policy
-// in wolfcrypt/Cargo.toml.
+// TODO: both crates now use `signature` 3.0 (stable), so this bridging layer
+// can be replaced with wolfcrypt's Signer/Verifier impls.
 // ---------------------------------------------------------------------------
 
 /// Sign a message with Ed25519 via wolfcrypt's standalone function.
@@ -504,8 +485,8 @@ fn der_sig_to_ssh(der: &[u8]) -> Result<Vec<u8>> {
     let (r_bytes, s_bytes) = wolfcrypt::ecc::ecc_sig_der_to_rs(der).map_err(Error::from)?;
 
     let mut data = Vec::with_capacity(r_bytes.len() + s_bytes.len() + 12);
-    Mpint::from_positive_bytes(&r_bytes)?.encode(&mut data)?;
-    Mpint::from_positive_bytes(&s_bytes)?.encode(&mut data)?;
+    Mpint::from_positive_bytes(&r_bytes).encode(&mut data)?;
+    Mpint::from_positive_bytes(&s_bytes).encode(&mut data)?;
     Ok(data)
 }
 
