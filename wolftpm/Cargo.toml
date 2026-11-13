@@ -21,4 +21,4 @@ wolftpm-sys = { version = "0.3.1", path = "../wolftpm-sys" }
 [dev-dependencies]
 # Independent oracle for sign_verify test: verify TPM-produced ECDSA signatures
 # using a pure-Rust P-256 implementation to confirm cross-implementation correctness.
-p256 = { version = "0.13", features = ["ecdsa"] }
+p256 = { version = "0.14", features = ["ecdsa"] }

@@ -291,10 +291,8 @@ mod tests {
             let mut uncompressed = [0u8; 65];
             uncompressed[0] = 0x04; // uncompressed point tag
             uncompressed[1..].copy_from_slice(&pub_bytes);
-            let encoded_point = p256::EncodedPoint::from_bytes(&uncompressed[..])
-                .expect("TPM returned invalid P-256 point coordinates");
-            let verifying_key = VerifyingKey::from_encoded_point(&encoded_point)
-                .expect("TPM returned point not on P-256 curve");
+            let verifying_key = VerifyingKey::from_sec1_bytes(&uncompressed[..])
+                .expect("TPM returned an invalid or off-curve P-256 point");
             let der_sig = DerSignature::try_from(sig.as_slice())
                 .expect("TPM produced a non-DER-encoded signature");
             verifying_key

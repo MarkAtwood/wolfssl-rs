@@ -10,7 +10,7 @@
 
 use hex_literal::hex;
 use wolfhsm::crypto::rsa::RsaRawOp;
-use wolfhsm::nvm::NvmId;
+use wolfhsm::nvm::{NvmAccess, NvmFlags, NvmId};
 use wolfhsm::{Client, Transport, Error};
 
 // ── Server connection helper ──────────────────────────────────────────────────
@@ -18,7 +18,15 @@ use wolfhsm::{Client, Transport, Error};
 fn connect_or_skip() -> Option<Client> {
     let server = std::env::var("WOLFHSM_SERVER").ok()?;
     let transport = if server.starts_with('/') {
-        Transport::Uds { path: server }
+        #[cfg(feature = "uds")]
+        {
+            Transport::Uds { path: server }
+        }
+        #[cfg(not(feature = "uds"))]
+        {
+            eprintln!("WOLFHSM_SERVER is a socket path but the `uds` feature is off; skipping");
+            return None;
+        }
     } else {
         let (ip, port_str) = server.rsplit_once(':')?;
         let port: u16 = port_str.parse().ok()?;
@@ -107,7 +115,7 @@ fn nvm_overwrite_read_delete() {
     // Remove any leftover object from a previous failed run.
     let _ = client.nvm_delete(NVM_ID_RW);
     client
-        .nvm_overwrite(NVM_ID_RW, 0, 0, b"test", data)
+        .nvm_overwrite(NVM_ID_RW, NvmAccess::NONE, NvmFlags::NONE, b"test", data)
         .expect("nvm_overwrite");
     let read = client.nvm_read(NVM_ID_RW, 0).expect("nvm_read");
     assert_eq!(read, data);
@@ -119,7 +127,7 @@ fn nvm_list_contains_written_object() {
     require_client!(client);
     let _ = client.nvm_delete(NVM_ID_LIST);
     client
-        .nvm_overwrite(NVM_ID_LIST, 0, 0, b"list-test", b"payload")
+        .nvm_overwrite(NVM_ID_LIST, NvmAccess::NONE, NvmFlags::NONE, b"list-test", b"payload")
         .expect("nvm_overwrite");
     let ids = client.nvm_list().expect("nvm_list");
     assert!(
@@ -241,10 +249,9 @@ fn ecc_p256_ecdh_cross() {
     require_client!(client);
     use p256::pkcs8::{DecodePublicKey, EncodePublicKey};
     use p256::{ecdh::EphemeralSecret, PublicKey};
-    use rand::rngs::OsRng;
 
     // Local side: generate a p256 ephemeral key pair.
-    let local_secret = EphemeralSecret::random(&mut OsRng);
+    let local_secret = <EphemeralSecret as p256::elliptic_curve::Generate>::generate_from_rng(&mut rand::rng());
     let local_pub_key = local_secret.public_key();
     let local_pub_der = local_pub_key
         .to_public_key_der()
@@ -304,11 +311,10 @@ fn ed25519_sign_verify_cross() {
 #[test]
 fn curve25519_x25519_ecdh_cross() {
     require_client!(client);
-    use rand::rngs::OsRng;
     use x25519_dalek::{PublicKey, StaticSecret};
 
     // Local side: generate an x25519 static secret.
-    let local_secret = StaticSecret::random_from_rng(OsRng);
+    let local_secret = StaticSecret::random_from_rng(&mut rand::rng());
     let local_public = PublicKey::from(&local_secret);
 
     // HSM side: DH + export public key inside the closure.
@@ -336,7 +342,7 @@ fn curve25519_x25519_ecdh_cross() {
 #[test]
 fn rsa_round_trip() {
     require_client!(client);
-    use rsa::{pkcs8::DecodePublicKey, traits::PublicKeyParts, BigUint, RsaPublicKey};
+    use rsa::{BoxedUint, PublicKey, hazmat::rsa_encrypt, pkcs8::DecodePublicKey, traits::PublicKeyParts};
 
     // RSA-1024 for faster key generation during testing.
     // All operations happen inside the closure; return the values needed for
@@ -358,14 +364,12 @@ fn rsa_round_trip() {
     // (n, e) and independently compute m^e mod n.  This ensures the HSM
     // produces a standard RSA result, not merely one it can reverse itself.
     let key_size = msg.len();
-    let pub_key = RsaPublicKey::from_public_key_der(&pub_der).expect("parse public key DER");
-    let m_big = BigUint::from_bytes_be(&msg);
-    let c_expected = m_big.modpow(pub_key.e(), pub_key.n());
-    // BigUint strips leading zeros; restore to key length.
-    let mut c_expected_bytes = c_expected.to_bytes_be();
-    while c_expected_bytes.len() < key_size {
-        c_expected_bytes.insert(0, 0);
-    }
+    let pub_key = PublicKey::from_public_key_der(&pub_der).expect("parse public key DER");
+    let m_big = BoxedUint::from_be_slice(&msg, pub_key.n().bits_precision()).unwrap();
+    let c_expected = rsa_encrypt(&pub_key, &m_big).expect("m^e mod n");
+    // to_be_bytes() is padded to the modulus precision; keep the low key_size bytes.
+    let c_bytes = c_expected.to_be_bytes();
+    let c_expected_bytes = c_bytes[c_bytes.len() - key_size..].to_vec();
     assert_eq!(
         ciphertext, c_expected_bytes,
         "HSM PublicEncrypt mismatch vs pure-Rust m^e mod n"
