@@ -1,0 +1,27 @@
+{
+  "id": "wolfssl-rs-69dm.14",
+  "title": "ssh-key-wolfcrypt keeps direct wolfcrypt signing helpers",
+  "description": "Switching to wolfcrypt's Signer types would reseed a DRBG on every signature and lose error detail, and the RSA Signer is SHA-256-only. The TODO is replaced with that rationale.",
+  "status": "open",
+  "priority": 2,
+  "issue_type": "decision",
+  "owner": "mark@reviewcommit.com",
+  "created_at": "2026-11-13T05:35:35.345067098Z",
+  "created_by": "Mark Atwood",
+  "updated_at": "2026-11-13T05:35:35.345067098Z",
+  "labels": [
+    "rustcrypto",
+    "release",
+    "wolfssl"
+  ],
+  "dependencies": [
+    {
+      "issue_id": "wolfssl-rs-69dm.14",
+      "depends_on_id": "wolfssl-rs-69dm",
+      "type": "parent-child",
+      "created_at": "2026-11-13T05:35:35.371139949Z",
+      "created_by": "Mark Atwood",
+      "metadata": "{}"
+    }
+  ]
+}
