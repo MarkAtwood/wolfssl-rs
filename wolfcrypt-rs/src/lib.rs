@@ -3741,6 +3741,13 @@ pub const WC_PK_TYPE_ED25519_VERIFY: c_int = 13;
 
 #[cfg(wolfssl_cryptocb)]
 unsafe extern "C" {
+    /// Initialize wolfCrypt (reference-counted). Among other things this
+    /// marks every crypto-callback device slot free (`wc_CryptoCb_Init`);
+    /// wolfSSL 5.9.4's `wc_CryptoCb_RegisterDevice` finds no free slot in a
+    /// table that was never initialized.
+    #[link_name = "wolfCrypt_Init"]
+    pub fn wolfCrypt_Init() -> c_int;
+
     /// Register a crypto callback for a given device ID.
     ///
     /// `devId` must not be `INVALID_DEVID`. `cb` is the C callback function.

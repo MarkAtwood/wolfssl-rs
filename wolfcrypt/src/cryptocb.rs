@@ -420,10 +420,14 @@ unsafe extern "C" fn trampoline(
 
             #[cfg(wolfssl_aes_gcm)]
             if cipher_type == wolfcrypt_rs::WC_CIPHER_AES_GCM {
-                return build_cipher_aesgcm(state, info_c, info_m, enc != 0);
+                // SAFETY: info_c/info_m are the non-null wc_CryptoInfo wolfCrypt passed
+                // to the trampoline, and the cipher type check above selects this helper.
+                return unsafe { build_cipher_aesgcm(state, info_c, info_m, enc != 0) };
             }
             if cipher_type == wolfcrypt_rs::WC_CIPHER_AES_CBC {
-                return build_cipher_aescbc(state, info_c, info_m, enc != 0);
+                // SAFETY: info_c/info_m are the non-null wc_CryptoInfo wolfCrypt passed
+                // to the trampoline, and the cipher type check above selects this helper.
+                return unsafe { build_cipher_aescbc(state, info_c, info_m, enc != 0) };
             }
             state.callbacks.cipher(CipherRequest::Unknown {
                 cipher_type,
@@ -438,16 +442,24 @@ unsafe extern "C" fn trampoline(
             #[cfg(wolfssl_ecc)]
             {
                 if pk_type == wolfcrypt_rs::WC_PK_TYPE_ECDSA_SIGN {
-                    return build_pk_ecdsasign(state, info_c, info_m);
+                    // SAFETY: info_c/info_m are the non-null wc_CryptoInfo wolfCrypt passed
+                    // to the trampoline, and the PK type check above selects this helper.
+                    return unsafe { build_pk_ecdsasign(state, info_c, info_m) };
                 }
                 if pk_type == wolfcrypt_rs::WC_PK_TYPE_ECDSA_VERIFY {
-                    return build_pk_ecdsaverify(state, info_c, info_m);
+                    // SAFETY: info_c/info_m are the non-null wc_CryptoInfo wolfCrypt passed
+                    // to the trampoline, and the PK type check above selects this helper.
+                    return unsafe { build_pk_ecdsaverify(state, info_c, info_m) };
                 }
                 if pk_type == wolfcrypt_rs::WC_PK_TYPE_ECDH {
-                    return build_pk_ecdh(state, info_c, info_m);
+                    // SAFETY: info_c/info_m are the non-null wc_CryptoInfo wolfCrypt passed
+                    // to the trampoline, and the PK type check above selects this helper.
+                    return unsafe { build_pk_ecdh(state, info_c, info_m) };
                 }
                 if pk_type == wolfcrypt_rs::WC_PK_TYPE_EC_KEYGEN {
-                    return build_pk_eckg(state, info_c);
+                    // SAFETY: info_c/info_m are the non-null wc_CryptoInfo wolfCrypt passed
+                    // to the trampoline, and the PK type check above selects this helper.
+                    return unsafe { build_pk_eckg(state, info_c) };
                 }
             }
             state.callbacks.pk(PkRequest::Unknown(pk_type))
@@ -786,6 +798,27 @@ unsafe fn build_pk_eckg(state: &DeviceState, info_c: *const wolfcrypt_rs::wc_Cry
 // Public API
 // ---------------------------------------------------------------------------
 
+/// Run `wolfCrypt_Init` once before the first registration. It sets up the
+/// crypto-callback device table; without it no slot is free.
+fn ensure_wolfcrypt_init() -> Result<(), WolfCryptError> {
+    use core::sync::atomic::{AtomicBool, Ordering};
+    static INITIALIZED: AtomicBool = AtomicBool::new(false);
+    if INITIALIZED.load(Ordering::Acquire) {
+        return Ok(());
+    }
+    // SAFETY: wolfCrypt_Init takes no arguments and is reference-counted, so
+    // a racing second call only bumps the count.
+    let rc = unsafe { wolfcrypt_rs::wolfCrypt_Init() };
+    if rc != 0 {
+        return Err(WolfCryptError::Ffi {
+            code: rc,
+            func: "wolfCrypt_Init",
+        });
+    }
+    INITIALIZED.store(true, Ordering::Release);
+    Ok(())
+}
+
 /// Register a crypto callback device.
 ///
 /// `dev_id` must be a positive integer (not `INVALID_DEVID`).
@@ -794,8 +827,10 @@ unsafe fn build_pk_eckg(state: &DeviceState, info_c: *const wolfcrypt_rs::wc_Cry
 ///
 /// # Errors
 ///
-/// Returns an error if wolfCrypt rejects the registration (e.g. device
-/// table full — max 8 devices by default).
+/// Returns an error if wolfCrypt rejects the registration: the device
+/// table is full (max 8 devices by default), or `dev_id` is already
+/// registered (`ALREADY_E` since wolfSSL 5.9.4; call [`unregister_device`]
+/// first to replace a device).
 ///
 /// # Panics
 ///
@@ -808,6 +843,8 @@ pub fn register_device(
         dev_id != wolfcrypt_rs::INVALID_DEVID as i32,
         "dev_id must not be INVALID_DEVID"
     );
+
+    ensure_wolfcrypt_init()?;
 
     let state = Box::new(DeviceState {
         callbacks: Box::new(callbacks),

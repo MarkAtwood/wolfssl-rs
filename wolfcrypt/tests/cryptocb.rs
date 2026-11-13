@@ -66,12 +66,18 @@ fn register_and_unregister() {
     unregister_device(dev_id);
 }
 
-/// Registering the same device ID twice should succeed (overwrite).
+/// Registering an already-registered device ID fails (wolfSSL >= 5.9.4
+/// returns ALREADY_E); unregistering first lets the ID be reused.
 #[test]
-fn register_twice_overwrites() {
+fn register_twice_rejected_then_reusable() {
     let dev_id = 101;
     register_device(dev_id, NullDevice).expect("first register");
-    register_device(dev_id, NullDevice).expect("second register (overwrite)");
+    assert!(
+        register_device(dev_id, NullDevice).is_err(),
+        "second register of the same dev_id must fail"
+    );
+    unregister_device(dev_id);
+    register_device(dev_id, NullDevice).expect("register after unregister");
     unregister_device(dev_id);
 }
 
