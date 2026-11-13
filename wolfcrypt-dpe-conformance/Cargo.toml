@@ -20,7 +20,7 @@ path = "src/lib.rs"
 [dev-dependencies]
 # === Wolf backend ===
 wolfcrypt-dpe = { version = "0.1.0", path = "../wolfcrypt-dpe" }
-wolfcrypt-ring-compat = { version = "1.0", path = "../wolfcrypt-ring-compat", default-features = false, features = ["wolfcrypt-rs", "alloc"] }
+wolfcrypt-ring-compat = { version = "1.17.2", path = "../wolfcrypt-ring-compat", default-features = false, features = ["wolfcrypt-rs", "alloc"] }
 
 # === Reference backend (RustCrypto) — same crypto crate with rustcrypto feature ===
 caliptra-dpe-crypto = { git = "https://github.com/chipsalliance/caliptra-dpe", rev = "cfc9a713882ca562a0ae6565198129e6da121a42", package = "crypto", default-features = false, features = ["rustcrypto"] }

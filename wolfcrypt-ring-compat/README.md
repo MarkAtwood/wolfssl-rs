@@ -35,11 +35,11 @@ FIPS-validatable backend:
 
 ```toml
 [dependencies]
-wolfcrypt-ring-compat = "1.16"
+wolfcrypt-ring-compat = "1.17"
 
 # Redirect transitive deps that ask for upstream `ring`:
 [patch.crates-io]
-ring = { package = "wolfcrypt-ring-compat", version = "1.16" }
+ring = { package = "wolfcrypt-ring-compat", version = "1.17" }
 ```
 
 ```rust

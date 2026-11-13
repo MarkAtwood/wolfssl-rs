@@ -32,7 +32,7 @@ The same reasons to choose `wolfcrypt-tls` for blocking I/O apply here — FIPS
 
 ```toml
 [dependencies]
-wolfcrypt-tls-futures-io = "0.1"
+wolfcrypt-tls-futures-io = "0.3"
 smol = "2"   # or async-std, async-executor, etc.
 ```
 

@@ -27,7 +27,7 @@ The same reasons to choose `wolfcrypt-tls` for blocking I/O apply here — FIPS
 
 ```toml
 [dependencies]
-wolfcrypt-tls-tokio = "0.1"
+wolfcrypt-tls-tokio = "0.3"
 tokio = { version = "1", features = ["full"] }
 ```
 

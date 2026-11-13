@@ -27,7 +27,7 @@ and server deployments. This crate wraps it in an idiomatic Rust API:
 
 ```toml
 [dependencies]
-wolfcrypt-tls = "0.2"
+wolfcrypt-tls = "0.4"
 ```
 
 ### TLS client

@@ -30,7 +30,7 @@ of devices across aerospace, automotive, and government products. Choosing
 
 ```toml
 [dependencies]
-wolfcrypt = { version = "0.1", features = ["digest", "aead", "signature"] }
+wolfcrypt = { version = "0.3", features = ["digest", "aead", "signature"] }
 ```
 
 ### SHA-256 via the RustCrypto `Digest` trait

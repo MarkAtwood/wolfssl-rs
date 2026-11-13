@@ -36,14 +36,14 @@ This crate is normally consumed transitively through `wolfcrypt-sys`:
 
 ```toml
 [dependencies]
-wolfcrypt-sys = { version = "0.1", features = ["vendored"] }
+wolfcrypt-sys = { version = "0.3", features = ["vendored"] }
 ```
 
 For direct use in your own build pipeline:
 
 ```toml
 [dependencies]
-wolfssl-src = "0.1"
+wolfssl-src = "0.3"
 ```
 
 ```rust,no_run

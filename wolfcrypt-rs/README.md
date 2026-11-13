@@ -34,7 +34,7 @@ crates. It exists as a separate crate because:
 
 ```toml
 [dependencies]
-wolfcrypt-rs = { version = "0.1", features = ["vendored"] }
+wolfcrypt-rs = { version = "0.3", features = ["vendored"] }
 ```
 
 Minimal example — print the linked wolfSSL version and generate 32 random

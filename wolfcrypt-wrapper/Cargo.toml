@@ -1,7 +1,7 @@
 [package]
 name = "wolfcrypt-wrapper"
 authors = ["WolfSSL Inc"]
-version = "1.2.1"
+version = "2.0.0"
 edition = "2024"
 rust-version = "1.88"
 description = "Rust wrapper for wolfssl C library cryptographic functionality"
@@ -19,7 +19,7 @@ std = []
 fips = ["wolfcrypt-sys/fips"]
 
 [dependencies]
-wolfcrypt-sys = { version = "0.2.2", path = "../wolfcrypt-sys", default-features = false, features = ["vendored"] }
+wolfcrypt-sys = { version = "0.3.0", path = "../wolfcrypt-sys", default-features = false, features = ["vendored"] }
 
 [build-dependencies]
 bindgen = { workspace = true }

@@ -36,7 +36,7 @@ through [`wolfssl-src`](../wolfssl-src).
 
 ```toml
 [dependencies]
-wolfcrypt-wrapper = "1.1"
+wolfcrypt-wrapper = "2.0"
 ```
 
 Minimal example — initialise wolfCrypt, hash a message with the streaming

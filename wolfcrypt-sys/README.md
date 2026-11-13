@@ -30,7 +30,7 @@ Prefer the higher-level crates ([`wolfcrypt`](../wolfcrypt),
 
 ```toml
 [dependencies]
-wolfcrypt-sys = { version = "0.1", features = ["vendored"] }
+wolfcrypt-sys = { version = "0.3", features = ["vendored"] }
 ```
 
 Every function in this crate is `unsafe` — there is no safe wrapping layer.

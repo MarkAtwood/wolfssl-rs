@@ -1,6 +1,6 @@
 [package]
 name = "wolfhsm"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2024"
 rust-version = "1.88"
 description = "Rust bindings to wolfHSM"
@@ -30,8 +30,8 @@ she = ["wolfhsm-sys/she"]
 
 [dependencies]
 log = "0.4"
-wolfhsm-sys = { version = "0.2.1", path = "../wolfhsm-sys" }
-wolfcrypt-sys = { version = "0.2.2", path = "../wolfcrypt-sys" }
+wolfhsm-sys = { version = "0.2.2", path = "../wolfhsm-sys" }
+wolfcrypt-sys = { version = "0.3.0", path = "../wolfcrypt-sys" }
 signature = "3.0"
 p256 = { version = "0.14", features = ["ecdsa"] }
 ed25519 = "3.0"

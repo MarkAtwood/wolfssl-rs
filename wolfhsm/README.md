@@ -38,7 +38,7 @@ crate adds the Rust guarantees the C API cannot express:
 
 ```toml
 [dependencies]
-wolfhsm = "0.1"
+wolfhsm = "0.3"
 ```
 
 ### Connect and sign
