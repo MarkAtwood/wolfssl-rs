@@ -1,0 +1,26 @@
+{
+  "id": "wolfssl-rs-ux5d",
+  "title": "Old RustCrypto versions remain only via Caliptra crates",
+  "description": "digest 0.10, signature 2.2, p384 0.13, sha2 0.10, rand 0.8 and x509-cert 0.2 in Cargo.lock come only from caliptra-dpe (cfc9a71) and caliptra-sw. As of November 2026, upstream main is still on them. Revisit when Caliptra upgrades; don't fork.",
+  "status": "open",
+  "priority": 4,
+  "issue_type": "chore",
+  "owner": "mark@reviewcommit.com",
+  "created_at": "2026-11-13T05:35:55.992307086Z",
+  "created_by": "Mark Atwood",
+  "updated_at": "2026-11-13T05:35:55.992307086Z",
+  "labels": [
+    "rustcrypto",
+    "dpe"
+  ],
+  "dependencies": [
+    {
+      "issue_id": "wolfssl-rs-ux5d",
+      "depends_on_id": "wolfssl-rs-69dm",
+      "type": "discovered-from",
+      "created_at": "2026-11-13T05:35:56.015699132Z",
+      "created_by": "Mark Atwood",
+      "metadata": "{}"
+    }
+  ]
+}
