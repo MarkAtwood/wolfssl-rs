@@ -11,9 +11,9 @@
 //! | [`digest`] | `Digest`, `Update`, `FixedOutput`, `Reset` | `Sha256`, `Sha384`, `Sha512`, … |
 //! | [`hmac`] | `Mac` (via `KeyInit` + `Update` + `FixedOutput` + `MacMarker`) | `WolfHmacSha256`, … |
 //! | [`cmac`] | `Mac` | `WolfCmacAes128`, `WolfCmacAes256` |
-//! | [`aead`] | `AeadInPlace`, `KeyInit` | `Aes128Gcm`, `Aes256Gcm`, `ChaCha20Poly1305` |
-//! | [`cipher`] | `BlockCipher`, `BlockEncrypt`/`Decrypt`, `StreamCipher`, `KeyInit`/`KeyIvInit` | AES-ECB/CTR/CBC/CFB, `WolfChaCha20` |
-//! | [`des3`] | `BlockEncryptMut`, `BlockDecryptMut`, `KeyIvInit` | `DesEde3CbcEnc`, `DesEde3CbcDec` |
+//! | [`aead`] | `AeadInOut` (so also `Aead`, `AeadInPlace` via blanket impls), `KeyInit` | `Aes128Gcm`, `Aes256Gcm`, `ChaCha20Poly1305` |
+//! | [`cipher`] | `BlockCipherEncrypt`/`Decrypt` (ECB), `BlockModeEncrypt`/`Decrypt` (CBC), `StreamCipher` (CTR/CFB/OFB/ChaCha20), `KeyInit`/`KeyIvInit` | AES-ECB/CBC/CTR/CFB/OFB, `WolfChaCha20` |
+//! | [`des3`] | `BlockModeEncrypt`, `BlockModeDecrypt`, `KeyIvInit` | `DesEde3CbcEnc`, `DesEde3CbcDec` |
 //! | [`poly1305`] | `Mac` | `WolfPoly1305` |
 //! | [`ed25519`] | `Signer`, `Verifier` (using `ed25519::Signature`) | `Ed25519SigningKey`, `Ed25519VerifyingKey` |
 //! | [`ed448`] | `Signer`, `Verifier` | `Ed448SigningKey`, `Ed448VerifyingKey` |
@@ -26,8 +26,8 @@
 //!
 //! | Module | Why no trait | API shape |
 //! |--------|-------------|-----------|
-//! | [`hkdf`] | The `hkdf` crate provides a concrete struct, not a trait | `new()` / `extract()` / `expand()` — same method names as `hkdf::Hkdf` |
-//! | [`pbkdf2`] | `pbkdf2::pbkdf2_hmac` requires `CoreProxy`; our EVP digests can't satisfy `Sync` | `pbkdf2_hmac_sha256(password, salt, rounds, &mut out)` |
+//! | [`hkdf`] | Predates `kdf::Kdf`; the `kdf` traits cover extract-then-expand in one call but have no expand-only step | `new()` / `extract()` / `expand()` — same method names as `hkdf::Hkdf` |
+//! | [`pbkdf2`] | Calls wolfCrypt's `wc_PBKDF2` directly. (`pbkdf2::pbkdf2::<hmac::SimpleHmac<Sha256>>` also works with our digests; only `pbkdf2_hmac` needs `EagerHash`.) | `pbkdf2_hmac_sha256(password, salt, rounds, &mut out)` |
 //! | [`keywrap`] | No RustCrypto trait exists for AES Key Wrap | `aes_wrap_key()` / `aes_unwrap_key()` |
 //! | [`dh`] | No RustCrypto trait for classic DH | `DhSecret::generate()` / `compute_shared_secret()` |
 //! | [`ecdh`] | No RustCrypto trait for raw ECDH | `X25519StaticSecret`, `NistEcdhSecret<C>`, etc. |
@@ -42,9 +42,10 @@
 //! Several RustCrypto traits define infallible constructors that return `Self`
 //! rather than `Result<Self, _>`:
 //!
-//! - [`digest::Digest::new`](https://docs.rs/digest/0.10/digest/trait.Digest.html#tymethod.new) (`Default::default`)
-//! - [`cipher::KeyInit::new`](https://docs.rs/cipher/0.4/cipher/trait.KeyInit.html#tymethod.new)
-//! - [`aead::KeyInit::new`](https://docs.rs/aead/0.5/aead/trait.KeyInit.html#tymethod.new)
+//! - [`digest::Digest::new`](https://docs.rs/digest/0.11/digest/trait.Digest.html#tymethod.new) (`Default::default`)
+//! - [`KeyInit::new`](https://docs.rs/crypto-common/0.2/crypto_common/trait.KeyInit.html#tymethod.new) (used by `cipher` 0.5 and `aead` 0.6)
+//! - the `cipher` 0.5 `StreamCipher` keystream methods and `digest` 0.11
+//!   `Update`/`FixedOutput`, which return `()`
 //!
 //! Because these signatures leave no room for a `Result`, our implementations
 //! `assert!` on the wolfCrypt return code and panic on failure. In practice
@@ -66,95 +67,22 @@
 //!
 //! # RustCrypto trait ecosystem gaps
 //!
-//! Implementing the RustCrypto traits on top of a C FFI backend exposed
-//! several design limitations that pure-Rust implementations never hit.
-//! This section documents each gap and the workaround used in this crate,
-//! both as guidance for contributors and as a reference for anyone
-//! proposing upstream improvements.
+//! These were written up against the 2025 trait crates (digest 0.10,
+//! cipher 0.4, aead 0.5, signature 2.2). Checked again against the 2026
+//! stable releases (digest 0.11, cipher 0.5, aead 0.6, signature 3.0,
+//! crypto-common 0.2) in November 2026:
 //!
-//! ## 1. Infallible constructors for fallible operations
+//! | Gap | Status |
+//! |-----|--------|
+//! | Infallible constructors | `crypto_common::TryKeyInit` exists, but its error is the unit `InvalidKey` (it can't say "HSM offline"), there's no `TryKeyIvInit`, and generic code (block modes, AEADs) bounds on `KeyInit`. We still `assert!` (see above). |
+//! | Infallible runtime operations | Still true: `Update`, `FixedOutput` and the `StreamCipher` keystream methods return `()`, so wolfCrypt failures panic. Upstream is open to fallible variants in a future breaking release (RustCrypto/traits#2366). |
+//! | No `ZeroizeOnDrop` bound on key types | Not possible upstream (`zeroize` is optional). Our key types free and zero in `Drop`. |
+//! | `AeadInPlace` is the only AEAD trait | Fixed in aead 0.6: `AeadInOut` takes an `InOutBuf`, so separate input and output buffers need no allocation. Implemented here. |
+//! | No HKDF/PBKDF2 traits | `kdf::Kdf`/`kdf::Pbkdf` exist and `hkdf`/`pbkdf2` implement them. Still no expand-only trait (TLS 1.3 key schedules). |
+//! | `pbkdf2_hmac` needs `CoreProxy`; `pbkdf2` needs `Sync` | Both claims were wrong: `hmac::SimpleHmac<D>` needs only `Digest + BlockSizeUser`, and `pbkdf2::pbkdf2` has no `Sync` bound. Use `pbkdf2::pbkdf2::<SimpleHmac<D>>`. |
+//! | `SignatureEncoding::Repr` assumes fixed-size signatures | Not a gap: the `ml-dsa` crate uses `Array`s generic over the parameter set. Our `MlDsaSignature<L>` does the same. |
 //!
-//! `KeyInit::new`, `Digest::new` (via `Default`) return `Self`, not
-//! `Result`.  Any FFI backend can fail for reasons beyond the caller's
-//! control — OOM in the C allocator, hardware device unavailable, library
-//! not initialized.  The trait gives no way to report this.
-//!
-//! **Workaround:** We `assert!` on the wolfCrypt return code.  In practice
-//! this panics only on OOM or device-init failure, never on valid input.
-//! Fallible alternatives (`new_from_slice`, `generate`, `from_seed`)
-//! return `Result` wherever the trait allows.
-//!
-//! ## 2. No `ZeroizeOnDrop` bound on key types
-//!
-//! `KeyInit` creates types holding secret key material, but the trait
-//! doesn't require `ZeroizeOnDrop` or any cleanup guarantee.  Each
-//! implementor must remember to add it manually — an easy thing to miss.
-//!
-//! **Workaround:** We manually implement `Drop` with `wc_AesFree` or
-//! `zeroize` calls on every type that holds key material (AES key schedules,
-//! ChaCha20Poly1305 keys, HKDF PRKs, keywrap temporaries).
-//!
-//! ## 3. `AeadInPlace` is the only AEAD trait
-//!
-//! There is no `Aead` variant with separate input and output buffers.
-//! wolfCrypt's one-shot ChaCha20-Poly1305 API (`wc_ChaCha20Poly1305_Encrypt`)
-//! required separate buffers, which would have forced a heap allocation
-//! per encrypt/decrypt call.
-//!
-//! **Workaround:** We switched to wolfCrypt's streaming ChaCha20-Poly1305
-//! API (`wc_ChaCha20Poly1305_Init` / `UpdateData` / `Final`), which
-//! supports `input == output` pointers.  This eliminated the allocation
-//! entirely.  A backend with no in-place path (e.g., a DMA-based hardware
-//! accelerator) would have no such escape hatch.
-//!
-//! ## 4. No HKDF or PBKDF2 traits
-//!
-//! The `hkdf` and `pbkdf2` crates provide concrete implementations, not
-//! traits.  There is no way to supply an alternative backend through trait
-//! implementation.
-//!
-//! **Workaround:** Our HKDF module exposes a bespoke API with method names
-//! matching `hkdf::Hkdf` (`new`, `extract`, `expand`).  Our PBKDF2 module
-//! exposes standalone functions matching `pbkdf2::pbkdf2_hmac`'s signature.
-//! For callers that need the actual `hkdf` or `pbkdf2` crate types, our
-//! digest types compose with `hkdf::SimpleHkdf<Sha256>` and
-//! `hmac::SimpleHmac<Sha256>` — see each module's docs for examples.
-//!
-//! ## 5. The `CoreProxy` cliff
-//!
-//! The `digest` crate has two tiers: high-level (`Digest`, `Update`,
-//! `FixedOutput`) and low-level (`CoreProxy`, `UpdateCore`,
-//! `FixedOutputCore`).  Our EVP-based digests implement the high-level
-//! tier, but `pbkdf2::pbkdf2_hmac` requires `CoreProxy` (low-level),
-//! which opaque FFI wrappers cannot satisfy.
-//!
-//! **Workaround:** Callers needing `pbkdf2_hmac` should use
-//! `hmac::SimpleHmac<Sha256>` (which bridges from high-level digest to
-//! low-level HMAC) or use our native `pbkdf2_hmac_sha256` function, which
-//! calls wolfCrypt's `wc_PBKDF2` in a single FFI call.
-//!
-//! ## 6. `pbkdf2::pbkdf2` requires `Sync` unconditionally
-//!
-//! The function signature has `PRF: Sync` even when the `parallel` feature
-//! is disabled.  Our EVP-based digest types are `!Sync` (correctly —
-//! `EVP_MD_CTX` has interior mutable state), so
-//! `pbkdf2::<SimpleHmac<Sha256>>(...)` does not compile.
-//!
-//! **Workaround:** Use our native `pbkdf2_hmac_sha256` function instead.
-//! This is a candidate for an upstream fix (the `Sync` bound should be
-//! conditional on the `parallel` feature).
-//!
-//! ## 7. `SignatureEncoding::Repr` assumes fixed-size signatures
-//!
-//! The trait works naturally for Ed25519 (`Repr = [u8; 64]`) but
-//! post-quantum signatures are variable-length — ML-DSA-87 is 4627 bytes.
-//! We use `Repr = Box<[u8]>`, which works but means the signature cannot
-//! be stack-allocated and loses compile-time size guarantees.
-//!
-//! **Workaround:** Accepted as-is.  As PQC becomes standard across the
-//! RustCrypto ecosystem, this will likely be revisited upstream.
-//!
-//! ## 8. Interior mutability for FFI verification calls
+//! ## Interior mutability for FFI verification calls
 //!
 //! wolfCrypt's C API requires `*mut` pointers even for logically read-only
 //! operations like signature verification and public-key export.  The

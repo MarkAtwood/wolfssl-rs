@@ -1,5 +1,13 @@
 # RustCrypto Issue Drafts
 
+> **Do not refile.** These drafts were filed as RustCrypto/traits#2357–#2366,
+> password-hashes#877 and AEADs#819 on 2026-04-05. All but #2366 were closed
+> the same day, most because they described outdated crate versions or were
+> simply wrong. The maintainers asked that questions go to their Zulip
+> (rust-lang.zulipchat.com) and that claims be checked against the latest
+> releases first. See the status table at the top of
+> `rustcrypto-trait-gaps.md`.
+
 These issues were discovered while implementing the `wolfcrypt` crate
 ([`wolfSSL/wolfssl-rs`](https://github.com/wolfSSL/wolfssl-rs)), which wraps
 wolfCrypt — a widely-deployed, FIPS 140-3 validated C cryptographic library —

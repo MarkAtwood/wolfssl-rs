@@ -1,5 +1,26 @@
 # RustCrypto Trait Ecosystem Gaps
 
+> **Status, November 2026.** This document was written against the 2025
+> trait crates (digest 0.10, cipher 0.4, aead 0.5, signature 2.2). Several of
+> its claims were already wrong when written, and others have since been
+> fixed upstream. wolfcrypt now targets digest 0.11, cipher 0.5, aead 0.6,
+> signature 3.0 and crypto-common 0.2. Current status, checked against
+> RustCrypto HEAD and crates.io:
+>
+> | # | Gap | Status |
+> |---|-----|--------|
+> | 1 | Infallible constructors | Partly addressed: `crypto_common::TryKeyInit` exists, but its error is the unit `InvalidKey`, there is no `TryKeyIvInit`, and generic code bounds on `KeyInit`. |
+> | 2 | No `ZeroizeOnDrop` bound | Won't happen: `zeroize` is optional upstream. Tracked in RustCrypto/traits#671. |
+> | 3 | `AeadInPlace` is the only AEAD trait | **Fixed** in aead 0.6 (`AeadInOut` over `InOutBuf`). wolfcrypt implements it. |
+> | 4 | No HKDF/PBKDF2 traits | Mostly addressed: `kdf::Kdf`/`kdf::Pbkdf`, implemented by `hkdf` and `pbkdf2`. There is still no expand-only trait. |
+> | 5 | The `CoreProxy` cliff | **Wrong**: `hmac::SimpleHmac<D>` needs only `Digest + BlockSizeUser`, so `pbkdf2::pbkdf2::<SimpleHmac<D>>` works. Only `pbkdf2_hmac` needs `EagerHash`, which is intentional. |
+> | 6 | `pbkdf2` requires `Sync` | **Wrong**: the parallel code and its `Sync` bound were removed long before this was written. |
+> | 7 | `SignatureEncoding::Repr` fixed-size | **Wrong**: `ml-dsa` uses `Array`s generic over the parameter set. |
+> | 8 | Interior mutability for FFI | Still how FFI backends work. Upstream won't document it in `signature`. |
+> | — | Infallible runtime operations (`Update`, `FixedOutput`, keystream) | Still true. Upstream is open to fallible variants in a future breaking release (RustCrypto/traits#2366). |
+>
+> The sections below are kept as written, for history.
+
 Discovered while implementing the `wolfcrypt` crate, which wraps wolfCrypt's C
 FFI behind standard RustCrypto trait interfaces.  Each gap is a design
 limitation that pure-Rust implementations never encounter — either because they
