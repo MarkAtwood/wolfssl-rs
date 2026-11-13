@@ -1,0 +1,25 @@
+{
+  "id": "wolfssl-rs-38ra",
+  "title": "Add .gitmodules entry for wolfcrypt-conformance/third_party/wycheproof",
+  "description": "The gitlink exists but there's no .gitmodules mapping, so 'git submodule' warns and the vectors aren't fetched. Use C2SP/wycheproof, or drop the gitlink and document WYCHEPROOF_DIR.",
+  "status": "open",
+  "priority": 3,
+  "issue_type": "chore",
+  "owner": "mark@reviewcommit.com",
+  "created_at": "2026-11-13T05:35:55.809271483Z",
+  "created_by": "Mark Atwood",
+  "updated_at": "2026-11-13T05:35:55.809271483Z",
+  "labels": [
+    "tests"
+  ],
+  "dependencies": [
+    {
+      "issue_id": "wolfssl-rs-38ra",
+      "depends_on_id": "wolfssl-rs-69dm",
+      "type": "discovered-from",
+      "created_at": "2026-11-13T05:35:55.830622724Z",
+      "created_by": "Mark Atwood",
+      "metadata": "{}"
+    }
+  ]
+}
