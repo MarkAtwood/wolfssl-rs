@@ -1,0 +1,28 @@
+{
+  "id": "wolfssl-rs-69dm.13",
+  "title": "wolfcrypt: implement kdf::Kdf for HKDF",
+  "description": "WolfHkdfSha{256,384,512}Kdf hold an optional salt; derive_key runs extract-then-expand, like hkdf 0.13's HkdfExtract.",
+  "status": "open",
+  "priority": 2,
+  "issue_type": "feature",
+  "owner": "mark@reviewcommit.com",
+  "created_at": "2026-11-13T05:35:35.123250929Z",
+  "created_by": "Mark Atwood",
+  "updated_at": "2026-11-13T05:35:35.123250929Z",
+  "labels": [
+    "rustcrypto",
+    "kdf",
+    "release",
+    "wolfssl"
+  ],
+  "dependencies": [
+    {
+      "issue_id": "wolfssl-rs-69dm.13",
+      "depends_on_id": "wolfssl-rs-69dm",
+      "type": "parent-child",
+      "created_at": "2026-11-13T05:35:35.151406248Z",
+      "created_by": "Mark Atwood",
+      "metadata": "{}"
+    }
+  ]
+}
