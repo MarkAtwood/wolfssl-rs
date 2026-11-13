@@ -114,7 +114,7 @@ impl Build {
         } else if cfg!(feature = "cryptocb-only") {
             append_cryptocb_only_sources(&defines, &mut wolfcrypt_sources);
         } else {
-            append_conditional_wolfcrypt_sources(&defines, &mut wolfcrypt_sources);
+            append_conditional_wolfcrypt_sources(&defines, &wolfcrypt_src, &mut wolfcrypt_sources);
         }
         // cryptocb-only and cryptocb-pure: no SSL layer (no OPENSSL_EXTRA).
         // riscv-bare-metal: also no SSL layer (bare-metal builds are cryptocb-based).
@@ -519,6 +519,7 @@ fn append_cryptocb_pure_sources(defines: &HashSet<String>, sources: &mut Vec<&'s
 
 fn append_conditional_wolfcrypt_sources(
     defines: &HashSet<String>,
+    wolfcrypt_src: &Path,
     sources: &mut Vec<&'static str>,
 ) {
     if defines.contains("HAVE_CHACHA") {
@@ -568,7 +569,13 @@ fn append_conditional_wolfcrypt_sources(
         sources.push("sha512.c");
     }
     if defines.contains("HAVE_DILITHIUM") {
-        sources.push("dilithium.c");
+        // wolfSSL 5.9.4 renamed dilithium.c to wc_mldsa.c. Older trees only
+        // have dilithium.c.
+        if wolfcrypt_src.join("wc_mldsa.c").exists() {
+            sources.push("wc_mldsa.c");
+        } else {
+            sources.push("dilithium.c");
+        }
     }
     if defines.contains("WOLFSSL_HAVE_MLKEM") {
         sources.push("wc_mlkem.c");

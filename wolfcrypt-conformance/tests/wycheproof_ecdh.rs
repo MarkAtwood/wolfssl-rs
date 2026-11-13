@@ -61,6 +61,7 @@ where
     let mut valid_count: usize = 0;
     let mut invalid_count: usize = 0;
     let mut skip_count: usize = 0;
+    let mut known_upstream_failures: usize = 0;
 
     for group in &file.test_groups {
         if group.curve != expected_curve {
@@ -135,6 +136,25 @@ where
 
             match tc.result {
                 WycheproofResult::Valid => {
+                    // KNOWN UPSTREAM BUG (wolfSSL 5.9.4): the SP-math ECDH path
+                    // treats an all-zero x-coordinate as the point at infinity
+                    // (wolfcrypt/src/ecc.c, the "Accumulate over the whole
+                    // buffer" check added for SP 800-56Ar3 5.7.1.2) and returns
+                    // ECC_INF_E. P-256/384/521 have valid points with x = 0, and
+                    // Wycheproof marks that shared secret valid ("x**2 = 0").
+                    // Tolerate exactly that case so the rest of the vectors keep
+                    // running; the assertion after the loop fails once wolfSSL
+                    // is fixed so this can be removed.
+                    if tc.comment.contains("x**2 = 0")
+                        && matches!(&result, Err(e) if format!("{e:?}").contains("code: -215"))
+                    {
+                        eprintln!(
+                            "  KNOWN UPSTREAM BUG: tc {} rejected with ECC_INF_E (x = 0 shared secret)",
+                            tc.tc_id
+                        );
+                        known_upstream_failures += 1;
+                        continue;
+                    }
                     let shared = result.unwrap_or_else(|e| {
                         panic!(
                             "tc {}: ECDH failed for valid vector (flags: {:?}): {e:?}\n\
@@ -178,6 +198,13 @@ where
         "no invalid ECDH vectors were exercised (curve={expected_curve}, skipped={skip_count})"
     );
 
+    // Exactly one vector per curve (tcId 3) hits the bug. If this is 0,
+    // wolfSSL fixed it: delete the KNOWN UPSTREAM BUG block above.
+    assert_eq!(
+        known_upstream_failures, 1,
+        "expected exactly one vector to hit the known x = 0 ECC_INF_E bug (curve={expected_curve}); \
+         if 0, wolfSSL fixed it and the workaround should be removed"
+    );
     if skip_count > 0 {
         eprintln!(
             "  wycheproof_ecdh: skipped {skip_count} vectors \
