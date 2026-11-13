@@ -1,0 +1,27 @@
+{
+  "id": "wolfssl-rs-69dm.2",
+  "title": "wolfcrypt: port to digest 0.11 / cipher 0.5 / aead 0.6 / signature 3.0",
+  "description": "GenericArray -\u003e hybrid Array; cipher 0.5 block/mode/stream trait split; AEADs implement AeadInOut (separate in/out buffers). Stream ciphers now panic on wolfCrypt errors, because cipher 0.5 keystream methods are infallible. Edition-2024 rustfmt changes are split into their own commit.",
+  "status": "open",
+  "priority": 2,
+  "issue_type": "feature",
+  "owner": "mark@reviewcommit.com",
+  "created_at": "2026-11-13T05:35:32.723936758Z",
+  "created_by": "Mark Atwood",
+  "updated_at": "2026-11-13T05:35:32.723936758Z",
+  "labels": [
+    "rustcrypto",
+    "release",
+    "wolfssl"
+  ],
+  "dependencies": [
+    {
+      "issue_id": "wolfssl-rs-69dm.2",
+      "depends_on_id": "wolfssl-rs-69dm",
+      "type": "parent-child",
+      "created_at": "2026-11-13T05:35:32.748957249Z",
+      "created_by": "Mark Atwood",
+      "metadata": "{}"
+    }
+  ]
+}
