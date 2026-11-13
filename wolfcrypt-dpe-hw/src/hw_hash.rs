@@ -33,7 +33,7 @@ use core::sync::atomic::{AtomicUsize, Ordering::Relaxed};
 
 use spin::Mutex;
 
-use hmac::Mac as _;
+use hmac::{KeyInit as _, Mac as _};
 use sha2::Digest as _;
 
 use wolfcrypt_sys::{

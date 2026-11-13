@@ -218,7 +218,7 @@ unsafe fn dispatch_ecc384_sign(
     // Build p384 signing key from the 48 big-endian private key bytes.
     // FieldBytes is GenericArray<u8, U48> — the conversion is infallible for
     // valid 48-byte slices.
-    let secret_key = match p384::SecretKey::from_bytes(p384::FieldBytes::from_slice(&priv_bytes)) {
+    let secret_key = match p384::SecretKey::from_bytes(<&p384::FieldBytes>::from(&priv_bytes)) {
         Ok(k) => k,
         Err(_) => {
             priv_bytes.zeroize();
@@ -330,8 +330,8 @@ unsafe fn dispatch_ecc384_verify(
 
     // Build p384 Signature from raw (r, s) scalars.
     let sig_obj = match p384::ecdsa::Signature::from_scalars(
-        *p384::FieldBytes::from_slice(&r_padded),
-        *p384::FieldBytes::from_slice(&s_padded),
+        p384::FieldBytes::from(r_padded),
+        p384::FieldBytes::from(s_padded),
     ) {
         Ok(s) => s,
         Err(_) => {
@@ -453,7 +453,7 @@ unsafe fn dispatch_ecdh384(
     }
 
     // Build p384 private key.
-    let secret_key = match p384::SecretKey::from_bytes(p384::FieldBytes::from_slice(&priv_bytes)) {
+    let secret_key = match p384::SecretKey::from_bytes(<&p384::FieldBytes>::from(&priv_bytes)) {
         Ok(k) => k,
         Err(_) => {
             priv_bytes.zeroize();

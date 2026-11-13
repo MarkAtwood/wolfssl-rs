@@ -249,7 +249,7 @@ pub mod test_support;
 /// real at the linker level — the symbol must be absent from a library
 /// compiled without `caliptra-2x`.
 #[cfg(feature = "caliptra-2x")]
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn wolfcrypt_dpe_hw_caliptra2x_probe() -> c_int {
     CRYPTOCB_UNAVAILABLE
 }

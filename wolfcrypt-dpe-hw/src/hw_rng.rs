@@ -192,7 +192,7 @@ pub fn register_trng(trng: Trng) {
 /// # Safety
 /// `output` must be writable for `sz` bytes.
 #[cfg(target_arch = "riscv32")]
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn caliptra_hw_generate_seed(output: *mut u8, sz: u32) -> i32 {
     let sz = sz as usize;
     if sz == 0 {

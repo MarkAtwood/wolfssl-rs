@@ -45,9 +45,9 @@
 use core::ffi::c_int;
 use core::sync::atomic::{AtomicUsize, Ordering::Relaxed};
 
-use aes::cipher::{BlockEncrypt, KeyInit, KeyIvInit};
+use aes::cipher::{BlockCipherEncrypt, KeyInit, KeyIvInit};
 use aes::Aes256;
-use cbc::cipher::{block_padding::NoPadding, BlockDecryptMut, BlockEncryptMut};
+use cbc::cipher::{BlockModeDecrypt, BlockModeEncrypt, block_padding::NoPadding};
 use ghash::{universal_hash::UniversalHash, GHash};
 use subtle::ConstantTimeEq;
 use zeroize::Zeroize;
@@ -475,7 +475,7 @@ fn cbc_encrypt_256(key: &[u8; 32], iv: &[u8; 16], input: &[u8], output: &mut [u8
         Ok(e) => e,
         Err(_) => return crate::CRYPTOCB_UNAVAILABLE,
     };
-    match enc.encrypt_padded_b2b_mut::<NoPadding>(input, output) {
+    match enc.encrypt_padded_b2b::<NoPadding>(input, output) {
         Ok(_) => 0,
         Err(_) => crate::CRYPTOCB_UNAVAILABLE,
     }
@@ -486,7 +486,7 @@ fn cbc_decrypt_256(key: &[u8; 32], iv: &[u8; 16], input: &[u8], output: &mut [u8
         Ok(d) => d,
         Err(_) => return crate::CRYPTOCB_UNAVAILABLE,
     };
-    match dec.decrypt_padded_b2b_mut::<NoPadding>(input, output) {
+    match dec.decrypt_padded_b2b::<NoPadding>(input, output) {
         Ok(_) => 0,
         Err(_) => crate::CRYPTOCB_UNAVAILABLE,
     }

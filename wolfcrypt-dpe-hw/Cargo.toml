@@ -66,16 +66,18 @@ spin = { workspace = true }
 # Cryptographic primitives used for host-side (non-riscv32) dispatch.
 # On riscv32 firmware, caliptra-drivers hardware registers are used instead.
 # Both crates are no_std-compatible with default-features = false.
-sha2 = { version = "0.10", default-features = false, features = ["force-soft"], optional = true }
-hmac = { version = "0.12", default-features = false, optional = true }
+# sha2 0.11 dropped the `force-soft` feature; it picks the portable backend
+# on riscv32 by itself, and `--cfg sha2_backend="soft"` forces it elsewhere.
+sha2 = { version = "0.11", default-features = false, optional = true }
+hmac = { version = "0.13", default-features = false, optional = true }
 
 # Phase 3: AES-GCM/CBC hardware dispatch (host path via RustCrypto primitives).
 # On riscv32 firmware the caliptra-drivers crate provides hardware registers
 # directly; these crates are not needed on that target.
 # All are no_std-compatible with default-features = false.
-aes    = { version = "0.8", default-features = false, features = ["zeroize"], optional = true }
-ghash  = { version = "0.5", default-features = false, optional = true }
-cbc    = { version = "0.1", default-features = false, features = ["block-padding"], optional = true }
+aes    = { version = "0.9", default-features = false, features = ["zeroize"], optional = true }
+ghash  = { version = "0.6", default-features = false, optional = true }
+cbc    = { version = "0.2", default-features = false, features = ["block-padding"], optional = true }
 subtle = { version = "2",   default-features = false, optional = true }
 zeroize = { workspace = true, optional = true }
 
@@ -83,7 +85,7 @@ zeroize = { workspace = true, optional = true }
 # caliptra-drivers Ecc384 hardware dispatch is deferred to a future phase;
 # the host path uses p384 + ecdsa for correctness testing.
 # p384 is no_std-compatible with default-features = false.
-p384   = { version = "0.13", default-features = false, features = ["ecdsa", "ecdh"], optional = true }
+p384   = { version = "0.14", default-features = false, features = ["ecdsa", "ecdh"], optional = true }
 
 [[test]]
 name = "phase2_rng"
@@ -117,5 +119,5 @@ cc = { workspace = true }
 # Tests "instantiate the caliptra sw-emulator" via CaliptraRootBus::new().
 caliptra-emu-periph = { path = "../../caliptra/sw-emulator/lib/periph" }
 hex = { workspace = true }
-sha2 = { version = "0.10", features = ["force-soft"] }
-hmac = { version = "0.12" }
+sha2 = "0.11"
+hmac = "0.13"
