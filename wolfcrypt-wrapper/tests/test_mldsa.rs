@@ -18,21 +18,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
-#![cfg(dilithium)]
+#![cfg(mldsa)]
 
 mod common;
 
-use wolfcrypt_wrapper::dilithium::Dilithium;
-#[cfg(all(random, any(dilithium_make_key, dilithium_sign)))]
+use wolfcrypt_wrapper::mldsa::MlDsa;
+#[cfg(all(random, any(mldsa_make_key, mldsa_sign)))]
 use wolfcrypt_wrapper::random::RNG;
 
 /// Verify the level constants have the correct numeric values required by
 /// the wolfCrypt API.
 #[test]
 fn test_level_constants() {
-    assert_eq!(Dilithium::LEVEL_44, 2);
-    assert_eq!(Dilithium::LEVEL_65, 3);
-    assert_eq!(Dilithium::LEVEL_87, 5);
+    assert_eq!(MlDsa::LEVEL_44, 2);
+    assert_eq!(MlDsa::LEVEL_65, 3);
+    assert_eq!(MlDsa::LEVEL_87, 5);
 }
 
 /// Verify `new()` + `set_level()` + `get_level()` for all three parameter sets.
@@ -40,27 +40,27 @@ fn test_level_constants() {
 fn test_new_and_level() {
     common::setup();
 
-    let mut key = Dilithium::new().expect("Error with new()");
+    let mut key = MlDsa::new().expect("Error with new()");
 
-    key.set_level(Dilithium::LEVEL_44)
+    key.set_level(MlDsa::LEVEL_44)
         .expect("Error with set_level()");
     assert_eq!(
         key.get_level().expect("Error with get_level()"),
-        Dilithium::LEVEL_44
+        MlDsa::LEVEL_44
     );
 
-    key.set_level(Dilithium::LEVEL_65)
+    key.set_level(MlDsa::LEVEL_65)
         .expect("Error with set_level()");
     assert_eq!(
         key.get_level().expect("Error with get_level()"),
-        Dilithium::LEVEL_65
+        MlDsa::LEVEL_65
     );
 
-    key.set_level(Dilithium::LEVEL_87)
+    key.set_level(MlDsa::LEVEL_87)
         .expect("Error with set_level()");
     assert_eq!(
         key.get_level().expect("Error with get_level()"),
-        Dilithium::LEVEL_87
+        MlDsa::LEVEL_87
     );
 }
 
@@ -68,126 +68,126 @@ fn test_new_and_level() {
 #[test]
 fn test_new_ex() {
     common::setup();
-    let mut key = Dilithium::new_ex(None, None).expect("Error with new_ex()");
-    key.set_level(Dilithium::LEVEL_44)
+    let mut key = MlDsa::new_ex(None, None).expect("Error with new_ex()");
+    key.set_level(MlDsa::LEVEL_44)
         .expect("Error with set_level()");
     assert_eq!(
         key.get_level().expect("Error with get_level()"),
-        Dilithium::LEVEL_44
+        MlDsa::LEVEL_44
     );
 }
 
 /// Verify the runtime size queries match the compile-time constants for
 /// ML-DSA-44.
 #[test]
-#[cfg(all(dilithium_make_key, dilithium_level2))]
+#[cfg(all(mldsa_make_key, mldsa_level2))]
 fn test_sizes_level44() {
     common::setup();
     let mut rng = RNG::new().expect("Error creating RNG");
     let mut key =
-        Dilithium::generate(Dilithium::LEVEL_44, &mut rng).expect("Error with generate()");
+        MlDsa::generate(MlDsa::LEVEL_44, &mut rng).expect("Error with generate()");
     assert_eq!(
         key.size().expect("Error with size()"),
-        Dilithium::LEVEL2_KEY_SIZE
+        MlDsa::LEVEL2_KEY_SIZE
     );
     assert_eq!(
         key.priv_size().expect("Error with priv_size()"),
-        Dilithium::LEVEL2_PRV_KEY_SIZE
+        MlDsa::LEVEL2_PRV_KEY_SIZE
     );
     assert_eq!(
         key.pub_size().expect("Error with pub_size()"),
-        Dilithium::LEVEL2_PUB_KEY_SIZE
+        MlDsa::LEVEL2_PUB_KEY_SIZE
     );
     assert_eq!(
         key.sig_size().expect("Error with sig_size()"),
-        Dilithium::LEVEL2_SIG_SIZE
+        MlDsa::LEVEL2_SIG_SIZE
     );
 }
 
 /// Verify the runtime size queries match the compile-time constants for
 /// ML-DSA-65.
 #[test]
-#[cfg(all(dilithium_make_key, dilithium_level3))]
+#[cfg(all(mldsa_make_key, mldsa_level3))]
 fn test_sizes_level65() {
     common::setup();
     let mut rng = RNG::new().expect("Error creating RNG");
     let mut key =
-        Dilithium::generate(Dilithium::LEVEL_65, &mut rng).expect("Error with generate()");
+        MlDsa::generate(MlDsa::LEVEL_65, &mut rng).expect("Error with generate()");
     assert_eq!(
         key.size().expect("Error with size()"),
-        Dilithium::LEVEL3_KEY_SIZE
+        MlDsa::LEVEL3_KEY_SIZE
     );
     assert_eq!(
         key.priv_size().expect("Error with priv_size()"),
-        Dilithium::LEVEL3_PRV_KEY_SIZE
+        MlDsa::LEVEL3_PRV_KEY_SIZE
     );
     assert_eq!(
         key.pub_size().expect("Error with pub_size()"),
-        Dilithium::LEVEL3_PUB_KEY_SIZE
+        MlDsa::LEVEL3_PUB_KEY_SIZE
     );
     assert_eq!(
         key.sig_size().expect("Error with sig_size()"),
-        Dilithium::LEVEL3_SIG_SIZE
+        MlDsa::LEVEL3_SIG_SIZE
     );
 }
 
 /// Verify the runtime size queries match the compile-time constants for
 /// ML-DSA-87.
 #[test]
-#[cfg(all(dilithium_make_key, dilithium_level5))]
+#[cfg(all(mldsa_make_key, mldsa_level5))]
 fn test_sizes_level87() {
     common::setup();
     let mut rng = RNG::new().expect("Error creating RNG");
     let mut key =
-        Dilithium::generate(Dilithium::LEVEL_87, &mut rng).expect("Error with generate()");
+        MlDsa::generate(MlDsa::LEVEL_87, &mut rng).expect("Error with generate()");
     assert_eq!(
         key.size().expect("Error with size()"),
-        Dilithium::LEVEL5_KEY_SIZE
+        MlDsa::LEVEL5_KEY_SIZE
     );
     assert_eq!(
         key.priv_size().expect("Error with priv_size()"),
-        Dilithium::LEVEL5_PRV_KEY_SIZE
+        MlDsa::LEVEL5_PRV_KEY_SIZE
     );
     assert_eq!(
         key.pub_size().expect("Error with pub_size()"),
-        Dilithium::LEVEL5_PUB_KEY_SIZE
+        MlDsa::LEVEL5_PUB_KEY_SIZE
     );
     assert_eq!(
         key.sig_size().expect("Error with sig_size()"),
-        Dilithium::LEVEL5_SIG_SIZE
+        MlDsa::LEVEL5_SIG_SIZE
     );
 }
 
 /// Verify that `check_key()` accepts a freshly generated ML-DSA-44 key pair.
 #[test]
-#[cfg(all(dilithium_make_key, dilithium_check_key))]
+#[cfg(all(mldsa_make_key, mldsa_check_key))]
 fn test_check_key_level44() {
     common::setup();
     let mut rng = RNG::new().expect("Error creating RNG");
     let mut key =
-        Dilithium::generate(Dilithium::LEVEL_44, &mut rng).expect("Error with generate()");
+        MlDsa::generate(MlDsa::LEVEL_44, &mut rng).expect("Error with generate()");
     key.check_key().expect("Error with check_key()");
 }
 
 /// Verify that `check_key()` accepts a freshly generated ML-DSA-65 key pair.
 #[test]
-#[cfg(all(dilithium_make_key, dilithium_check_key))]
+#[cfg(all(mldsa_make_key, mldsa_check_key))]
 fn test_check_key_level65() {
     common::setup();
     let mut rng = RNG::new().expect("Error creating RNG");
     let mut key =
-        Dilithium::generate(Dilithium::LEVEL_65, &mut rng).expect("Error with generate()");
+        MlDsa::generate(MlDsa::LEVEL_65, &mut rng).expect("Error with generate()");
     key.check_key().expect("Error with check_key()");
 }
 
 /// Verify that `check_key()` accepts a freshly generated ML-DSA-87 key pair.
 #[test]
-#[cfg(all(dilithium_make_key, dilithium_check_key))]
+#[cfg(all(mldsa_make_key, mldsa_check_key))]
 fn test_check_key_level87() {
     common::setup();
     let mut rng = RNG::new().expect("Error creating RNG");
     let mut key =
-        Dilithium::generate(Dilithium::LEVEL_87, &mut rng).expect("Error with generate()");
+        MlDsa::generate(MlDsa::LEVEL_87, &mut rng).expect("Error with generate()");
     key.check_key().expect("Error with check_key()");
 }
 
@@ -196,12 +196,12 @@ fn test_check_key_level87() {
 /// Also verifies that a tampered message or signature produces a
 /// verification failure rather than an error.
 #[test]
-#[cfg(all(dilithium_make_key, dilithium_sign, dilithium_verify))]
+#[cfg(all(mldsa_make_key, mldsa_sign, mldsa_verify))]
 fn test_sign_verify_level44() {
     common::setup();
     let mut rng = RNG::new().expect("Error creating RNG");
     let mut key =
-        Dilithium::generate(Dilithium::LEVEL_44, &mut rng).expect("Error with generate()");
+        MlDsa::generate(MlDsa::LEVEL_44, &mut rng).expect("Error with generate()");
     let message = b"Hello, ML-DSA-44!";
     let mut sig = vec![0u8; key.sig_size().expect("Error with sig_size()")];
 
@@ -224,12 +224,12 @@ fn test_sign_verify_level44() {
 
 /// Sign and verify a message round-trip using ML-DSA-65.
 #[test]
-#[cfg(all(dilithium_make_key, dilithium_sign, dilithium_verify))]
+#[cfg(all(mldsa_make_key, mldsa_sign, mldsa_verify))]
 fn test_sign_verify_level65() {
     common::setup();
     let mut rng = RNG::new().expect("Error creating RNG");
     let mut key =
-        Dilithium::generate(Dilithium::LEVEL_65, &mut rng).expect("Error with generate()");
+        MlDsa::generate(MlDsa::LEVEL_65, &mut rng).expect("Error with generate()");
     let message = b"Hello, ML-DSA-65!";
     let mut sig = vec![0u8; key.sig_size().expect("Error with sig_size()")];
 
@@ -246,12 +246,12 @@ fn test_sign_verify_level65() {
 
 /// Sign and verify a message round-trip using ML-DSA-87.
 #[test]
-#[cfg(all(dilithium_make_key, dilithium_sign, dilithium_verify))]
+#[cfg(all(mldsa_make_key, mldsa_sign, mldsa_verify))]
 fn test_sign_verify_level87() {
     common::setup();
     let mut rng = RNG::new().expect("Error creating RNG");
     let mut key =
-        Dilithium::generate(Dilithium::LEVEL_87, &mut rng).expect("Error with generate()");
+        MlDsa::generate(MlDsa::LEVEL_87, &mut rng).expect("Error with generate()");
     let message = b"Hello, ML-DSA-87!";
     let mut sig = vec![0u8; key.sig_size().expect("Error with sig_size()")];
 
@@ -270,12 +270,12 @@ fn test_sign_verify_level87() {
 ///
 /// Also verifies that a mismatched context causes verification to fail.
 #[test]
-#[cfg(all(dilithium_make_key, dilithium_sign, dilithium_verify))]
+#[cfg(all(mldsa_make_key, mldsa_sign, mldsa_verify))]
 fn test_sign_ctx_verify_level44() {
     common::setup();
     let mut rng = RNG::new().expect("Error creating RNG");
     let mut key =
-        Dilithium::generate(Dilithium::LEVEL_44, &mut rng).expect("Error with generate()");
+        MlDsa::generate(MlDsa::LEVEL_44, &mut rng).expect("Error with generate()");
     let message = b"Context-bound message";
     let ctx = b"my context";
     let mut sig = vec![0u8; key.sig_size().expect("Error with sig_size()")];
@@ -303,17 +303,17 @@ fn test_sign_ctx_verify_level44() {
 ///   original public key.
 #[test]
 #[cfg(all(
-    dilithium_make_key,
-    dilithium_import,
-    dilithium_export,
-    dilithium_sign,
-    dilithium_verify
+    mldsa_make_key,
+    mldsa_import,
+    mldsa_export,
+    mldsa_sign,
+    mldsa_verify
 ))]
 fn test_import_export_level44() {
     common::setup();
     let mut rng = RNG::new().expect("Error creating RNG");
     let mut key =
-        Dilithium::generate(Dilithium::LEVEL_44, &mut rng).expect("Error with generate()");
+        MlDsa::generate(MlDsa::LEVEL_44, &mut rng).expect("Error with generate()");
 
     let priv_size = key.size().expect("Error with size()");
     let pub_size = key.pub_size().expect("Error with pub_size()");
@@ -347,9 +347,9 @@ fn test_import_export_level44() {
         .expect("Error with sign_msg()");
 
     // Re-import public key only and verify.
-    let mut pub_key = Dilithium::new().expect("Error with new()");
+    let mut pub_key = MlDsa::new().expect("Error with new()");
     pub_key
-        .set_level(Dilithium::LEVEL_44)
+        .set_level(MlDsa::LEVEL_44)
         .expect("Error with set_level()");
     pub_key
         .import_public(&pub_buf)
@@ -363,9 +363,9 @@ fn test_import_export_level44() {
     );
 
     // Re-import private key, sign a message, and verify with the original key.
-    let mut priv_key = Dilithium::new().expect("Error with new()");
+    let mut priv_key = MlDsa::new().expect("Error with new()");
     priv_key
-        .set_level(Dilithium::LEVEL_44)
+        .set_level(MlDsa::LEVEL_44)
         .expect("Error with set_level()");
     priv_key
         .import_private(&priv_buf)
@@ -387,17 +387,17 @@ fn test_import_export_level44() {
 /// verify using the re-imported key pair.
 #[test]
 #[cfg(all(
-    dilithium_make_key,
-    dilithium_import,
-    dilithium_export,
-    dilithium_sign,
-    dilithium_verify
+    mldsa_make_key,
+    mldsa_import,
+    mldsa_export,
+    mldsa_sign,
+    mldsa_verify
 ))]
 fn test_import_key_level44() {
     common::setup();
     let mut rng = RNG::new().expect("Error creating RNG");
     let mut key =
-        Dilithium::generate(Dilithium::LEVEL_44, &mut rng).expect("Error with generate()");
+        MlDsa::generate(MlDsa::LEVEL_44, &mut rng).expect("Error with generate()");
 
     let priv_size = key.size().expect("Error with size()");
     let pub_size = key.pub_size().expect("Error with pub_size()");
@@ -408,8 +408,8 @@ fn test_import_key_level44() {
     key.export_key(&mut priv_buf, &mut pub_buf)
         .expect("Error with export_key()");
 
-    let mut key2 = Dilithium::new().expect("Error with new()");
-    key2.set_level(Dilithium::LEVEL_44)
+    let mut key2 = MlDsa::new().expect("Error with new()");
+    key2.set_level(MlDsa::LEVEL_44)
         .expect("Error with set_level()");
     key2.import_key(&priv_buf, &pub_buf)
         .expect("Error with import_key()");
@@ -428,15 +428,15 @@ fn test_import_key_level44() {
 /// Verify that `generate_from_seed()` is deterministic: the same seed
 /// produces the same key pair on repeated calls.
 #[test]
-#[cfg(all(dilithium_make_key_from_seed, dilithium_export))]
+#[cfg(all(mldsa_make_key_from_seed, mldsa_export))]
 fn test_generate_from_seed_determinism() {
     common::setup();
-    // DILITHIUM_SEED_SZ = 32 bytes
+    // MLDSA_SEED_SZ = 32 bytes
     let seed = [0x42u8; 32];
 
-    let mut key1 = Dilithium::generate_from_seed(Dilithium::LEVEL_44, &seed)
+    let mut key1 = MlDsa::generate_from_seed(MlDsa::LEVEL_44, &seed)
         .expect("Error with generate_from_seed() first call");
-    let mut key2 = Dilithium::generate_from_seed(Dilithium::LEVEL_44, &seed)
+    let mut key2 = MlDsa::generate_from_seed(MlDsa::LEVEL_44, &seed)
         .expect("Error with generate_from_seed() second call");
 
     let pub_size = key1.pub_size().expect("Error with pub_size()");
@@ -463,19 +463,19 @@ fn test_generate_from_seed_determinism() {
 /// the signature verifies correctly.
 #[test]
 #[cfg(all(
-    dilithium_make_key_from_seed,
-    dilithium_sign_with_seed,
-    dilithium_verify
+    mldsa_make_key_from_seed,
+    mldsa_sign_with_seed,
+    mldsa_verify
 ))]
 fn test_sign_with_seed_determinism() {
     common::setup();
-    // DILITHIUM_SEED_SZ = 32 bytes
+    // MLDSA_SEED_SZ = 32 bytes
     let key_seed = [0x42u8; 32];
-    // DILITHIUM_RND_SZ = 32 bytes
+    // MLDSA_RND_SZ = 32 bytes
     let sign_seed = [0x55u8; 32];
     let message = b"Deterministic ML-DSA signing test";
 
-    let mut key = Dilithium::generate_from_seed(Dilithium::LEVEL_44, &key_seed)
+    let mut key = MlDsa::generate_from_seed(MlDsa::LEVEL_44, &key_seed)
         .expect("Error with generate_from_seed()");
 
     let sig_size = key.sig_size().expect("Error with sig_size()");
@@ -506,9 +506,9 @@ fn test_sign_with_seed_determinism() {
 /// produced signature verifies with `verify_ctx_msg()`.
 #[test]
 #[cfg(all(
-    dilithium_make_key_from_seed,
-    dilithium_sign_with_seed,
-    dilithium_verify
+    mldsa_make_key_from_seed,
+    mldsa_sign_with_seed,
+    mldsa_verify
 ))]
 fn test_sign_ctx_with_seed_determinism() {
     common::setup();
@@ -517,7 +517,7 @@ fn test_sign_ctx_with_seed_determinism() {
     let message = b"Context deterministic signing test";
     let ctx = b"test-context";
 
-    let mut key = Dilithium::generate_from_seed(Dilithium::LEVEL_44, &key_seed)
+    let mut key = MlDsa::generate_from_seed(MlDsa::LEVEL_44, &key_seed)
         .expect("Error with generate_from_seed()");
 
     let sig_size = key.sig_size().expect("Error with sig_size()");
@@ -548,9 +548,9 @@ fn test_sign_ctx_with_seed_determinism() {
 /// `verify_msg()` work across all three security levels.
 #[test]
 #[cfg(all(
-    dilithium_make_key_from_seed,
-    dilithium_sign_with_seed,
-    dilithium_verify
+    mldsa_make_key_from_seed,
+    mldsa_sign_with_seed,
+    mldsa_verify
 ))]
 fn test_seed_sign_verify_all_levels() {
     common::setup();
@@ -559,11 +559,11 @@ fn test_seed_sign_verify_all_levels() {
     let message = b"All-levels seed sign/verify test";
 
     for level in [
-        Dilithium::LEVEL_44,
-        Dilithium::LEVEL_65,
-        Dilithium::LEVEL_87,
+        MlDsa::LEVEL_44,
+        MlDsa::LEVEL_65,
+        MlDsa::LEVEL_87,
     ] {
-        let mut key = Dilithium::generate_from_seed(level, &key_seed)
+        let mut key = MlDsa::generate_from_seed(level, &key_seed)
             .expect("Error with generate_from_seed()");
         let sig_size = key.sig_size().expect("Error with sig_size()");
         let mut sig = vec![0u8; sig_size];

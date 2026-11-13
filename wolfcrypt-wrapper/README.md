@@ -22,7 +22,7 @@ instead.
   [contact wolfSSL](https://www.wolfssl.com/license/) for details.
 - **Broad coverage** — AES (all modes), ECC, RSA, Ed25519, Ed448, Curve25519,
   the SHA family, HMAC, CMAC, HKDF, PBKDF2, ChaCha20-Poly1305, BLAKE2,
-  Dilithium, ML-KEM, LMS, and more
+  ML-DSA, ML-KEM, LMS, and more
 - **Thin wrapper** — stays close to the C API; useful when you need an
   algorithm not yet covered by the higher-level [`wolfcrypt`](../wolfcrypt)
   crate, or when porting C code that already uses wolfCrypt
@@ -81,7 +81,7 @@ wolfcrypt-wrapper  Idiomatic Rust types over wolfCrypt primitives (this crate)
 | Hash | SHA-1, SHA-224/256/384/512, SHA3-224/256/384/512, SHAKE128/256 |
 | MAC | CMAC, HMAC, BLAKE2 |
 | KDF | HKDF, PBKDF2, PKCS#12 PBKDF, PRF, SSH KDF, TLSv1.3 HKDF, SRTP/SRTCP KDF |
-| Post-quantum | Dilithium (ML-DSA), ML-KEM, LMS |
+| Post-quantum | ML-DSA (module `mldsa`; was `dilithium` before 2.0), ML-KEM, LMS |
 | Random | wolfCrypt RNG |
 
 | Feature | Description |

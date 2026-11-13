@@ -359,29 +359,33 @@ fn scan_cfg() -> Result<()> {
         println!("cargo:rustc-cfg=rsa_const_api");
     }
 
-    /* dilithium / ML-DSA */
-    check_cfg(&binding, "wc_dilithium_init", "dilithium");
-    check_cfg(&binding, "wc_dilithium_make_key", "dilithium_make_key");
+    /* mldsa / ML-DSA (wc_MlDsaKey_* API, wolfSSL >= 5.9.4) */
+    check_cfg(&binding, "wc_MlDsaKey_Init", "mldsa");
+    check_cfg(&binding, "wc_MlDsaKey_MakeKey", "mldsa_make_key");
     check_cfg(
         &binding,
-        "wc_dilithium_make_key_from_seed",
-        "dilithium_make_key_from_seed",
+        "wc_MlDsaKey_MakeKeyFromSeed",
+        "mldsa_make_key_from_seed",
     );
-    check_cfg(&binding, "wc_dilithium_sign_ctx_msg", "dilithium_sign");
+    check_cfg(&binding, "wc_MlDsaKey_SignCtx", "mldsa_sign");
     check_cfg(
         &binding,
-        "wc_dilithium_sign_ctx_msg_with_seed",
-        "dilithium_sign_with_seed",
+        "wc_MlDsaKey_SignCtxWithSeed",
+        "mldsa_sign_with_seed",
     );
-    check_cfg(&binding, "wc_dilithium_verify_ctx_msg", "dilithium_verify");
-    check_cfg(&binding, "wc_dilithium_import_public", "dilithium_import");
-    check_cfg(&binding, "wc_dilithium_export_public", "dilithium_export");
-    check_cfg(&binding, "wc_dilithium_check_key", "dilithium_check_key");
-    check_cfg(&binding, "DILITHIUM_LEVEL2_KEY_SIZE", "dilithium_level2");
-    check_cfg(&binding, "DILITHIUM_LEVEL3_KEY_SIZE", "dilithium_level3");
-    check_cfg(&binding, "DILITHIUM_LEVEL5_KEY_SIZE", "dilithium_level5");
-    check_cfg(&binding, "DILITHIUM_SEED_SZ", "dilithium_make_key_seed_sz");
-    check_cfg(&binding, "DILITHIUM_RND_SZ", "dilithium_rnd_sz");
+    check_cfg(&binding, "wc_MlDsaKey_VerifyCtx", "mldsa_verify");
+    check_cfg(&binding, "wc_MlDsaKey_ImportPubRaw", "mldsa_import");
+    check_cfg(&binding, "wc_MlDsaKey_ExportPubRaw", "mldsa_export");
+    check_cfg(&binding, "wc_MlDsaKey_CheckKey", "mldsa_check_key");
+    /* The WC_MLDSA_NN_* size macros are defined unconditionally by
+     * wc_mldsa.h, so their presence says nothing about which parameter sets
+     * were built in. The PARAMS_ML_DSA_NN_* macros are guarded by
+     * WOLFSSL_NO_ML_DSA_NN, so probe those instead (as upstream does). */
+    check_cfg(&binding, "PARAMS_ML_DSA_44_K", "mldsa_level2");
+    check_cfg(&binding, "PARAMS_ML_DSA_65_K", "mldsa_level3");
+    check_cfg(&binding, "PARAMS_ML_DSA_87_K", "mldsa_level5");
+    check_cfg(&binding, "MLDSA_SEED_SZ", "mldsa_make_key_seed_sz");
+    check_cfg(&binding, "MLDSA_RND_SZ", "mldsa_rnd_sz");
 
     /* mlkem / ML-KEM */
     check_cfg(&binding, "wc_MlKemKey_Init", "mlkem");
