@@ -1,0 +1,17 @@
+{
+  "id": "wolfssl-rs-69dm",
+  "title": "Catch up to 2026 RustCrypto + wolfSSL 5.9.4, publish to crates.io",
+  "description": "November 2026 catch-up: every crate moved to the 2026 stable RustCrypto releases (digest 0.11, cipher 0.5, aead 0.6, signature 3.0, crypto-common 0.2, hybrid-array) and to wolfSSL 5.9.4. Along the way, crates that had been broken since the edition-2024 move were fixed, the vendored build gained the TLS layer, the wolftpm family was renamed to wolftpm2 (the crates.io name belongs to wolfSSL), and 16 crates were published. main: 2dcf91a..1078e71.",
+  "status": "open",
+  "priority": 1,
+  "issue_type": "epic",
+  "owner": "mark@reviewcommit.com",
+  "created_at": "2026-11-13T05:35:32.413845295Z",
+  "created_by": "Mark Atwood",
+  "updated_at": "2026-11-13T05:35:32.413845295Z",
+  "labels": [
+    "rustcrypto",
+    "wolfssl",
+    "release"
+  ]
+}
