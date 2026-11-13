@@ -22,6 +22,9 @@ rustflags = ["-C", "link-arg=-Tmemory.x", "-C", "link-arg=-Tlink.x"]
 # wolfHSM and wolfTPM fall back to their bundled submodules unless
 # WOLFHSM_SRC / WOLFTPM_SRC are set in your shell.
 WOLFSSL_SRC = { value = "wolfssl-src/wolfssl", relative = true }
+# Directory holding the user_settings.h that goes with WOLFSSL_SRC; the
+# wolfHSM/wolfTPM build scripts need it to compile against wolfSSL headers.
+WOLFSSL_SETTINGS_INCLUDE = { value = "wolfssl-src", relative = true }
 # riscv32 C cross-compiler via zig cc.
 # Used by the cc crate when compiling wolfssl-src for the riscv32imc-unknown-none-elf target.
 CC_riscv32imc_unknown_none_elf = { value = ".cargo/riscv32-cc", relative = true }
