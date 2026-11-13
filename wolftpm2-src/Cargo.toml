@@ -1,13 +1,13 @@
 [package]
-name = "wolftpm-src"
+name = "wolftpm2-src"
 version = "0.3.2"
 edition = "2024"
 rust-version = "1.88"
-description = "Compile wolfTPM from source for use by wolftpm-sys"
+description = "Compile wolfTPM from source for use by wolftpm2-sys (formerly published as wolftpm-src)"
 license = "GPL-3.0-only OR LicenseRef-wolfSSL-commercial"
 repository = "https://github.com/MarkAtwood/wolfssl-rs"
 readme = "README.md"
-links = "wolftpm_src"
+links = "wolftpm2_src"
 include = [
     "src/**",
     "build.rs",

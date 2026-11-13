@@ -1,27 +1,27 @@
 [package]
-name = "wolftpm-tss"
+name = "wolftpm2-tss"
 version = "0.3.1"
 edition = "2024"
 rust-version = "1.88"
-description = "wolfTPM backend for the tpm-rs / TSS Rust ecosystem"
+description = "Unofficial wolfTPM backend for the tpm-rs / TSS Rust ecosystem"
 license = "GPL-3.0-only OR LicenseRef-wolfSSL-commercial"
 repository = "https://github.com/MarkAtwood/wolfssl-rs"
 readme = "README.md"
 
 [features]
 ## Enable Linux /dev/tpm0 kernel driver transport.
-linux-dev = ["wolftpm-sys/linux-dev"]
+linux-dev = ["wolftpm2-sys/linux-dev"]
 
 ## Enable software TPM socket transport (for swtpm / IBM TPM2 simulator).
-swtpm = ["wolftpm-sys/swtpm"]
+swtpm = ["wolftpm2-sys/swtpm"]
 
 ## Enable the tpm-rs / TSS Connection trait implementations.
 ## tpm2-rs-client and tpm2-rs-base are not yet on crates.io; git source only.
 tss = ["dep:tpm2-rs-client", "dep:tpm2-rs-base"]
 
 [dependencies]
-# wolftpm-sys must be a direct [dependency] so that Cargo propagates
-# DEP_WOLFTPM_SRC_* and link metadata to downstream consumers.
-wolftpm-sys = { version = "0.3.1", path = "../wolftpm-sys" }
+# wolftpm2-sys must be a direct [dependency] so that Cargo propagates
+# DEP_WOLFTPM2_SRC_* and link metadata to downstream consumers.
+wolftpm2-sys = { version = "0.3.1", path = "../wolftpm2-sys" }
 tpm2-rs-client = { git = "https://github.com/tpm-rs/tpm-rs", rev = "a7bf0e9126bab6c607a27a30e2f3df65f7e95371", optional = true }
 tpm2-rs-base = { git = "https://github.com/tpm-rs/tpm-rs", rev = "a7bf0e9126bab6c607a27a30e2f3df65f7e95371", optional = true }

@@ -7,7 +7,7 @@
  * is handled transparently via the same INTERNAL_SEND_COMMAND macro
  * used by the rest of wolfTPM.
  *
- * This file must be compiled as part of wolftpm-sys, alongside the
+ * This file must be compiled as part of wolftpm2-sys, alongside the
  * wolfTPM static library, so that INTERNAL_SEND_COMMAND resolves to
  * the correct transport at link time.
  */
@@ -98,7 +98,7 @@ int wolftpm_rs_transact(
      * If wolfTPM restructures WOLFTPM2_CTX, this function will fail to compile
      * (missing field or size mismatch caught by the _Static_assert above), which
      * is the correct failure mode.
-     * See: wolftpm-sys/build.rs for the wolfTPM version warning. */
+     * See: wolftpm2-sys/build.rs for the wolfTPM version warning. */
 
     if (dev == NULL || cmd == NULL || rsp == NULL || rsp_sz_out == NULL)
         return BAD_FUNC_ARG;

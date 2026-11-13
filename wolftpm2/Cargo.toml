@@ -1,22 +1,22 @@
 [package]
-name = "wolftpm"
+name = "wolftpm2"
 version = "0.3.1"
 edition = "2024"
 rust-version = "1.88"
-description = "Rust bindings to wolfTPM"
+description = "Unofficial safe Rust bindings to wolfTPM (TPM 2.0); not the official `wolftpm` crate"
 license = "GPL-3.0-only OR LicenseRef-wolfSSL-commercial"
 repository = "https://github.com/MarkAtwood/wolfssl-rs"
 readme = "README.md"
 
 [features]
 ## Enable Linux /dev/tpm0 kernel driver transport.
-linux-dev = ["wolftpm-sys/linux-dev"]
+linux-dev = ["wolftpm2-sys/linux-dev"]
 
 ## Enable software TPM socket transport (for swtpm / IBM TPM2 simulator).
-swtpm = ["wolftpm-sys/swtpm"]
+swtpm = ["wolftpm2-sys/swtpm"]
 
 [dependencies]
-wolftpm-sys = { version = "0.3.1", path = "../wolftpm-sys" }
+wolftpm2-sys = { version = "0.3.1", path = "../wolftpm2-sys" }
 
 [dev-dependencies]
 # Independent oracle for sign_verify test: verify TPM-produced ECDSA signatures

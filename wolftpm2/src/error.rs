@@ -44,7 +44,7 @@ impl TpmRc {
 
 impl fmt::Display for TpmRc {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(name) = wolftpm_sys::tpm_rc::tpm_rc_name(self.0) {
+        if let Some(name) = wolftpm2_sys::tpm_rc::tpm_rc_name(self.0) {
             write!(f, "0x{:08x} ({name})", self.0)
         } else {
             write!(f, "0x{:08x}", self.0)

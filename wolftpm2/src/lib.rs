@@ -10,9 +10,9 @@
 //! # Quick start
 //!
 //! ```no_run
-//! use wolftpm::Device;
+//! use wolftpm2::Device;
 //!
-//! # fn main() -> Result<(), wolftpm::Error> {
+//! # fn main() -> Result<(), wolftpm2::Error> {
 //! let mut dev = Device::open()?;           // opens /dev/tpm0 or /dev/tpmrm0 via kernel driver
 //! let rand = dev.get_random(32)?;          // TPM-sourced random bytes
 //! # let _ = rand;

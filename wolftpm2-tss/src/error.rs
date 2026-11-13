@@ -58,14 +58,14 @@ impl fmt::Display for Error {
         match self {
             Error::Transport { code } => {
                 write!(f, "wolfTPM transport error 0x{:08x}", *code as u32)?;
-                if let Some(name) = wolftpm_sys::tpm_rc::tpm_rc_name(*code as u32) {
+                if let Some(name) = wolftpm2_sys::tpm_rc::tpm_rc_name(*code as u32) {
                     write!(f, " ({name})")?;
                 }
                 Ok(())
             }
             Error::TpmLayer { rc } => {
                 write!(f, "TPM error 0x{rc:08x}")?;
-                if let Some(name) = wolftpm_sys::tpm_rc::tpm_rc_name(*rc) {
+                if let Some(name) = wolftpm2_sys::tpm_rc::tpm_rc_name(*rc) {
                     write!(f, " ({name})")?;
                 }
                 Ok(())

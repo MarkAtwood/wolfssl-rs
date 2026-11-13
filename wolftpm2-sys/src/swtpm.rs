@@ -1,4 +1,4 @@
-/// Shared swtpm initialisation helper used by both `wolftpm` and `wolftpm-tss`.
+/// Shared swtpm initialisation helper used by both `wolftpm2` and `wolftpm2-tss`.
 ///
 /// Having a single copy here prevents the two callers from diverging.
 
@@ -25,7 +25,7 @@ static SWTPM_INIT_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 ///
 /// Temporarily sets `SWTPM_SERVER_NAME` and `SWTPM_SERVER_PORT` in the
 /// process environment, calls `wolfTPM2_Init`, then removes them.
-/// A process-wide mutex (shared across both `wolftpm` and `wolftpm-tss`)
+/// A process-wide mutex (shared across both `wolftpm2` and `wolftpm2-tss`)
 /// serialises concurrent calls.
 ///
 /// Returns `Ok(Box<WOLFTPM2_DEV>)` on success, or an [`InitError`] on failure.

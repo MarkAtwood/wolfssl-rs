@@ -4,41 +4,41 @@
 > The official wolfSSL Rust crate is **wolfssl-wolfcrypt**:
 > https://github.com/wolfSSL/wolfssl/tree/master/wrapper/rust/wolfssl-wolfcrypt
 
-# wolftpm-src
+# wolftpm2-src
 
 Build-script crate that compiles [wolfTPM](https://github.com/wolfSSL/wolfTPM)
 from C source as part of a Cargo build. Used internally by
-[`wolftpm-sys`](../wolftpm-sys); has no public Rust API.
+[`wolftpm2-sys`](../wolftpm2-sys); has no public Rust API.
 
 ## Why
 
 Cargo cannot compile C libraries on behalf of an arbitrary crate — each
 crate that links a C library needs a `build.rs` that drives the C
-compiler. The three-crate split (`wolftpm-src` → `wolftpm-sys` →
-[`wolftpm`](../wolftpm)) mirrors the pattern used throughout this
+compiler. The three-crate split (`wolftpm2-src` → `wolftpm2-sys` →
+[`wolftpm2`](../wolftpm2)) mirrors the pattern used throughout this
 workspace ([`wolfssl-src`](../wolfssl-src),
 [`wolfhsm-src`](../wolfhsm-src)) and separates concerns cleanly:
 
-- `wolftpm-src` owns the C build; it can be versioned and replaced
+- `wolftpm2-src` owns the C build; it can be versioned and replaced
   without touching the FFI or the safe Rust API.
-- [`wolftpm-sys`](../wolftpm-sys) owns the FFI boundary; bindgen runs
+- [`wolftpm2-sys`](../wolftpm2-sys) owns the FFI boundary; bindgen runs
   there.
-- [`wolftpm`](../wolftpm) owns the safe Rust API.
+- [`wolftpm2`](../wolftpm2) owns the safe Rust API.
 
 ## Usage
 
 This crate is not intended to be used directly. Add
-[`wolftpm-sys`](../wolftpm-sys) or [`wolftpm`](../wolftpm) to your
+[`wolftpm2-sys`](../wolftpm2-sys) or [`wolftpm2`](../wolftpm2) to your
 `Cargo.toml` instead.
 
-If you need to use `wolftpm-src` directly (e.g. to build a different FFI
+If you need to use `wolftpm2-src` directly (e.g. to build a different FFI
 crate against the same wolfTPM build), declare it as a regular
 `[dependency]` rather than a `[build-dependency]` so that Cargo
-propagates the `DEP_WOLFTPM_SRC_*` metadata to your build script:
+propagates the `DEP_WOLFTPM2_SRC_*` metadata to your build script:
 
 ```toml
 [dependencies]
-wolftpm-src = "0.2"
+wolftpm2-src = "0.2"
 ```
 
 The wolfTPM source tree must be available, supplied by either of:
@@ -48,7 +48,7 @@ The wolfTPM source tree must be available, supplied by either of:
 export WOLFTPM_SRC=/path/to/wolfTPM
 
 # Option 2: bundled submodule (tracks upstream wolfSSL/wolfTPM main)
-git submodule update --init wolftpm-src/wolftpm
+git submodule update --init wolftpm2-src/wolftpm
 ```
 
 The wolfSSL headers are also required (wolfTPM uses wolfSSL/wolfCrypt
@@ -68,7 +68,7 @@ must have been compiled with `WOLF_CRYPTO_CB` enabled.
 `build.rs` performs four steps:
 
 1. **Locate wolfTPM source** — checks `WOLFTPM_SRC` first, then falls
-   back to the bundled git submodule at `wolftpm-src/wolftpm/`.
+   back to the bundled git submodule at `wolftpm2-src/wolftpm/`.
 2. **Locate wolfSSL headers** — checks `WOLFSSL_INCLUDE_DIR`,
    `WOLFSSL_DIR`, then `WOLFSSL_SRC` in that priority order (same as
    the rest of the workspace).
@@ -86,8 +86,8 @@ must have been compiled with `WOLF_CRYPTO_CB` enabled.
    when present.
 
 The compiled library path and wolfTPM include directory are emitted as
-Cargo metadata (`DEP_WOLFTPM_SRC_LIB`, `DEP_WOLFTPM_SRC_INCLUDE`) for
-consumption by [`wolftpm-sys`](../wolftpm-sys).
+Cargo metadata (`DEP_WOLFTPM2_SRC_LIB`, `DEP_WOLFTPM2_SRC_INCLUDE`) for
+consumption by [`wolftpm2-sys`](../wolftpm2-sys).
 
 | Feature | Description |
 |---|---|
@@ -100,9 +100,9 @@ simultaneously.
 
 ## References
 
-- [wolftpm](../wolftpm) — safe Rust API; use this unless you have a specific reason not to
-- [wolftpm-sys](../wolftpm-sys) — raw FFI bindings consumer of this crate
-- [wolftpm-tss](../wolftpm-tss) — tpm-rs TSS backend
+- [wolftpm2](../wolftpm2) — safe Rust API; use this unless you have a specific reason not to
+- [wolftpm2-sys](../wolftpm2-sys) — raw FFI bindings consumer of this crate
+- [wolftpm2-tss](../wolftpm2-tss) — tpm-rs TSS backend
 - [wolfTPM repository](https://github.com/wolfSSL/wolfTPM)
 - [wolfTPM documentation](https://www.wolfssl.com/docs/wolftpm/)
 - [wolfTPM manual](https://wolfssl.github.io/wolfTPM/)

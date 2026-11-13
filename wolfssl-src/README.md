@@ -27,7 +27,7 @@ independently:
   re-exports build metadata.
 
 Having the C build in its own crate means multiple crates in the same
-workspace (`wolfcrypt-sys`, `wolftpm-sys`, `wolfhsm-sys`) can share the
+workspace (`wolfcrypt-sys`, `wolftpm2-sys`, `wolfhsm-sys`) can share the
 compiled wolfSSL without recompiling it.
 
 ## Usage
@@ -117,7 +117,7 @@ link against them without re-running the C build.
 - [wolfcrypt-rs](../wolfcrypt-rs) — typed Rust wrapper above
   `wolfcrypt-sys`
 - [wolfhsm-src](../wolfhsm-src) — sibling source-build crate for wolfHSM
-- [wolftpm-src](../wolftpm-src) — sibling source-build crate for wolfTPM
+- [wolftpm2-src](../wolftpm2-src) — sibling source-build crate for wolfTPM
 - [wolfSSL repository](https://github.com/wolfSSL/wolfssl)
 - [wolfSSL documentation](https://www.wolfssl.com/documentation/)
 - [`cc` crate](https://crates.io/crates/cc) — C build dependency

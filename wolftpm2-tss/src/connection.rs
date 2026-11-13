@@ -22,7 +22,7 @@ use tpm2_rs_client::connection::Connection;
 /// same `dev`.  The single-buffer design is therefore safe through the Rust API.
 #[cfg(feature = "tss")]
 fn do_transact<'a>(
-    dev: &mut wolftpm_sys::WOLFTPM2_DEV,
+    dev: &mut wolftpm2_sys::WOLFTPM2_DEV,
     cmd: &[u8],
     rsp: &'a mut [u8],
 ) -> Result<&'a mut [u8], Error> {
@@ -35,7 +35,7 @@ fn do_transact<'a>(
     let mut rsp_sz: c_int = 0;
 
     let rc = unsafe {
-        wolftpm_sys::wolftpm_rs_transact(
+        wolftpm2_sys::wolftpm_rs_transact(
             dev as *mut _,
             cmd.as_ptr(),
             cmd_sz,
@@ -46,7 +46,7 @@ fn do_transact<'a>(
     };
 
     // TPM_RC_SIZE means the caller's buffer was too small
-    if rc == wolftpm_sys::TPM_RC_T_TPM_RC_SIZE as c_int {
+    if rc == wolftpm2_sys::TPM_RC_T_TPM_RC_SIZE as c_int {
         return Err(Error::ResponseBufferTooSmall);
     }
     Error::check(rc)?;
@@ -65,7 +65,7 @@ fn do_transact<'a>(
 /// Both public transport types wrap this so that the Drop cleanup lives in
 /// exactly one place.
 struct WolfTpmDev {
-    dev: Box<wolftpm_sys::WOLFTPM2_DEV>,
+    dev: Box<wolftpm2_sys::WOLFTPM2_DEV>,
 }
 
 impl core::fmt::Debug for WolfTpmDev {
@@ -79,7 +79,7 @@ impl core::fmt::Debug for WolfTpmDev {
 }
 
 impl WolfTpmDev {
-    fn new(dev: Box<wolftpm_sys::WOLFTPM2_DEV>) -> Self {
+    fn new(dev: Box<wolftpm2_sys::WOLFTPM2_DEV>) -> Self {
         Self { dev }
     }
 }
@@ -88,7 +88,7 @@ impl Drop for WolfTpmDev {
     fn drop(&mut self) {
         // SAFETY: dev was initialised by wolfTPM2_Init; cleanup is idempotent.
         unsafe {
-            wolftpm_sys::wolfTPM2_Cleanup(self.dev.as_mut() as *mut _);
+            wolftpm2_sys::wolfTPM2_Cleanup(self.dev.as_mut() as *mut _);
         }
     }
 }
@@ -108,7 +108,7 @@ impl Drop for WolfTpmDev {
 /// # Construction
 ///
 /// ```no_run
-/// use wolftpm_tss::connection::WolfTpmLinuxDev;
+/// use wolftpm2_tss::connection::WolfTpmLinuxDev;
 /// let mut transport = WolfTpmLinuxDev::open().unwrap();
 /// ```
 pub struct WolfTpmLinuxDev {
@@ -154,9 +154,9 @@ impl WolfTpmLinuxDev {
     pub fn open() -> Result<Self, Error> {
         // SAFETY: zeroed WOLFTPM2_DEV is the correct initial state per
         // the wolfTPM documentation; wolfTPM2_Init fills it in.
-        let mut dev = Box::new(unsafe { std::mem::zeroed::<wolftpm_sys::WOLFTPM2_DEV>() });
+        let mut dev = Box::new(unsafe { std::mem::zeroed::<wolftpm2_sys::WOLFTPM2_DEV>() });
         let rc = unsafe {
-            wolftpm_sys::wolfTPM2_Init(
+            wolftpm2_sys::wolfTPM2_Init(
                 dev.as_mut() as *mut _,
                 None,                 // ioCb — not used with devtpm
                 std::ptr::null_mut(), // userCtx
@@ -186,7 +186,7 @@ impl Connection for WolfTpmLinuxDev {
 /// # Construction
 ///
 /// ```no_run
-/// use wolftpm_tss::connection::WolfTpmSwtpm;
+/// use wolftpm2_tss::connection::WolfTpmSwtpm;
 /// let mut transport = WolfTpmSwtpm::connect("127.0.0.1", 2321).unwrap();
 /// ```
 #[cfg(feature = "swtpm")]
@@ -216,7 +216,7 @@ impl WolfTpmSwtpm {
     /// Connect to a software TPM at `host:port`.
     ///
     /// The setenv/init/unsetenv sequence is shared with
-    /// `wolftpm::Device::open_swtpm` via `wolftpm_sys::swtpm::init_swtpm`;
+    /// `wolftpm2::Device::open_swtpm` via `wolftpm2_sys::swtpm::init_swtpm`;
     /// both functions delegate to that helper and there is no duplication
     /// to keep in sync.
     ///
@@ -256,15 +256,15 @@ impl WolfTpmSwtpm {
         let port_c = CString::new(port.to_string())
             .map_err(|_| Error::InvalidArg("port string contains a null byte"))?;
 
-        // Delegate to the shared init helper in wolftpm-sys (also used by
-        // wolftpm::Device::open_swtpm) so the two callers share a single copy
+        // Delegate to the shared init helper in wolftpm2-sys (also used by
+        // wolftpm2::Device::open_swtpm) so the two callers share a single copy
         // of the setenv/init/unsetenv sequence.
-        let dev = wolftpm_sys::swtpm::init_swtpm(&host_c, &port_c)
+        let dev = wolftpm2_sys::swtpm::init_swtpm(&host_c, &port_c)
             .map_err(|e| match e {
-                wolftpm_sys::swtpm::InitError::Env => {
+                wolftpm2_sys::swtpm::InitError::Env => {
                     Error::InvalidArg("setenv failed (ENOMEM?); cannot set swtpm connection vars")
                 }
-                wolftpm_sys::swtpm::InitError::WolfTpm(rc) => Error::Transport { code: rc },
+                wolftpm2_sys::swtpm::InitError::WolfTpm(rc) => Error::Transport { code: rc },
             })?;
         Ok(Self { inner: WolfTpmDev::new(dev) })
     }

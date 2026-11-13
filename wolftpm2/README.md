@@ -4,10 +4,14 @@
 > The official wolfSSL Rust crate is **wolfssl-wolfcrypt**:
 > https://github.com/wolfSSL/wolfssl/tree/master/wrapper/rust/wolfssl-wolfcrypt
 
-# wolftpm
+# wolftpm2
 
-Safe Rust bindings to [wolfTPM](https://github.com/wolfSSL/wolfTPM), a
-portable TPM 2.0 library from wolfSSL.
+Unofficial safe Rust bindings to [wolfTPM](https://github.com/wolfSSL/wolfTPM),
+a portable TPM 2.0 library from wolfSSL. The name follows wolfTPM's own C API
+(`wolfTPM2_*`, `WOLFTPM2_DEV`). This is **not** a newer version of the official
+[`wolftpm`](https://crates.io/crates/wolftpm) crate, which wolfSSL publishes
+from the wolfTPM repository. Earlier releases of this crate's family were
+published as `wolftpm-src`.
 
 ## Why
 
@@ -36,11 +40,11 @@ bare-metal microcontrollers.
 
 ```toml
 [dependencies]
-wolftpm = "0.2"
+wolftpm2 = "0.2"
 ```
 
 ```rust
-use wolftpm::Device;
+use wolftpm2::Device;
 
 let mut dev = Device::open()?;                // /dev/tpm0 or /dev/tpmrm0
 
@@ -60,15 +64,15 @@ dev.with_ecc_key(|key| {
 
 `Device::open()` is always available. `Device::open_swtpm(host, port)`
 requires the `swtpm` feature. Build prerequisites (wolfTPM source and
-wolfSSL headers) are documented in [wolftpm-src](../wolftpm-src).
+wolfSSL headers) are documented in [wolftpm2-src](../wolftpm2-src).
 
 ## How it works
 
 ```text
-wolftpm-src     Compiles wolfTPM C source via the cc crate; generates
-│               wolftpm/options.h; emits DEP_WOLFTPM_SRC_{INCLUDE,LIB}
+wolftpm2-src     Compiles wolfTPM C source via the cc crate; generates
+│               wolftpm/options.h; emits DEP_WOLFTPM2_SRC_{INCLUDE,LIB}
 │
-wolftpm-sys     bindgen-generated FFI bindings; links libwolftpm.a and
+wolftpm2-sys     bindgen-generated FFI bindings; links libwolftpm.a and
 │               libwolfssl
 │
 wolftpm         Safe high-level Rust API  ← this crate
@@ -80,7 +84,7 @@ P-256 signing key and unloads both the signing key and its storage root
 key when dropped — even on panic. TPM return codes are mapped to typed
 [`Error`] variants; `TpmRc` decodes the standard TPM2 result-code layers.
 
-Transport selection happens in `wolftpm-src` at compile time. On Linux
+Transport selection happens in `wolftpm2-src` at compile time. On Linux
 with no feature selected, `WOLFTPM_LINUX_DEV` is the default so that
 `Device::open()` works out of the box.
 
@@ -92,13 +96,13 @@ with no feature selected, `WOLFTPM_LINUX_DEV` is the default so that
 The wolfSSL key-import/export helpers (`wolfTPM2_RsaKey_To_Device` etc.)
 are compiled out for now (`-DWOLFTPM2_NO_WOLFCRYPT`). Advanced wolfTPM
 features (NV storage, attestation, HMAC sessions) are not yet wrapped;
-the [wolftpm-sys](../wolftpm-sys) raw bindings cover the full C API.
+the [wolftpm2-sys](../wolftpm2-sys) raw bindings cover the full C API.
 
 ## References
 
-- [wolftpm-sys](../wolftpm-sys) — raw FFI bindings (use these for APIs not yet wrapped here)
-- [wolftpm-src](../wolftpm-src) — vendored wolfTPM source build
-- [wolftpm-tss](../wolftpm-tss) — wolfTPM as a backend for the tpm-rs TSS ecosystem
+- [wolftpm2-sys](../wolftpm2-sys) — raw FFI bindings (use these for APIs not yet wrapped here)
+- [wolftpm2-src](../wolftpm2-src) — vendored wolfTPM source build
+- [wolftpm2-tss](../wolftpm2-tss) — wolfTPM as a backend for the tpm-rs TSS ecosystem
 - [wolfTPM repository](https://github.com/wolfSSL/wolfTPM)
 - [wolfTPM documentation](https://www.wolfssl.com/docs/wolftpm/)
 - [wolfTPM API reference](https://wolfssl.github.io/wolfTPM/)

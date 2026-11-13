@@ -5,7 +5,7 @@ use crate::error::Error;
 /// The context is heap-allocated to give the C library a stable address.
 /// `Device` is `Send` (can be moved across threads) but not `Sync`.
 pub struct Device {
-    dev: Box<wolftpm_sys::WOLFTPM2_DEV>,
+    dev: Box<wolftpm2_sys::WOLFTPM2_DEV>,
 }
 
 // SAFETY: WOLFTPM2_DEV is safe to send across threads because:
@@ -35,9 +35,9 @@ impl Device {
     pub fn open() -> Result<Self, Error> {
         // SAFETY: zeroed WOLFTPM2_DEV is the correct initial state per
         // the wolfTPM documentation; wolfTPM2_Init fills it in.
-        let mut dev = Box::new(unsafe { std::mem::zeroed::<wolftpm_sys::WOLFTPM2_DEV>() });
+        let mut dev = Box::new(unsafe { std::mem::zeroed::<wolftpm2_sys::WOLFTPM2_DEV>() });
         let rc = unsafe {
-            wolftpm_sys::wolfTPM2_Init(dev.as_mut() as *mut _, None, std::ptr::null_mut())
+            wolftpm2_sys::wolfTPM2_Init(dev.as_mut() as *mut _, None, std::ptr::null_mut())
         };
         Error::check(rc)?;
         Ok(Self { dev })
@@ -72,15 +72,15 @@ impl Device {
         let port_c = CString::new(port.to_string())
             .map_err(|_| Error::InvalidInput("port string invalid"))?;
 
-        // Delegate to the shared init helper in wolftpm-sys (also used by
-        // wolftpm-tss::WolfTpmSwtpm::connect) so the two callers share a
+        // Delegate to the shared init helper in wolftpm2-sys (also used by
+        // wolftpm2-tss::WolfTpmSwtpm::connect) so the two callers share a
         // single copy of the setenv/init/unsetenv sequence.
-        let dev = wolftpm_sys::swtpm::init_swtpm(&host_c, &port_c)
+        let dev = wolftpm2_sys::swtpm::init_swtpm(&host_c, &port_c)
             .map_err(|e| match e {
-                wolftpm_sys::swtpm::InitError::Env => {
+                wolftpm2_sys::swtpm::InitError::Env => {
                     Error::InvalidInput("setenv failed (ENOMEM?); cannot set swtpm connection vars")
                 }
-                wolftpm_sys::swtpm::InitError::WolfTpm(rc) => {
+                wolftpm2_sys::swtpm::InitError::WolfTpm(rc) => {
                     Error::Tpm { rc: crate::error::TpmRc::from_raw(rc as u32) }
                 }
             })?;
@@ -91,7 +91,7 @@ impl Device {
     ///
     /// For internal use by sibling modules (e.g. `key`) that need to pass the
     /// device pointer to C API functions.
-    pub(crate) fn dev_ptr_mut(&mut self) -> *mut wolftpm_sys::WOLFTPM2_DEV {
+    pub(crate) fn dev_ptr_mut(&mut self) -> *mut wolftpm2_sys::WOLFTPM2_DEV {
         self.dev.as_mut() as *mut _
     }
 
@@ -124,7 +124,7 @@ impl Device {
             u32::try_from(n).map_err(|_| Error::InvalidInput("requested length exceeds u32"))?;
         let mut buf = vec![0u8; n];
         let rc =
-            unsafe { wolftpm_sys::wolfTPM2_GetRandom(self.dev_ptr_mut(), buf.as_mut_ptr(), len) };
+            unsafe { wolftpm2_sys::wolfTPM2_GetRandom(self.dev_ptr_mut(), buf.as_mut_ptr(), len) };
         Error::check(rc)?;
         Ok(buf)
     }
@@ -146,10 +146,10 @@ impl Device {
         // 64 is a compile-time constant that trivially fits in c_int.
         let mut digest_len: std::ffi::c_int = 64;
         let rc = unsafe {
-            wolftpm_sys::wolfTPM2_ReadPCR(
+            wolftpm2_sys::wolfTPM2_ReadPCR(
                 self.dev_ptr_mut(),
                 std::ffi::c_int::from(index),
-                wolftpm_sys::TPM_ALG_ID_T_TPM_ALG_SHA256 as std::ffi::c_int,
+                wolftpm2_sys::TPM_ALG_ID_T_TPM_ALG_SHA256 as std::ffi::c_int,
                 digest.as_mut_ptr(),
                 &mut digest_len as *mut _,
             )
@@ -179,7 +179,7 @@ impl Drop for Device {
     fn drop(&mut self) {
         // SAFETY: dev was initialised by wolfTPM2_Init; cleanup is idempotent.
         unsafe {
-            wolftpm_sys::wolfTPM2_Cleanup(self.dev_ptr_mut());
+            wolftpm2_sys::wolfTPM2_Cleanup(self.dev_ptr_mut());
         }
     }
 }

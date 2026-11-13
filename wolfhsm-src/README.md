@@ -15,7 +15,7 @@ from C source as part of a Cargo build. Used internally by
 Cargo cannot compile C libraries on behalf of an arbitrary crate — each
 crate that links a C library needs a `build.rs` that drives the C
 compiler. Splitting the C build into its own crate (the same pattern used
-by [`wolfssl-src`](../wolfssl-src) and [`wolftpm-src`](../wolftpm-src) in
+by [`wolfssl-src`](../wolfssl-src) and [`wolftpm2-src`](../wolftpm2-src) in
 this workspace) keeps concerns separate:
 
 - **`wolfhsm-src` owns the C build** — it can be versioned and replaced
@@ -112,7 +112,7 @@ enabled.
   this crate
 - [wolfhsm](../wolfhsm) — safe Rust API
 - [wolfssl-src](../wolfssl-src) — sibling source-build crate for wolfSSL
-- [wolftpm-src](../wolftpm-src) — sibling source-build crate for wolfTPM
+- [wolftpm2-src](../wolftpm2-src) — sibling source-build crate for wolfTPM
 - [wolfHSM repository](https://github.com/wolfSSL/wolfHSM)
 - [wolfHSM documentation](https://www.wolfssl.com/documentation/manuals/wolfhsm/)
 - [workspace README](../README.md)

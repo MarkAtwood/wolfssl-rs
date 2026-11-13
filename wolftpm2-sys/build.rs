@@ -18,11 +18,11 @@ fn main() {
     let user_settings_h = PathBuf::from(&wolfssl_settings).join("user_settings.h");
     let use_user_settings = wolfssl_vendored || user_settings_h.exists();
 
-    // ── 2. Read wolfTPM metadata from wolftpm-src ────────────────────────────
-    let wolftpm_include = env::var("DEP_WOLFTPM_SRC_INCLUDE")
-        .expect("DEP_WOLFTPM_SRC_INCLUDE not set; is wolftpm-src a direct dependency?");
-    let wolftpm_lib = env::var("DEP_WOLFTPM_SRC_LIB")
-        .expect("DEP_WOLFTPM_SRC_LIB not set");
+    // ── 2. Read wolfTPM metadata from wolftpm2-src ────────────────────────────
+    let wolftpm_include = env::var("DEP_WOLFTPM2_SRC_INCLUDE")
+        .expect("DEP_WOLFTPM2_SRC_INCLUDE not set; is wolftpm2-src a direct dependency?");
+    let wolftpm_lib = env::var("DEP_WOLFTPM2_SRC_LIB")
+        .expect("DEP_WOLFTPM2_SRC_LIB not set");
 
     // ── 2a. Assert wolfTPM version is compatible ─────────────────────────────
     // wolftpm_rs_shim.c accesses WOLFTPM2_CTX::cmdBuf, an internal field that
@@ -76,7 +76,7 @@ fn main() {
     // ── 4. Run bindgen ────────────────────────────────────────────────────────
     let bindings = bindgen::Builder::default()
         .header(manifest_dir.join("wrapper.h").to_str().unwrap())
-        // wolftpm_lib is the OUT_DIR from wolftpm-src; it holds wolftpm/options.h
+        // wolftpm_lib is the OUT_DIR from wolftpm2-src; it holds wolftpm/options.h
         .clang_arg(format!("-I{wolftpm_lib}"))
         .clang_arg(format!("-I{wolftpm_include}"))
         // hal/ directory for tpm_io.h (included by tpm2_wrap.h indirectly)
@@ -171,7 +171,7 @@ fn check_wolftpm_version(version_h_path: &str) {
              against 0x{TESTED_VERSION_HEX:08x} (v4.0.0 / fbbf6fe).\n\
              wolftpm_rs_shim.c accesses WOLFTPM2_CTX::cmdBuf which is not a \
              stable API — review shim.c for compatibility, then update \
-             TESTED_VERSION_HEX in wolftpm-sys/build.rs."
+             TESTED_VERSION_HEX in wolftpm2-sys/build.rs."
         );
     }
 }

@@ -4,7 +4,7 @@
 > The official wolfSSL Rust crate is **wolfssl-wolfcrypt**:
 > https://github.com/wolfSSL/wolfssl/tree/master/wrapper/rust/wolfssl-wolfcrypt
 
-# wolftpm-tss
+# wolftpm2-tss
 
 wolfTPM backend for the [tpm-rs](https://github.com/tpm-rs/tpm-rs) TSS
 (Trusted Software Stack) Rust ecosystem. Implements
@@ -18,7 +18,7 @@ This repository provides two complementary ways to program against
 wolfTPM from Rust, mirroring how `wolfcrypt` offers both its own API
 and RustCrypto traits:
 
-- **Standalone wolfTPM API** — the [`wolftpm`](../wolftpm) crate
+- **Standalone wolfTPM API** — the [`wolftpm2`](../wolftpm2) crate
   exposes the full wolfTPM2_* feature set as an idiomatic Rust API.
 - **tpm-rs `Connection` trait** — this crate plugs wolfTPM into the
   tpm-rs ecosystem so libraries written against tpm-rs can use a
@@ -42,7 +42,7 @@ Both types implement `tpm2_rs_client::connection::Connection` when the
 
 ```toml
 [dependencies]
-wolftpm-tss = { version = "0.2", features = ["tss", "linux-dev"] }
+wolftpm2-tss = { version = "0.2", features = ["tss", "linux-dev"] }
 tpm2-rs-client = { git = "https://github.com/tpm-rs/tpm-rs", rev = "a7bf0e9126bab6c607a27a30e2f3df65f7e95371" }
 tpm2-rs-base   = { git = "https://github.com/tpm-rs/tpm-rs", rev = "a7bf0e9126bab6c607a27a30e2f3df65f7e95371" }
 ```
@@ -54,7 +54,7 @@ cannot be passed to tpm-rs functions. `tpm2-rs-client` and
 that matches the one pinned in this crate's `Cargo.toml` must be used.
 
 ```rust
-use wolftpm_tss::connection::WolfTpmLinuxDev;
+use wolftpm2_tss::connection::WolfTpmLinuxDev;
 use tpm2_rs_client::run_command;
 use tpm2_rs_base::commands::GetRandomCmd;
 
@@ -63,7 +63,7 @@ let resp = run_command(&GetRandomCmd { bytes_requested: 32 }, &mut transport)?;
 ```
 
 Build prerequisites (wolfTPM source and wolfSSL headers) are documented
-in [`wolftpm-src`](../wolftpm-src).
+in [`wolftpm2-src`](../wolftpm2-src).
 
 ## How it works
 
@@ -72,7 +72,7 @@ cmd: &[u8]
    │
    │ Connection::transact
    ▼
-do_transact ──► wolftpm_rs_transact (C shim in wolftpm-sys)
+do_transact ──► wolftpm_rs_transact (C shim in wolftpm2-sys)
                   │
                   │ XMEMCPY into dev->ctx.cmdBuf
                   ▼
@@ -91,7 +91,7 @@ Ok(&mut rsp[..n])
 
 `Connection::transact` delegates to `do_transact`, which calls
 `wolftpm_rs_transact` — a small C shim compiled into
-[`wolftpm-sys`](../wolftpm-sys). The shim copies the tpm-rs command
+[`wolftpm2-sys`](../wolftpm2-sys). The shim copies the tpm-rs command
 bytes into wolfTPM's internal `cmdBuf`, dispatches via the
 `RS_SEND_COMMAND` macro (resolved to the configured transport at link
 time, mirroring wolfTPM's own `tpm2.c` `#ifdef` chain), reads the
@@ -110,8 +110,8 @@ Compile-time `_Static_assert`s in the shim guard against unexpected
 layout changes in `WOLFTPM2_DEV` / `TPM2_CTX`.
 
 `WolfTpmSwtpm::connect` delegates to the shared `init_swtpm` helper in
-[`wolftpm-sys`](../wolftpm-sys), the same helper used by
-`wolftpm::Device::open_swtpm`. A process-wide mutex serialises
+[`wolftpm2-sys`](../wolftpm2-sys), the same helper used by
+`wolftpm2::Device::open_swtpm`. A process-wide mutex serialises
 concurrent calls so that two threads do not corrupt each other's
 `SWTPM_SERVER_NAME` / `SWTPM_SERVER_PORT` environment variables; this
 mutex does not protect against unrelated threads that read or write
@@ -125,9 +125,9 @@ those variables outside this API.
 
 ## References
 
-- [wolftpm](../wolftpm) — standalone wolfTPM Rust API
-- [wolftpm-sys](../wolftpm-sys) — raw FFI bindings (hosts the `wolftpm_rs_transact` shim)
-- [wolftpm-src](../wolftpm-src) — vendored wolfTPM source build
+- [wolftpm](../wolftpm2) — standalone wolfTPM Rust API
+- [wolftpm2-sys](../wolftpm2-sys) — raw FFI bindings (hosts the `wolftpm_rs_transact` shim)
+- [wolftpm2-src](../wolftpm2-src) — vendored wolfTPM source build
 - [tpm-rs repository](https://github.com/tpm-rs/tpm-rs)
 - [wolfTPM repository](https://github.com/wolfSSL/wolfTPM)
 - [wolfTPM API documentation](https://wolfssl.github.io/wolfTPM/)

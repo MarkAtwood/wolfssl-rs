@@ -12,7 +12,7 @@
 //! Open a transport connection (no extra features required):
 //!
 //! ```no_run
-//! use wolftpm_tss::connection::WolfTpmLinuxDev;
+//! use wolftpm2_tss::connection::WolfTpmLinuxDev;
 //! let mut transport = WolfTpmLinuxDev::open().unwrap();
 //! ```
 //!
@@ -20,7 +20,7 @@
 //! and the tpm2-rs git dependencies — see `Cargo.toml`):
 //!
 //! ```ignore
-//! use wolftpm_tss::connection::WolfTpmLinuxDev;
+//! use wolftpm2_tss::connection::WolfTpmLinuxDev;
 //! use tpm2_rs_client::run_command;
 //! use tpm2_rs_base::commands::GetRandomCmd;
 //!

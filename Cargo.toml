@@ -35,10 +35,10 @@ members = [
     "wolfhsm-src",
     "wolfhsm-sys",
     "wolfhsm",
-    "wolftpm-src",
-    "wolftpm-sys",
-    "wolftpm",
-    "wolftpm-tss",
+    "wolftpm2-src",
+    "wolftpm2-sys",
+    "wolftpm2",
+    "wolftpm2-tss",
 ]
 exclude = [
     "scripts/tools/cargo-dig.rs",

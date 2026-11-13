@@ -1,0 +1,29 @@
+[package]
+name = "wolftpm2-sys"
+version = "0.3.1"
+edition = "2024"
+rust-version = "1.88"
+description = "Unofficial auto-generated Rust FFI bindings to wolfTPM, for wolftpm2"
+license = "GPL-3.0-only OR LicenseRef-wolfSSL-commercial"
+repository = "https://github.com/MarkAtwood/wolfssl-rs"
+readme = "README.md"
+links = "wolftpm2_sys"
+
+[dependencies]
+wolfcrypt-sys = { version = "0.3.0", path = "../wolfcrypt-sys" }
+# wolftpm2-src must be a direct [dependency] (not build-dep) so that Cargo
+# propagates DEP_WOLFTPM2_SRC_* metadata to our build script.  The crate's
+# lib.rs is empty; the cost is negligible.
+wolftpm2-src = { version = "0.3.2", path = "../wolftpm2-src" }
+libc = { version = "0.2", optional = true }
+
+[features]
+## Enable Linux /dev/tpm0 kernel driver transport — propagates to wolftpm2-src.
+linux-dev = ["wolftpm2-src/linux-dev"]
+
+## Enable software TPM socket transport — propagates to wolftpm2-src.
+swtpm = ["wolftpm2-src/swtpm", "dep:libc"]
+
+[build-dependencies]
+bindgen = { workspace = true }
+cc = { workspace = true }

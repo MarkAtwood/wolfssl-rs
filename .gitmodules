@@ -5,5 +5,5 @@
 	path = wolfhsm-src/wolfhsm
 	url = https://github.com/wolfSSL/wolfHSM.git
 [submodule "wolftpm-src/wolftpm"]
-	path = wolftpm-src/wolftpm
+	path = wolftpm2-src/wolftpm
 	url = https://github.com/wolfSSL/wolfTPM.git

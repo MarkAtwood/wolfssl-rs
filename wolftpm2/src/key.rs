@@ -9,10 +9,10 @@ use crate::{device::Device, error::Error};
 /// of this value's lifetime.
 pub struct EccKey<'dev> {
     /// The loaded ECC signing key.
-    key: wolftpm_sys::WOLFTPM2_KEY,
+    key: wolftpm2_sys::WOLFTPM2_KEY,
     /// The transient storage root key used as parent; flushed after the
     /// signing key.
-    srk: wolftpm_sys::WOLFTPM2_KEY,
+    srk: wolftpm2_sys::WOLFTPM2_KEY,
     /// Back-reference to the open device context.
     dev: &'dev mut Device,
 }
@@ -29,13 +29,13 @@ impl<'dev> EccKey<'dev> {
         // ── Step 1: Create a transient ECC storage root key ─────────────────
         // SAFETY: WOLFTPM2_KEY and TPMT_PUBLIC are plain C structs; zeroing
         // them is the documented initial state before passing to wolfTPM2 API.
-        let mut srk = unsafe { std::mem::zeroed::<wolftpm_sys::WOLFTPM2_KEY>() };
-        let mut srk_template = unsafe { std::mem::zeroed::<wolftpm_sys::TPMT_PUBLIC>() };
+        let mut srk = unsafe { std::mem::zeroed::<wolftpm2_sys::WOLFTPM2_KEY>() };
+        let mut srk_template = unsafe { std::mem::zeroed::<wolftpm2_sys::TPMT_PUBLIC>() };
 
         // SAFETY: srk_template is a valid zeroed TPMT_PUBLIC; the function
         // only writes to it.
         let rc = unsafe {
-            wolftpm_sys::wolfTPM2_GetKeyTemplate_ECC_SRK(&mut srk_template as *mut _)
+            wolftpm2_sys::wolfTPM2_GetKeyTemplate_ECC_SRK(&mut srk_template as *mut _)
         };
         Error::check(rc)?;
 
@@ -43,10 +43,10 @@ impl<'dev> EccKey<'dev> {
         // are local structs with correct initial state; auth=NULL/0 = no password.
         // TPM_RH_OWNER = TPM_RH_T_TPM_RH_OWNER = 0x40000001.
         let rc = unsafe {
-            wolftpm_sys::wolfTPM2_CreatePrimaryKey(
+            wolftpm2_sys::wolfTPM2_CreatePrimaryKey(
                 dev_ptr,
                 &mut srk as *mut _,
-                wolftpm_sys::TPM_RH_T_TPM_RH_OWNER,
+                wolftpm2_sys::TPM_RH_T_TPM_RH_OWNER,
                 &mut srk_template as *mut _,
                 std::ptr::null(),
                 0,
@@ -56,39 +56,39 @@ impl<'dev> EccKey<'dev> {
 
         // ── Step 2: Build an ECC P-256/ECDSA/SHA-256 signing key template ────
         // SAFETY: zeroing TPMT_PUBLIC is the correct initial state.
-        let mut key_template = unsafe { std::mem::zeroed::<wolftpm_sys::TPMT_PUBLIC>() };
+        let mut key_template = unsafe { std::mem::zeroed::<wolftpm2_sys::TPMT_PUBLIC>() };
 
         // SAFETY: key_template is a valid zeroed TPMT_PUBLIC; the function
         // writes the ECC P-256/ECDSA template into it.
         let rc = unsafe {
-            wolftpm_sys::wolfTPM2_GetKeyTemplate_ECC(
+            wolftpm2_sys::wolfTPM2_GetKeyTemplate_ECC(
                 &mut key_template as *mut _,
                 // object attributes: origin on TPM, password auth, sign, DA exempt
-                wolftpm_sys::TPMA_OBJECT_mask_TPMA_OBJECT_sensitiveDataOrigin
-                    | wolftpm_sys::TPMA_OBJECT_mask_TPMA_OBJECT_userWithAuth
-                    | wolftpm_sys::TPMA_OBJECT_mask_TPMA_OBJECT_sign
-                    | wolftpm_sys::TPMA_OBJECT_mask_TPMA_OBJECT_noDA,
-                wolftpm_sys::TPM_ECC_CURVE_T_TPM_ECC_NIST_P256
-                    as wolftpm_sys::TPM_ECC_CURVE,
-                wolftpm_sys::TPM_ALG_ID_T_TPM_ALG_ECDSA as wolftpm_sys::TPM_ALG_ID,
+                wolftpm2_sys::TPMA_OBJECT_mask_TPMA_OBJECT_sensitiveDataOrigin
+                    | wolftpm2_sys::TPMA_OBJECT_mask_TPMA_OBJECT_userWithAuth
+                    | wolftpm2_sys::TPMA_OBJECT_mask_TPMA_OBJECT_sign
+                    | wolftpm2_sys::TPMA_OBJECT_mask_TPMA_OBJECT_noDA,
+                wolftpm2_sys::TPM_ECC_CURVE_T_TPM_ECC_NIST_P256
+                    as wolftpm2_sys::TPM_ECC_CURVE,
+                wolftpm2_sys::TPM_ALG_ID_T_TPM_ALG_ECDSA as wolftpm2_sys::TPM_ALG_ID,
             )
         };
         // SAFETY: srk was successfully created above; flush it before
         // propagating any error so no transient slot is leaked.
         Error::check(rc).inspect_err(|_e| {
             unsafe {
-                wolftpm_sys::wolfTPM2_UnloadHandle(dev_ptr, &mut srk.handle as *mut _);
+                wolftpm2_sys::wolfTPM2_UnloadHandle(dev_ptr, &mut srk.handle as *mut _);
             }
         })?;
 
         // ── Step 3: Create and load the signing key under the SRK ────────────
         // SAFETY: zeroing WOLFTPM2_KEY is the correct initial state.
-        let mut key = unsafe { std::mem::zeroed::<wolftpm_sys::WOLFTPM2_KEY>() };
+        let mut key = unsafe { std::mem::zeroed::<wolftpm2_sys::WOLFTPM2_KEY>() };
 
         // SAFETY: dev_ptr, key, srk.handle, and key_template are all valid;
         // auth=NULL/0 = no password.
         let rc = unsafe {
-            wolftpm_sys::wolfTPM2_CreateAndLoadKey(
+            wolftpm2_sys::wolfTPM2_CreateAndLoadKey(
                 dev_ptr,
                 &mut key as *mut _,
                 &mut srk.handle as *mut _,
@@ -100,7 +100,7 @@ impl<'dev> EccKey<'dev> {
         // SAFETY: srk was successfully created; flush it before returning.
         Error::check(rc).inspect_err(|_e| {
             unsafe {
-                wolftpm_sys::wolfTPM2_UnloadHandle(dev_ptr, &mut srk.handle as *mut _);
+                wolftpm2_sys::wolfTPM2_UnloadHandle(dev_ptr, &mut srk.handle as *mut _);
             }
         })?;
 
@@ -129,15 +129,15 @@ impl<'dev> EccKey<'dev> {
         let hash_sz: std::ffi::c_int = 32;
 
         let rc = unsafe {
-            wolftpm_sys::wolfTPM2_SignHashScheme(
+            wolftpm2_sys::wolfTPM2_SignHashScheme(
                 self.dev.dev_ptr_mut(),
                 &mut self.key as *mut _,
                 hash.as_ptr(),
                 hash_sz,
                 sig.as_mut_ptr(),
                 &mut sig_sz as *mut _,
-                wolftpm_sys::TPM_ALG_ID_T_TPM_ALG_ECDSA as wolftpm_sys::TPMI_ALG_SIG_SCHEME,
-                wolftpm_sys::TPM_ALG_ID_T_TPM_ALG_SHA256 as wolftpm_sys::TPMI_ALG_HASH,
+                wolftpm2_sys::TPM_ALG_ID_T_TPM_ALG_ECDSA as wolftpm2_sys::TPMI_ALG_SIG_SCHEME,
+                wolftpm2_sys::TPM_ALG_ID_T_TPM_ALG_SHA256 as wolftpm2_sys::TPMI_ALG_HASH,
             )
         };
         Error::check(rc)?;
@@ -194,15 +194,15 @@ impl<'dev> EccKey<'dev> {
         // SAFETY: dev_ptr is alive for 'dev; self.key is a loaded TPM key;
         // hash is 32 bytes (hash_sz) and sig is sig_sz bytes (both validated above).
         let rc = unsafe {
-            wolftpm_sys::wolfTPM2_VerifyHashScheme(
+            wolftpm2_sys::wolfTPM2_VerifyHashScheme(
                 self.dev.dev_ptr_mut(),
                 &mut self.key as *mut _,
                 sig.as_ptr(),
                 sig_sz,
                 hash.as_ptr(),
                 hash_sz,
-                wolftpm_sys::TPM_ALG_ID_T_TPM_ALG_ECDSA as wolftpm_sys::TPMI_ALG_SIG_SCHEME,
-                wolftpm_sys::TPM_ALG_ID_T_TPM_ALG_SHA256 as wolftpm_sys::TPMI_ALG_HASH,
+                wolftpm2_sys::TPM_ALG_ID_T_TPM_ALG_ECDSA as wolftpm2_sys::TPMI_ALG_SIG_SCHEME,
+                wolftpm2_sys::TPM_ALG_ID_T_TPM_ALG_SHA256 as wolftpm2_sys::TPMI_ALG_HASH,
             )
         };
 
@@ -223,7 +223,7 @@ impl<'dev> EccKey<'dev> {
             0 => Ok(()),
             // TPM_RC_SIGNATURE (0x9B = 155): the signature is structurally
             // well-formed but does not verify against this key and hash.
-            r if r == wolftpm_sys::TPM_RC_T_TPM_RC_SIGNATURE => {
+            r if r == wolftpm2_sys::TPM_RC_T_TPM_RC_SIGNATURE => {
                 Err(Error::SignatureInvalid)
             }
             _ => Err(Error::Tpm {
@@ -253,8 +253,8 @@ impl Drop for EccKey<'_> {
         // Errors are intentionally ignored: flush is best-effort and the keys
         // are gone from the caller's view regardless.
         unsafe {
-            wolftpm_sys::wolfTPM2_UnloadHandle(dev_ptr, &mut self.key.handle as *mut _);
-            wolftpm_sys::wolfTPM2_UnloadHandle(dev_ptr, &mut self.srk.handle as *mut _);
+            wolftpm2_sys::wolfTPM2_UnloadHandle(dev_ptr, &mut self.key.handle as *mut _);
+            wolftpm2_sys::wolfTPM2_UnloadHandle(dev_ptr, &mut self.srk.handle as *mut _);
         }
     }
 }
