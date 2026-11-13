@@ -416,10 +416,9 @@ int wolfcrypt_fix_ec_privatekey_only(WOLFSSL_EC_KEY *key) {
 
 #if defined(OPENSSL_EXTRA) || defined(OPENSSL_ALL)
 
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-void SetErrorString(int error, char* str) {
+/* Write `error` as a decimal string. Exported under its own name so the
+ * tests can exercise it even when the real SetErrorString is linked. */
+void wolfcrypt_rs_error_code_string(int error, char* str) {
     /* Caller always provides WOLFSSL_MAX_ERROR_SZ (80) bytes.
      * snprintf not available on all targets; manual int-to-string.
      * Maximum output: '-' + 10 digits + '\0' = 12 bytes, well within 80. */
@@ -437,6 +436,13 @@ void SetErrorString(int error, char* str) {
     do { buf[i++] = '0' + (n % 10); n /= 10; } while (n > 0);
     while (i > 0) *p++ = buf[--i];
     *p = '\0';
+}
+
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+void SetErrorString(int error, char* str) {
+    wolfcrypt_rs_error_code_string(error, str);
 }
 #endif /* OPENSSL_EXTRA || OPENSSL_ALL */
 

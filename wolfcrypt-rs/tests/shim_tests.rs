@@ -426,63 +426,67 @@ mod cfg_flag_tests {
 }
 
 /// Tests for the SetErrorString stub in compat_shim.c.
-/// Our stub converts the error code to a decimal string, since we don't
-/// compile internal.c (where the real SetErrorString lives).
+///
+/// The stub (weak) only takes effect when wolfSSL's internal.c is not
+/// linked. Full vendored builds now compile the TLS layer, so the real
+/// SetErrorString wins there. The stub's formatting is tested through
+/// `wolfcrypt_rs_error_code_string`, which it delegates to.
 #[cfg(wolfssl_openssl_extra)]
 mod error_string_stub_tests {
-    use core::ffi::{c_char, c_ulong};
+    use core::ffi::{c_char, c_int, c_ulong};
     use wolfcrypt_rs::*;
-
-    /// Helper: call ERR_error_string with a caller-provided buffer and
-    /// return the result as a &str.
-    unsafe fn error_string_for(code: c_ulong) -> alloc::string::String {
-        // SAFETY: buf is large enough for WOLFSSL_MAX_ERROR_SZ; ptr is valid for the duration
-        unsafe {
-            let mut buf = [0u8; 120]; // WOLFSSL_MAX_ERROR_SZ is 80, but be safe
-            let ptr = ERR_error_string(code, buf.as_mut_ptr() as *mut c_char);
-            assert!(!ptr.is_null());
-            let cstr = core::ffi::CStr::from_ptr(ptr);
-            cstr.to_string_lossy().into_owned()
-        }
-    }
 
     extern crate alloc;
 
+    unsafe extern "C" {
+        fn wolfcrypt_rs_error_code_string(error: c_int, str: *mut c_char);
+    }
+
+    fn stub_string(code: c_int) -> alloc::string::String {
+        let mut buf = [0u8; 80]; // WOLFSSL_MAX_ERROR_SZ
+        // SAFETY: buf holds WOLFSSL_MAX_ERROR_SZ bytes, as SetErrorString's
+        // callers guarantee; the output is at most 12 bytes.
+        unsafe { wolfcrypt_rs_error_code_string(code, buf.as_mut_ptr() as *mut c_char) };
+        let end = buf.iter().position(|&b| b == 0).expect("NUL-terminated");
+        alloc::string::String::from_utf8(buf[..end].to_vec()).expect("ASCII digits")
+    }
+
     #[test]
     fn positive_error_code() {
-        unsafe {
-            let s = error_string_for(42);
-            assert_eq!(s, "42");
-        }
+        assert_eq!(stub_string(42), "42");
     }
 
     #[test]
     fn zero_error_code() {
-        unsafe {
-            let s = error_string_for(0);
-            assert_eq!(s, "0");
-        }
+        assert_eq!(stub_string(0), "0");
     }
 
     #[test]
-    fn negative_error_code_via_cast() {
-        unsafe {
-            // -42 as i32, then cast to unsigned long — mirrors how wolfSSL
-            // internally casts back to int in ERR_error_string.
-            let code = (-42i32) as c_ulong;
-            let s = error_string_for(code);
-            assert_eq!(s, "-42");
-        }
+    fn negative_error_code() {
+        assert_eq!(stub_string(-42), "-42");
     }
 
     #[test]
     fn int_min_safe_negation() {
-        // Tests the safe negation trick: -(error + 1) + 1u avoids UB on INT_MIN.
-        unsafe {
-            let code = (i32::MIN) as c_ulong;
-            let s = error_string_for(code);
-            assert_eq!(s, "-2147483648");
-        }
+        // -(error + 1) + 1u avoids UB on INT_MIN.
+        assert_eq!(stub_string(i32::MIN), "-2147483648");
+    }
+
+    /// ERR_error_string returns either the stub's decimal code (crypto-only
+    /// wolfSSL) or wolfSSL's real message (TLS layer linked).
+    #[test]
+    fn err_error_string_is_stub_or_real_message() {
+        let code = (-173i32) as c_ulong; // BAD_FUNC_ARG
+        let mut buf = [0u8; 120];
+        // SAFETY: buf is larger than WOLFSSL_MAX_ERROR_SZ; ptr is valid while buf lives.
+        let s = unsafe {
+            let ptr = ERR_error_string(code, buf.as_mut_ptr() as *mut c_char);
+            assert!(!ptr.is_null());
+            core::ffi::CStr::from_ptr(ptr).to_string_lossy().into_owned()
+        };
+        let is_stub = s == "-173";
+        let is_real = !s.is_empty() && !s.trim_start_matches('-').chars().all(|c| c.is_ascii_digit());
+        assert!(is_stub || is_real, "unexpected error string: {s:?}");
     }
 }
 

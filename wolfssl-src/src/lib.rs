@@ -119,14 +119,16 @@ impl Build {
         // cryptocb-only and cryptocb-pure: no SSL layer (no OPENSSL_EXTRA).
         // riscv-bare-metal: also no SSL layer (bare-metal builds are cryptocb-based).
         // Full builds: compile all ssl/ sources.
-        let ssl_srcs: &[&str] = if cfg!(any(
+        let ssl_srcs: Vec<&str> = if cfg!(any(
             feature = "cryptocb-pure",
             feature = "cryptocb-only",
             feature = "riscv-bare-metal",
         )) {
-            &[]
+            Vec::new()
         } else {
-            ssl_sources(&defines)
+            let mut v = ssl_sources(&defines).to_vec();
+            v.extend(tls_sources(&defines));
+            v
         };
 
         // Compile
@@ -196,7 +198,7 @@ impl Build {
             build.file(&path);
             println!("cargo:rerun-if-changed={}", path.display());
         }
-        for src in ssl_srcs {
+        for src in &ssl_srcs {
             let path = ssl_src.join(src);
             if !path.exists() {
                 panic!("required wolfssl source not found: {}", path.display());
@@ -643,6 +645,40 @@ mod tests {
         let defs = parse_defines(f.path());
         assert!(defs.is_empty());
     }
+}
+
+/// The TLS protocol layer, mirroring the `!BUILD_CRYPTONLY` block of wolfSSL's
+/// src/include.am. Without these, full builds had the OpenSSL-compat files
+/// (ssl.c and friends) but no TLS state machine, so the TLS crates could only
+/// link against a separately installed libwolfssl.
+fn tls_sources(defines: &HashSet<String>) -> Vec<&'static str> {
+    if defines.contains("WOLFCRYPT_ONLY") {
+        return Vec::new();
+    }
+    let mut v = vec!["internal.c", "wolfio.c", "keys.c", "tls.c"];
+    // ssl.c is already in ssl_sources() when OPENSSL_EXTRA/OPENSSL_ALL is set.
+    if !(defines.contains("OPENSSL_EXTRA") || defines.contains("OPENSSL_ALL")) {
+        v.push("ssl.c");
+    }
+    if defines.contains("WOLFSSL_TLS13") {
+        v.push("tls13.c");
+    }
+    if defines.contains("HAVE_OCSP") {
+        v.push("ocsp.c");
+    }
+    if defines.contains("HAVE_CRL") {
+        v.push("crl.c");
+    }
+    if defines.contains("WOLFSSL_DTLS") {
+        v.push("dtls.c");
+    }
+    if defines.contains("WOLFSSL_DTLS13") {
+        v.push("dtls13.c");
+    }
+    if defines.contains("WOLFSSL_QUIC") {
+        v.push("quic.c");
+    }
+    v
 }
 
 fn ssl_sources(defines: &HashSet<String>) -> &'static [&'static str] {
