@@ -22,7 +22,7 @@ fips = ["wolfcrypt-ring-compat/fips"]
 wolfcrypt-ring-compat = { version = "1.17.1", path = "../wolfcrypt-ring-compat", optional = true }
 
 [dev-dependencies]
-wolfcrypt-ring-compat = { version = "1.17.1", path = "../wolfcrypt-ring-compat", features = ["ring-sig-verify", "unstable"] }
+wolfcrypt_ring_compat = { package = "wolfcrypt-ring-compat", version = "1.17.1", path = "../wolfcrypt-ring-compat", features = ["ring-sig-verify", "unstable"] }
 untrusted.workspace = true
 paste.workspace = true
 criterion = { workspace = true, features = ["csv_output"] }
