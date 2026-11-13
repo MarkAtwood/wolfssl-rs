@@ -1,0 +1,28 @@
+{
+  "id": "wolfssl-rs-69dm.4",
+  "title": "ssh-key-wolfcrypt: stable deps; keep written private keys at 0600",
+  "description": "Release-candidate pins moved to stable (ssh-cipher 0.3 needs its encoding feature; Mpint is infallible; TdesCbc). write_openssh_file kept existing files' permissions, so a key written over a 0644 file stayed world-readable; it now sets 0600 explicitly. The test scratch keys that were committed are no longer tracked.",
+  "status": "open",
+  "priority": 2,
+  "issue_type": "bug",
+  "owner": "mark@reviewcommit.com",
+  "created_at": "2026-11-13T05:35:33.163827716Z",
+  "created_by": "Mark Atwood",
+  "updated_at": "2026-11-13T05:35:33.163827716Z",
+  "labels": [
+    "rustcrypto",
+    "security",
+    "release",
+    "wolfssl"
+  ],
+  "dependencies": [
+    {
+      "issue_id": "wolfssl-rs-69dm.4",
+      "depends_on_id": "wolfssl-rs-69dm",
+      "type": "parent-child",
+      "created_at": "2026-11-13T05:35:33.193157601Z",
+      "created_by": "Mark Atwood",
+      "metadata": "{}"
+    }
+  ]
+}
