@@ -394,6 +394,14 @@ impl PrivateKey {
 
         let mut file = options.write(true).create(true).truncate(true).open(path)?;
 
+        // `mode` only applies when the file is created. If it already existed
+        // (e.g. with 0644), tighten it before writing key material into it.
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            file.set_permissions(std::fs::Permissions::from_mode(UNIX_FILE_PERMISSIONS))?;
+        }
+
         self.write_openssh(&mut file, line_ending)
     }
 
