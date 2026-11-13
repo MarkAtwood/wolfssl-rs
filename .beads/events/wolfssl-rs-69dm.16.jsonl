@@ -2,3 +2,4 @@
 {"id":"01a1d367-776d-7c65-b74e-f03ebc522fda","issue_id":"wolfssl-rs-69dm.16","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: release","created_at":"2026-11-13T05:35:35.789812766Z"}
 {"id":"01a1d367-7770-7bc8-b614-9ab50e14473c","issue_id":"wolfssl-rs-69dm.16","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: rustcrypto","created_at":"2026-11-13T05:35:35.792772615Z"}
 {"id":"01a1d367-7773-7a95-9b5d-8f0aa0c0c075","issue_id":"wolfssl-rs-69dm.16","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: wolfssl","created_at":"2026-11-13T05:35:35.795693926Z"}
+{"id":"01a1d367-77e5-73b9-8816-2f3a2dd1e765","issue_id":"wolfssl-rs-69dm.16","event_type":"closed","actor":"Mark Atwood","old_value":"","new_value":"Done in 61f536d and 1078e71. All 16 published 2026-11-13; verified on crates.io.","created_at":"2026-11-13T05:35:35.909244916Z"}
