@@ -1,0 +1,28 @@
+{
+  "id": "wolfssl-rs-69dm.12",
+  "title": "Declare the real MSRV: 1.88 (1.89 for ssh-key-wolfcrypt, wolfcrypt-dpe-hw)",
+  "description": "Every crate claimed 1.85, but the build scripts use let chains (1.88) and the new deps need up to 1.89 (aes 0.9.4).",
+  "status": "open",
+  "priority": 2,
+  "issue_type": "chore",
+  "owner": "mark@reviewcommit.com",
+  "created_at": "2026-11-13T05:35:34.893313924Z",
+  "created_by": "Mark Atwood",
+  "updated_at": "2026-11-13T05:35:34.893313924Z",
+  "labels": [
+    "msrv",
+    "release",
+    "rustcrypto",
+    "wolfssl"
+  ],
+  "dependencies": [
+    {
+      "issue_id": "wolfssl-rs-69dm.12",
+      "depends_on_id": "wolfssl-rs-69dm",
+      "type": "parent-child",
+      "created_at": "2026-11-13T05:35:34.921206934Z",
+      "created_by": "Mark Atwood",
+      "metadata": "{}"
+    }
+  ]
+}
