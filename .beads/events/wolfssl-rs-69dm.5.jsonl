@@ -3,3 +3,4 @@
 {"id":"01a1d367-6e0b-7af9-bd03-b0c37cfc30d7","issue_id":"wolfssl-rs-69dm.5","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: dpe","created_at":"2026-11-13T05:35:33.387719344Z"}
 {"id":"01a1d367-6e0e-7a94-b987-124070423448","issue_id":"wolfssl-rs-69dm.5","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: release","created_at":"2026-11-13T05:35:33.3906966Z"}
 {"id":"01a1d367-6e11-78a2-b062-7241d398e234","issue_id":"wolfssl-rs-69dm.5","event_type":"label_added","actor":"Mark Atwood","comment":"Added label: wolfssl","created_at":"2026-11-13T05:35:33.393566228Z"}
+{"id":"01a1d367-6e81-7343-8474-dd794a45d766","issue_id":"wolfssl-rs-69dm.5","event_type":"closed","actor":"Mark Atwood","old_value":"","new_value":"Done in e9d1db6, 3a80e9c and 4812bab. 37 + 286 + 26 pass.","created_at":"2026-11-13T05:35:33.505214515Z"}
