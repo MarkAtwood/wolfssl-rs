@@ -180,6 +180,7 @@ unsafe fn dispatch_aesgcm_encrypt(gcm: &wc_CryptoCb_AesAuthEnc) -> c_int {
 
     // Perform AES-256-GCM encryption.
     gcm_encrypt_256(&key, iv, aad, plaintext, out, gcm.authTag, 16);
+    wipe_callee_stack();
 
     // Zeroize key copy after use.
     key.zeroize();
@@ -242,6 +243,7 @@ unsafe fn dispatch_aesgcm_decrypt(gcm: &wc_CryptoCb_AesAuthDec) -> c_int {
     let provided_tag: &[u8; 16] = &*(gcm.authTag as *const [u8; 16]);
 
     let rc = gcm_decrypt_256(&key, iv, aad, ciphertext, out, provided_tag);
+    wipe_callee_stack();
 
     // Zeroize key copy after use, regardless of auth outcome.
     key.zeroize();
@@ -299,6 +301,7 @@ unsafe fn dispatch_aescbc(enc: c_int, cbc: &WcAesCbcInfo) -> c_int {
         cbc_decrypt_256(&key, &iv, input, output)
     };
 
+    wipe_callee_stack();
     key.zeroize();
 
     if rc != 0 {
@@ -323,10 +326,30 @@ unsafe fn dispatch_aescbc(enc: c_int, cbc: &WcAesCbcInfo) -> c_int {
 // GCM implementation helpers
 // ---------------------------------------------------------------------------
 
+/// Overwrite the stack region the software AES helpers just used.
+///
+/// The `aes` crate wipes its key schedule when the cipher is dropped, but
+/// building the cipher moves it between stack slots, and only the final copy
+/// gets wiped. The stale copies hold the first round keys, which for AES-256
+/// are the raw key. This crate is `no_std` with no allocator, so the cipher
+/// can't be pinned on the heap. Instead, call this from the dispatch function
+/// right after a helper returns: its frame lands on the region the helper
+/// used and zeroes it. The helpers are `#[inline(never)]` so their frames
+/// (and the key copies) sit below the caller's frame rather than inside it.
+/// Only compiled for the host emulation path; firmware uses the hardware AES
+/// engine.
+#[inline(never)]
+fn wipe_callee_stack() {
+    let mut scratch = [0u8; 4096];
+    scratch.zeroize();
+    core::hint::black_box(&scratch);
+}
+
 /// AES-256-GCM encrypt in place.
 ///
 /// Encrypts `plaintext` into `out`, writes the 16-byte auth tag to
 /// `tag_out[..16]`.  Caller must ensure output slices are the right size.
+#[inline(never)] // keep its stack frame below the caller so wipe_callee_stack reaches it
 fn gcm_encrypt_256(
     key: &[u8; 32],
     iv: &[u8; 12],
@@ -359,6 +382,7 @@ fn gcm_encrypt_256(
 /// Uses "authenticate-then-decrypt": the tag is verified BEFORE the ciphertext
 /// is decrypted and written to `out`.  This prevents leaking partially
 /// decrypted plaintext when the tag is invalid.
+#[inline(never)] // keep its stack frame below the caller so wipe_callee_stack reaches it
 fn gcm_decrypt_256(
     key: &[u8; 32],
     iv: &[u8; 12],
@@ -470,6 +494,7 @@ fn gcm_ctr_process(cipher: &Aes256, iv: &[u8; 12], input: &[u8], output: &mut [u
 // CBC implementation helpers
 // ---------------------------------------------------------------------------
 
+#[inline(never)] // keep its stack frame below the caller so wipe_callee_stack reaches it
 fn cbc_encrypt_256(key: &[u8; 32], iv: &[u8; 16], input: &[u8], output: &mut [u8]) -> c_int {
     let enc = match cbc::Encryptor::<Aes256>::new_from_slices(key, iv) {
         Ok(e) => e,
@@ -481,6 +506,7 @@ fn cbc_encrypt_256(key: &[u8; 32], iv: &[u8; 16], input: &[u8], output: &mut [u8
     }
 }
 
+#[inline(never)] // keep its stack frame below the caller so wipe_callee_stack reaches it
 fn cbc_decrypt_256(key: &[u8; 32], iv: &[u8; 16], input: &[u8], output: &mut [u8]) -> c_int {
     let dec = match cbc::Decryptor::<Aes256>::new_from_slices(key, iv) {
         Ok(d) => d,
