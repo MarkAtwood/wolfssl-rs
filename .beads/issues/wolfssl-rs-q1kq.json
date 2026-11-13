@@ -1,0 +1,26 @@
+{
+  "id": "wolfssl-rs-q1kq",
+  "title": "Report wolfSSL 5.9.4 ECDH bug: valid x=0 shared secret rejected (ECC_INF_E)",
+  "description": "wolfSSL 5.9.4's SP-math identity check in wc_ecc_shared_secret treats an all-zero x-coordinate as infinity. P-256/384/521 have valid points with x=0, and Wycheproof tcId 3 on each curve ('x**2 = 0') expects success. The source is the OR-accumulate check added with PRs 11173/11172/11233. File it upstream. wolfcrypt-conformance tests/wycheproof_ecdh.rs tolerates exactly this case and asserts it happens once per curve; remove that block when wolfSSL is fixed (the test fails once it is).",
+  "status": "open",
+  "priority": 2,
+  "issue_type": "bug",
+  "owner": "mark@reviewcommit.com",
+  "created_at": "2026-11-13T05:35:55.422686093Z",
+  "created_by": "Mark Atwood",
+  "updated_at": "2026-11-13T05:35:55.422686093Z",
+  "labels": [
+    "wolfssl",
+    "upstream"
+  ],
+  "dependencies": [
+    {
+      "issue_id": "wolfssl-rs-q1kq",
+      "depends_on_id": "wolfssl-rs-69dm",
+      "type": "discovered-from",
+      "created_at": "2026-11-13T05:35:55.445074543Z",
+      "created_by": "Mark Atwood",
+      "metadata": "{}"
+    }
+  ]
+}
