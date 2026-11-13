@@ -36,8 +36,8 @@ wolfcrypt = { version = "0.2.0", path = "../wolfcrypt", default-features = false
 ] }
 
 # RustCrypto traits used in the public/internal API
-digest_trait = { package = "digest", version = "0.10", default-features = false }
-signature_trait = { package = "signature", version = "2.2", default-features = false }
+digest_trait = { package = "digest", version = "0.11", default-features = false }
+signature_trait = { package = "signature", version = "3.0", default-features = false }
 rand_core = { version = "0.10", default-features = false }
 
 # Constant-time comparison
